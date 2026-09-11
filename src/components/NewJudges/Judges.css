@@ -1,0 +1,164 @@
+.judges {
+  position: relative;
+  background: var(--vh-black-soft);
+  padding: clamp(6rem, 12vh, 12rem) 0;
+  overflow: hidden;
+}
+
+.judges__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.judges__layout {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: clamp(3rem, 6vw, 8rem);
+  align-items: start;
+}
+
+/* ── Left ── */
+.judges__overline {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red);
+  margin-bottom: var(--vh-space-5);
+}
+
+.judges__overline-bar {
+  width: 30px;
+  height: 2px;
+  background: var(--vh-red);
+  display: block;
+}
+
+.judges__heading {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-5xl);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  color: var(--vh-white);
+  margin-bottom: var(--vh-space-6);
+}
+
+.judges__heading-accent {
+  color: var(--vh-red);
+}
+
+.judges__desc {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-md);
+  line-height: 1.7;
+  color: var(--vh-white-dim);
+  max-width: 360px;
+}
+
+/* ── Grid ── */
+.judges__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+.judges__card {
+  background: var(--vh-black);
+  padding: clamp(1.5rem, 2.5vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-4);
+  transition: background 0.4s;
+}
+
+.judges__card:hover {
+  background: var(--vh-black-light);
+}
+
+/* Portrait */
+.judges__portrait {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: var(--vh-red-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.judges__portrait-initial {
+  font-family: var(--vh-font-display);
+  font-size: clamp(3rem, 6vw, 5rem);
+  color: var(--vh-red);
+  opacity: 0.4;
+  z-index: 1;
+}
+
+.judges__portrait-accent {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 40%;
+  height: 40%;
+  background: var(--vh-red);
+  opacity: 0.15;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.judges__card:hover .judges__portrait-initial {
+  opacity: 0.7;
+}
+
+/* Info */
+.judges__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.judges__name {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-md);
+  font-weight: 600;
+  color: var(--vh-white);
+}
+
+.judges__role {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-sm);
+  color: var(--vh-white-dim);
+}
+
+.judges__company {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.2em;
+  color: var(--vh-red);
+}
+
+.judges__domain {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.15em;
+  color: var(--vh-white-faint);
+}
+
+/* ── Mobile ── */
+@media (max-width: 900px) {
+  .judges__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .judges__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .judges__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,194 @@
+.mentors {
+  position: relative;
+  padding: 160px 40px;
+  background: var(--black-secondary);
+}
+
+.mentors-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.mentors-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mentors-number {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--red-primary);
+}
+
+.mentors-label-divider {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--white-ghost);
+}
+
+.mentors-label-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--white-dim);
+}
+
+.mentors-title {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 7vw, 80px);
+  line-height: 1;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+
+.mentors-title-red {
+  color: var(--red-primary);
+}
+
+.mentors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.mentor-card {
+  position: relative;
+  padding: 32px;
+  background: var(--black-surface);
+  border: 1px solid var(--black-border);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  transition: all 0.45s var(--ease-out-expo);
+}
+
+.mentor-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--red-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+
+.mentor-card--hovered::after {
+  transform: scaleX(1);
+}
+
+.mentor-card-index {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--red-dark);
+}
+
+.mentor-card-monogram {
+  font-family: var(--font-display);
+  font-size: 80px;
+  line-height: 1;
+  color: var(--white);
+  opacity: 0.12;
+  transition: all 0.45s var(--ease-out-expo);
+}
+
+.mentor-card--hovered .mentor-card-monogram {
+  opacity: 0.25;
+  color: var(--red-primary);
+}
+
+.mentor-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mentor-card-name {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.mentor-card-role {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--white-dim);
+}
+
+.mentor-card-company {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--red-dark);
+}
+
+.mentor-card-expertise {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mentor-card-expertise-title {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.3em;
+  color: var(--white-ghost);
+}
+
+.mentor-card-expertise-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--white-muted);
+}
+
+.mentor-card-icon {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  color: var(--white-ghost);
+  transition: all 0.3s;
+}
+
+.mentor-card--hovered .mentor-card-icon {
+  color: var(--red-primary);
+  transform: translate(2px, -2px);
+}
+
+.mentor-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 60%, rgba(176, 0, 32, 0.05));
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.mentor-card--hovered .mentor-card-overlay {
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .mentors {
+    padding: 100px 20px;
+  }
+
+  .mentors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mentor-card {
+    min-height: 240px;
+  }
+}

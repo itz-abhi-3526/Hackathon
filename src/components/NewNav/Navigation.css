@@ -1,0 +1,352 @@
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 0 var(--vh-gutter);
+  transition: all 0.4s var(--vh-ease-out);
+}
+
+.nav--scrolled {
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.nav__inner {
+  max-width: var(--vh-max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: clamp(3.5rem, 6vh, 5rem);
+}
+
+/* ── Brand ── */
+.nav__brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.1rem;
+  font-family: var(--vh-font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+  transition: opacity 0.3s;
+}
+
+.nav__brand:hover {
+  opacity: 0.8;
+}
+
+.nav__brand-v {
+  color: var(--vh-white);
+}
+
+.nav__brand-h {
+  color: var(--vh-red);
+}
+
+.nav__brand-dot {
+  color: var(--vh-white-dim);
+  font-size: 1rem;
+}
+
+.nav__brand-year {
+  color: var(--vh-white-dim);
+  font-size: 1rem;
+}
+
+/* ── Desktop Links ── */
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+.nav__link {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.15em;
+  color: var(--vh-white-dim);
+  transition: color 0.3s;
+  padding: 0.3rem 0;
+  position: relative;
+}
+
+.nav__link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--vh-red);
+  transition: width 0.3s var(--vh-ease-out);
+}
+
+.nav__link:hover {
+  color: var(--vh-white);
+}
+
+.nav__link:hover::after {
+  width: 100%;
+}
+
+/* ── Register Button ── */
+.nav__register {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.15em;
+  padding: 0.5rem 1.5rem;
+  background: var(--vh-red);
+  color: var(--vh-white);
+  transition: all 0.3s var(--vh-ease-out);
+}
+
+.nav__register:hover {
+  background: var(--vh-red-light);
+}
+
+/* ── Mobile Toggle ── */
+.nav__toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0.5rem;
+  width: 30px;
+}
+
+.nav__toggle-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--vh-white);
+  transition: all 0.3s var(--vh-ease-out);
+  transform-origin: center;
+}
+
+.nav__toggle-line--open:first-child {
+  transform: translateY(3.5px) rotate(45deg);
+}
+
+.nav__toggle-line--open:last-child {
+  transform: translateY(-3.5px) rotate(-45deg);
+}
+
+/* ── Mobile Menu ── */
+.nav__mobile {
+  position: fixed;
+  top: clamp(3.5rem, 6vh, 5rem);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(rgba(10, 10, 10, 0.94), rgba(10, 10, 10, 0.97)),
+    repeating-linear-gradient(0deg, transparent 0, transparent 63px, rgba(255, 255, 255, 0.04) 64px);
+  z-index: 99;
+  padding: var(--vh-space-5) var(--vh-gutter) calc(var(--vh-space-5) + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.nav__mobile-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.2em;
+  color: var(--vh-white-dim);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: var(--vh-space-3);
+  margin-bottom: var(--vh-space-5);
+}
+
+.nav__mobile-meta-count {
+  color: var(--vh-red);
+}
+
+/* ── Grouped sections: EVENT / PEOPLE / INFO ── */
+.nav__mobile-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-4);
+}
+
+.nav__mobile-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav__mobile-group-head {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  margin-bottom: var(--vh-space-1);
+}
+
+.nav__mobile-group-index {
+  font-size: var(--vh-text-xs);
+  color: var(--vh-red);
+  letter-spacing: 0.2em;
+}
+
+.nav__mobile-group-label {
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.3em;
+  color: var(--vh-white-warm);
+}
+
+.nav__mobile-group-rule {
+  flex: 1;
+  height: 1px;
+  background: rgba(232, 22, 5, 0.35);
+  display: block;
+}
+
+.nav__mobile-group-count {
+  font-size: var(--vh-text-xs);
+  color: var(--vh-white-faint);
+  letter-spacing: 0.2em;
+}
+
+.nav__mobile-group-links {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav__mobile-link {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-display);
+  font-size: clamp(1.5rem, 6.5vw, 2rem);
+  color: var(--vh-white);
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  padding: var(--vh-space-2) 0;
+  transition: color 0.3s, padding-left 0.3s var(--vh-ease-out);
+}
+
+.nav__mobile-link:active {
+  color: var(--vh-red);
+  padding-left: var(--vh-space-2);
+}
+
+.nav__mobile-idx {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  color: var(--vh-white-faint);
+  letter-spacing: 0.2em;
+  min-width: 3ch;
+}
+
+.nav__mobile-register {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-xl);
+  letter-spacing: 0.1em;
+  background: var(--vh-red);
+  color: var(--vh-white);
+  margin-top: var(--vh-space-5);
+  padding: var(--vh-space-4) var(--vh-space-6);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s var(--vh-ease-out);
+}
+
+.nav__mobile-register:active {
+  background: var(--vh-red-light);
+}
+
+.nav__mobile-register::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -30%;
+  width: 25%;
+  background: rgba(255, 255, 255, 0.25);
+  transform: skewX(-20deg);
+  transition: left 0.45s var(--vh-ease-out);
+}
+
+.nav__mobile-register:active::after {
+  left: 110%;
+}
+
+.nav__mobile-foot {
+  margin-top: auto;
+  padding-top: var(--vh-space-6);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.18em;
+  color: var(--vh-white-faint);
+}
+
+/* ── Responsive ──
+   Light > 1023 behaves as a compact desktop toolbar.
+   <= 1023 (tablet + mobile) switches to the full-screen menu. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .nav__inner { height: clamp(3.25rem, 5.5vh, 4.25rem); }
+  .nav__links { gap: clamp(1rem, 2vw, 1.75rem); }
+}
+
+@media (max-width: 1023px) {
+  .nav__links {
+    display: none;
+  }
+
+  .nav__register {
+    display: none;
+  }
+
+  .nav__toggle {
+    display: flex;
+  }
+}
+
+@media (pointer: coarse) {
+  .nav__toggle {
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── Very small phones: tighten the grouped menu so it reads as a
+   single designed board, never a stretched column ── */
+@media (max-width: 380px) {
+  .nav__mobile {
+    padding-top: var(--vh-space-4);
+  }
+
+  .nav__mobile-link {
+    font-size: clamp(1.35rem, 6.5vw, 1.6rem);
+    padding: var(--vh-space-1) 0;
+  }
+
+  .nav__mobile-group {
+    gap: var(--vh-space-1);
+  }
+
+  .nav__mobile-register {
+    padding: var(--vh-space-4) var(--vh-space-5);
+  }
+}
+
+/* Short viewports (landscape phones / small in-wham) — keep the menu
+   scrollable and never let the register block push the foot off. */
+@media (max-height: 620px) {
+  .nav__mobile-foot {
+    margin-top: var(--vh-space-4);
+  }
+}

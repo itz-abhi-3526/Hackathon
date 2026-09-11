@@ -1,0 +1,42 @@
+.chapter {
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.chapter-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 48px;
+}
+
+.chapter-num {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--signal-primary);
+  min-width: 28px;
+}
+
+.chapter-sep {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--info-ghost);
+}
+
+.chapter-name {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: var(--info-dim);
+}
+
+.chapter-line {
+  flex: 1;
+  height: 1px;
+  background: var(--void-border);
+}

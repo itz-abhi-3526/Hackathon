@@ -1,0 +1,361 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOIDHACK 2026 — THE PEOPLE (mobile / tablet stage)
+   A connected People index replacing three sequential sections on
+   small screens. One category rail (sticky where supported) with an
+   animated selection, three horizontal snap carousels, and the same
+   editorial red/black language as the desktop sections.
+   ═══════════════════════════════════════════════════════════════ */
+
+.people {
+  position: relative;
+  background: var(--vh-black);
+  padding: clamp(5rem, 10vh, 10rem) 0 clamp(6rem, 14vh, 12rem);
+  overflow: hidden;
+}
+
+.people__inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* thin red spine — continues the axis from the Timeline Journey */
+.people__spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--vh-gutter) / 2);
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(232, 22, 5, 0.9),
+    rgba(232, 22, 5, 0.18)
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── HEADER ── */
+.people__head {
+  margin-bottom: var(--vh-space-6);
+}
+
+.people__overline {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red);
+  margin-bottom: var(--vh-space-5);
+}
+
+.people__overline-bar {
+  width: 30px;
+  height: 2px;
+  background: var(--vh-red);
+  display: block;
+}
+
+.people__heading {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-5xl);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  color: var(--vh-white);
+  margin-bottom: var(--vh-space-4);
+}
+
+.people__heading-accent {
+  color: var(--vh-red);
+}
+
+.people__desc {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-md);
+  line-height: 1.7;
+  color: var(--vh-white-dim);
+  max-width: 46ch;
+}
+
+/* ── CATEGORY RAIL ──
+   Full-bleed strip, sticky where supported. Selection follows the
+   scrollspy; selecting a tab scrolls to its carousel. */
+.people__tabs {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  gap: var(--vh-space-2);
+  margin: var(--vh-space-6) calc(-1 * var(--vh-gutter)) 0;
+  padding: var(--vh-space-3) var(--vh-gutter);
+  background: rgba(10, 10, 10, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.people__tab {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vh-space-2);
+  min-height: 3.25rem;
+  padding: 0 var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.18em;
+  color: var(--vh-white-dim);
+  transition: color 0.3s;
+}
+
+.people__tab-count {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-md);
+  opacity: 0.45;
+  transition: color 0.3s, opacity 0.3s;
+}
+
+.people__tab-pill {
+  position: absolute;
+  inset: var(--vh-space-1);
+  border: 1px solid var(--vh-red);
+  background: rgba(232, 22, 5, 0.08);
+  pointer-events: none;
+}
+
+.people__tab--on {
+  color: var(--vh-white);
+}
+
+.people__tab--on .people__tab-count {
+  color: var(--vh-red);
+  opacity: 1;
+}
+
+/* ── GROUPS ── */
+.people__groups {
+  display: flex;
+  flex-direction: column;
+}
+
+.people__group {
+  padding: var(--vh-space-8) 0 var(--vh-space-10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  scroll-margin-top: 4.5rem;
+}
+
+.people__group:last-child {
+  border-bottom: none;
+}
+
+.people__group-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vh-space-3);
+  margin-bottom: var(--vh-space-5);
+}
+
+.people__group-index {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  color: var(--vh-red);
+}
+
+.people__group-label {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.24em;
+  color: var(--vh-white);
+}
+
+.people__group-meta {
+  margin-left: auto;
+  font-family: var(--vh-font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: var(--vh-white-faint);
+  white-space: nowrap;
+}
+
+/* ── SNAP CAROUSEL ──
+   Native touch momentum + scroll-snap. First card bleeds to the
+   gutter; section overflow: hidden contains the bleed. */
+.people__rail {
+  display: flex;
+  gap: var(--vh-space-4);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 calc(-1 * var(--vh-gutter));
+  padding: var(--vh-space-1) var(--vh-gutter) var(--vh-space-6);
+}
+
+.people__rail::-webkit-scrollbar {
+  display: none;
+}
+
+.people__card {
+  flex: 0 0 clamp(230px, 74vw, 320px);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-4);
+  padding: var(--vh-space-4);
+  background: var(--vh-black-soft);
+  border-top: 2px solid transparent;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.people__card:first-child {
+  border-top-color: var(--vh-red);
+}
+
+.people__portrait {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--vh-red-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.people__portrait--mentor {
+  aspect-ratio: 3 / 2;
+}
+
+.people__portrait-initial {
+  font-family: var(--vh-font-display);
+  font-size: clamp(2.6rem, 12vw, 4rem);
+  color: var(--vh-red);
+  opacity: 0.45;
+  z-index: 1;
+}
+
+.people__portrait-accent {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 38%;
+  height: 38%;
+  background: var(--vh-red);
+  opacity: 0.14;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.people__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.people__name {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-md);
+  font-weight: 600;
+  color: var(--vh-white);
+}
+
+.people__role {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-sm);
+  color: var(--vh-white-dim);
+}
+
+.people__company {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.2em;
+  color: var(--vh-red);
+}
+
+.people__domain {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.15em;
+  color: var(--vh-white-faint);
+}
+
+/* ── PARTNERS ── */
+.people__tiers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-8);
+}
+
+.people__tier-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vh-space-3);
+  margin-bottom: var(--vh-space-3);
+}
+
+.people__tier-index {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  color: var(--vh-red);
+}
+
+.people__tier-label {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.24em;
+  color: var(--vh-white-faint);
+}
+
+.people__tier-count {
+  margin-left: auto;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  color: var(--vh-white-faint);
+}
+
+.people__rail--chips {
+  padding-bottom: var(--vh-space-3);
+}
+
+.people__chip {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  padding: var(--vh-space-3) var(--vh-space-5);
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-2xl);
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  color: var(--vh-white-dim);
+  background: var(--vh-black-soft);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: color 0.3s, border-color 0.3s;
+}
+
+.people__chip:first-child {
+  border-color: var(--vh-red);
+}
+
+/* ── TABLET — wider rails so two cards peek ── */
+@media (min-width: 768px) {
+  .people__card {
+    flex-basis: clamp(280px, 46vw, 360px);
+  }
+
+  .people__group-meta {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .people__tab {
+    padding: 0 var(--vh-space-2);
+    letter-spacing: 0.14em;
+    font-size: var(--vh-text-xs);
+  }
+}
+
+/* Reduced motion: spring/layout animations are globally collapsed by
+   the design system; the scrollspy still tracks the rails visually. */

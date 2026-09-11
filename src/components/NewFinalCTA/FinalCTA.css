@@ -1,0 +1,500 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOIDHACK 2026 — THE FINAL INVITATION
+   Campaign poster CTA. Its exit choreography is driven by the shared
+   FinalSequence timeline so motion continues into the footer.
+   ═══════════════════════════════════════════════════════════════ */
+
+.finalcta {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  background: var(--vh-black);
+  overflow: hidden;
+}
+
+/* ── RED FIELD ── */
+.finalcta__field {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--vh-red);
+  will-change: transform, clip-path;
+}
+
+.finalcta__field::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.14),
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 70%,
+    rgba(0, 0, 0, 0.2)
+  );
+  pointer-events: none;
+}
+
+.finalcta__field::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.finalcta__mark {
+  position: absolute;
+  top: 2rem;
+  left: calc(66% - 4.5rem);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-lg);
+  color: var(--vh-black);
+  pointer-events: none;
+}
+
+.finalcta__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(66% - 3rem);
+  width: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+}
+
+.finalcta__field-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: var(--vh-space-6);
+  padding: 0 var(--vh-gutter) clamp(8rem, 16vh, 10rem);
+  will-change: transform, opacity;
+}
+
+.finalcta__eyebrow {
+  position: absolute;
+  top: clamp(1.75rem, 5vh, 3rem);
+  left: var(--vh-gutter);
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.32em;
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.finalcta__eyebrow::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--vh-black);
+}
+
+.finalcta__headline {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-family: var(--vh-font-display);
+  line-height: 0.82;
+}
+
+.finalcta__headline-line {
+  font-size: clamp(3.6rem, 10vw, 11rem);
+  color: var(--vh-black);
+  letter-spacing: 0.01em;
+}
+
+.finalcta__headline-line--indent {
+  padding-left: 0.32em;
+}
+
+/* ── CTA BUTTON ── */
+.finalcta__cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vh-space-4);
+  padding: clamp(1.15rem, 2.2vw, 1.7rem) clamp(1.9rem, 4vw, 3.2rem);
+  background: var(--vh-white);
+  color: var(--vh-black);
+  font-family: var(--vh-font-display);
+  font-size: clamp(1.15rem, 2.2vw, 1.7rem);
+  letter-spacing: 0.09em;
+  overflow: hidden;
+  cursor: pointer;
+  transition: color 0.4s var(--vh-ease-out), padding 0.4s var(--vh-ease-out);
+}
+
+.finalcta__cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--vh-black);
+  transform: translateX(-102%);
+  transition: transform 0.45s var(--vh-ease-out);
+}
+
+.finalcta__cta:hover {
+  color: var(--vh-white);
+  padding-left: clamp(2.3rem, 4.6vw, 3.8rem);
+}
+
+.finalcta__cta:hover::before {
+  transform: translateX(0);
+}
+
+.finalcta__cta:active {
+  transform: translateY(1px);
+}
+
+.finalcta__cta-text,
+.finalcta__cta-arrow {
+  position: relative;
+  z-index: 1;
+}
+
+.finalcta__cta-arrow {
+  transition: transform 0.35s var(--vh-ease-out);
+}
+
+.finalcta__cta:hover .finalcta__cta-arrow {
+  transform: translateX(8px);
+}
+
+/* ── META ── */
+.finalcta__meta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
+  padding: 0 var(--vh-gutter);
+  will-change: opacity;
+}
+
+.finalcta__meta-rule {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.55);
+  margin-bottom: var(--vh-space-3);
+}
+
+.finalcta__meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: clamp(0.5rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2.5rem);
+  padding-right: clamp(2rem, 8vw, 7rem);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.2em;
+  color: var(--vh-black);
+}
+
+.finalcta__meta-item + .finalcta__meta-item::before {
+  content: '·';
+  color: var(--vh-white);
+  margin-right: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+/* ── BLACK FIELD ── */
+.finalcta__dark {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.finalcta__tagline {
+  position: absolute;
+  top: clamp(1.75rem, 5vh, 3rem);
+  right: var(--vh-gutter);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red-muted);
+  will-change: transform, opacity;
+}
+
+.finalcta__print {
+  position: absolute;
+  top: clamp(1.75rem, 5vh, 3rem);
+  right: calc(var(--vh-gutter) + 5px);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-lg);
+  color: var(--vh-red);
+  pointer-events: none;
+}
+
+.finalcta__rule {
+  position: absolute;
+  top: calc(clamp(1.75rem, 5vh, 3rem) + 2rem);
+  right: calc(var(--vh-gutter) + 8px);
+  width: 1px;
+  height: clamp(2.5rem, 7vh, 5rem);
+  background: var(--vh-red-deep);
+  pointer-events: none;
+}
+
+.finalcta__kill {
+  position: absolute;
+  right: var(--vh-gutter);
+  bottom: 21%;
+  margin: 0;
+  text-align: right;
+  font-family: var(--vh-font-display);
+  font-size: clamp(3.4rem, 9vw, 9rem);
+  line-height: 0.82;
+  letter-spacing: 0.01em;
+  color: var(--vh-white);
+  will-change: transform, opacity;
+}
+
+.finalcta__kill-red {
+  color: var(--vh-red);
+}
+
+.finalcta__2026 {
+  position: absolute;
+  right: -3vw;
+  bottom: -5vw;
+  font-family: var(--vh-font-display);
+  font-size: clamp(11rem, 28vw, 28rem);
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(242, 240, 237, 0.16);
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+.finalcta__coord {
+  position: absolute;
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
+  left: calc(58% + 1.5rem);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.25em;
+  color: var(--vh-white-faint);
+  white-space: nowrap;
+  will-change: opacity;
+}
+
+.finalcta__presenter {
+  position: absolute;
+  top: 9vh;
+  bottom: 24%;
+  right: calc(var(--vh-gutter) + 10px);
+  writing-mode: vertical-rl;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-white-faint);
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* ── DARKENING SHADE ── */
+.finalcta__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: var(--vh-black);
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* ── MOBILE — a designed poster card, not a squeezed desktop panel.
+   The red field becomes an in-flow "poster" surface (never clips), the
+   dark field sits below it. Typography is a deliberate vertical stack:
+   eyebrow → headline → CTA → stake list. ── */
+@media (max-width: 768px) {
+  .finalcta {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .finalcta__field {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    height: auto;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .finalcta__field-inner {
+    position: relative;
+    inset: auto;
+    flex: 1;
+    justify-content: center;
+    align-items: stretch;
+    gap: var(--vh-space-5);
+    padding: clamp(4.5rem, 13vh, 6.5rem) var(--vh-gutter) var(--vh-space-6);
+  }
+
+  .finalcta__eyebrow {
+    position: relative;
+    top: auto;
+    left: auto;
+    margin-bottom: var(--vh-space-2);
+  }
+
+  .finalcta__headline {
+    margin: 0;
+  }
+
+  .finalcta__headline-line {
+    font-size: clamp(3.2rem, 14.5vw, 5rem);
+    line-height: 0.82;
+  }
+
+  .finalcta__headline-line--indent {
+    padding-left: 0.18em;
+  }
+
+  .finalcta__cta {
+    width: 100%;
+    justify-content: space-between;
+    min-height: 3.9rem;
+    padding: 1.1rem 1.4rem;
+    font-size: var(--vh-text-lg);
+    letter-spacing: 0.08em;
+  }
+
+  .finalcta__cta:active {
+    transform: translateY(1px);
+  }
+
+  .finalcta__cta-arrow {
+    font-size: 1.35em;
+  }
+
+  .finalcta__mark,
+  .finalcta__tick {
+    display: none;
+  }
+
+  .finalcta__meta {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    padding: 0;
+    margin-top: var(--vh-space-2);
+  }
+
+  .finalcta__meta-rule {
+    margin-bottom: 0;
+  }
+
+  .finalcta__meta-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding-right: 0;
+  }
+
+  .finalcta__meta-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--vh-space-2) 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.22);
+    font-size: var(--vh-text-xs);
+    letter-spacing: 0.22em;
+  }
+
+  .finalcta__meta-item::after {
+    content: '·';
+    margin-left: var(--vh-space-4);
+    color: rgba(0, 0, 0, 0.35);
+    font-weight: 700;
+  }
+
+  .finalcta__meta-item:first-child {
+    border-top: none;
+  }
+
+  .finalcta__meta-item + .finalcta__meta-item::before {
+    display: none;
+  }
+
+  .finalcta__dark {
+    position: relative;
+    top: auto;
+    flex: 0 0 auto;
+    min-height: clamp(20rem, 44%, 26rem);
+  }
+
+  .finalcta__tagline {
+    top: var(--vh-space-4);
+  }
+
+  .finalcta__print,
+  .finalcta__rule,
+  .finalcta__presenter {
+    display: none;
+  }
+
+  .finalcta__kill {
+    right: auto;
+    left: 0;
+    bottom: 17%;
+    text-align: left;
+    padding: 0 var(--vh-gutter);
+    font-size: clamp(2.8rem, 14vw, 5rem);
+  }
+
+  .finalcta__2026 {
+    right: -8vw;
+    bottom: -8vw;
+    font-size: clamp(8rem, 42vw, 18rem);
+  }
+
+  .finalcta__coord {
+    left: var(--vh-gutter);
+  }
+}
+
+/* ── very small phones ── */
+@media (max-width: 380px) {
+  .finalcta__field-inner {
+    padding-top: clamp(4rem, 12vh, 5.5rem);
+    gap: var(--vh-space-4);
+  }
+
+  .finalcta__headline-line {
+    font-size: clamp(2.9rem, 14vw, 3.6rem);
+  }
+
+  .finalcta__cta {
+    min-height: 3.6rem;
+    font-size: var(--vh-text-base);
+  }
+
+  .finalcta__meta-item {
+    font-size: 0.68rem;
+  }
+
+  .finalcta__kill {
+    font-size: clamp(2.5rem, 13vw, 3.4rem);
+    bottom: 15%;
+  }
+
+  .finalcta__coord {
+    font-size: var(--vh-text-xs);
+    letter-spacing: 0.18em;
+  }
+}

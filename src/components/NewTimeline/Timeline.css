@@ -1,0 +1,459 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOIDHACK 2026 — TIMELINE
+   A pinned journey. Vertical scroll drives horizontal travel across
+   seven phases on one continuous red axis, which hands off directly
+   into the Prize Pool stage.
+   ═══════════════════════════════════════════════════════════════ */
+
+.timeline {
+  --tl-axis: clamp(6rem, 13vh, 8.5rem);
+  position: relative;
+  background: var(--vh-black);
+  overflow: hidden;
+}
+
+/* ── RED HANDOFF — the journey axis continues downward into the
+   Prize Pool's stage seam. Aligned to the same left gutter. ── */
+.timeline__handoff {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--vh-gutter);
+  width: clamp(2px, 0.15vw, 3px);
+  background: linear-gradient(180deg, var(--vh-red) 0%, var(--vh-red) 30%, rgba(232, 22, 5, 0));
+  opacity: 0.22;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── PINNED VIEWPORT ── */
+.timeline__viewport {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(1.5rem, 4vh, 3.5rem);
+  padding: clamp(4.5rem, 10vh, 8rem) var(--vh-gutter) clamp(2rem, 6vh, 3.5rem);
+  z-index: 1;
+  will-change: transform;
+}
+
+/* ── STAGE HEAD ── */
+.timeline__stage-head {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.timeline__overline {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red);
+  margin-bottom: var(--vh-space-5);
+}
+
+.timeline__overline-bar {
+  width: 30px;
+  height: 2px;
+  background: var(--vh-red);
+  display: block;
+}
+
+.timeline__overline-index {
+  color: var(--vh-white-faint);
+  letter-spacing: 0.22em;
+}
+
+.timeline__heading {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  font-family: var(--vh-font-display);
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  color: var(--vh-white-dim);
+  display: flex;
+  gap: 0.5em;
+  align-items: baseline;
+}
+
+.timeline__heading-accent {
+  color: var(--vh-red);
+}
+
+/* ── TRAVELLING TRACK ── */
+.timeline__track {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(3rem, 6vw, 6rem);
+  width: max-content;
+  padding-bottom: 0;
+  will-change: transform;
+}
+
+/* ── ONE CONTINUOUS AXIS ── */
+.timeline__axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--tl-axis, clamp(6rem, 13vh, 8.5rem));
+  height: 2px;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.timeline__axis-base {
+  position: absolute;
+  inset: 0;
+  background: rgba(242, 240, 237, 0.13);
+  border-radius: 1px;
+}
+
+.timeline__axis-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--vh-red);
+  transform-origin: left center;
+  transform: scaleX(0);
+  box-shadow: 0 0 10px rgba(232, 22, 5, 0.45);
+}
+
+.timeline__axis-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  background: var(--vh-red-light);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px rgba(232, 22, 5, 0.7);
+  will-change: transform;
+}
+
+/* ── PHASE ── */
+.timeline__phase {
+  position: relative;
+  width: clamp(300px, 32vw, 440px);
+  flex-shrink: 0;
+  padding-top: var(--tl-axis, clamp(6rem, 13vh, 8.5rem));
+  opacity: 0.32;
+  transition: opacity 0.45s var(--vh-ease-out);
+  pointer-events: none;
+}
+
+/* Marker on the axis for every phase */
+.timeline__phase::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--tl-axis, clamp(6rem, 13vh, 8.5rem));
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--vh-black-soft);
+  border: 2px solid var(--vh-white-faint);
+  border-radius: 50%;
+  z-index: 2;
+  transition: all 0.45s var(--vh-ease-out);
+}
+
+.timeline__phase-index {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-family: var(--vh-font-display);
+  font-size: clamp(4rem, 8vw, 7rem);
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--vh-white-faint);
+  letter-spacing: 0.02em;
+  transition: color 0.45s var(--vh-ease-out);
+}
+
+.timeline__phase-main {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-2);
+  padding-left: clamp(2rem, 4vw, 3.5rem);
+}
+
+.timeline__phase-date {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.28em;
+  color: var(--vh-red);
+}
+
+.timeline__phase-title {
+  font-family: var(--vh-font-display);
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  line-height: 0.95;
+  color: var(--vh-white);
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+}
+
+.timeline__phase-mark {
+  display: inline-block;
+  width: 0;
+  height: 2px;
+  background: var(--vh-red);
+  transition: width 0.6s var(--vh-ease-out);
+}
+
+.timeline__phase-desc {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-sm);
+  line-height: 1.6;
+  color: var(--vh-white-dim);
+  max-width: 34ch;
+}
+
+/* ── ACTIVE PHASE — dominant, readable, red-accented ── */
+.timeline__phase--active {
+  opacity: 1;
+}
+
+.timeline__phase--active::before {
+  background: var(--vh-red);
+  border-color: var(--vh-red-light);
+  box-shadow: 0 0 10px rgba(232, 22, 5, 0.55);
+}
+
+.timeline__phase--active .timeline__phase-index {
+  -webkit-text-stroke: 0;
+  color: var(--vh-red);
+}
+
+.timeline__phase--active .timeline__phase-desc {
+  color: var(--vh-white);
+}
+
+.timeline__phase--active .timeline__phase-mark {
+  width: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+/* ── FINAL PHASE — the handoff beats red before releasing ── */
+.timeline__phase--final.timeline__phase--active .timeline__phase-title {
+  color: var(--vh-red);
+}
+
+.timeline__phase--final.timeline__phase--active .timeline__phase-mark {
+  background: var(--vh-red);
+  opacity: 0.9;
+}
+
+/* ── SCROLL HINT ── */
+.timeline__hint {
+  position: absolute;
+  bottom: var(--vh-gutter);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--vh-font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.38em;
+  color: var(--vh-white-faint);
+  text-transform: uppercase;
+  margin: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATIC MODE — mobile, tablet, prefers-reduced-motion.
+   No pinning. A vertical JOURNEY JOURNAL: one red spine down the
+   left gutter, scroll-drawn top-to-bottom, phases revealed in
+   sequence as small cards along the spine.
+   ═══════════════════════════════════════════════════════════════ */
+
+.timeline__static-spine {
+  display: none;
+}
+
+.timeline--static {
+  padding: clamp(5rem, 10vh, 10rem) 0 clamp(6rem, 12vh, 10rem);
+  min-height: auto;
+}
+
+.timeline--static .timeline__viewport {
+  position: relative;
+  height: auto;
+  overflow: visible;
+  display: block;
+  padding: 0 var(--vh-gutter);
+}
+
+.timeline--static .timeline__stage-head {
+  margin-bottom: clamp(2.5rem, 6vh, 4rem);
+}
+
+.timeline--static .timeline__heading {
+  position: static;
+  margin-top: var(--vh-space-2);
+  font-size: var(--vh-text-5xl);
+}
+
+/* ── JOURNAL COLUMN ──
+   One flowing column; the spine sits in the track's left padding. */
+.timeline--static .timeline__track {
+  --tl-pad: clamp(2.25rem, 11vw, 3.5rem);
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  padding-left: var(--tl-pad);
+  align-items: stretch;
+}
+
+/* ── THE SPINE (static scroll-draw version) ── */
+.timeline--static .timeline__static-spine {
+  display: block;
+  position: absolute;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  left: 0;
+  width: 2px;
+  z-index: 1;
+  background: rgba(242, 240, 237, 0.12);
+}
+
+.timeline--static .timeline__static-spine-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--vh-red);
+  transform-origin: top center;
+  will-change: transform;
+}
+
+/* Hide the desktop horizontal axis machinery in static mode. */
+.timeline--static .timeline__axis,
+.timeline--static .timeline__axis-dot,
+.timeline--static .timeline__hint,
+.timeline--static .timeline__overline-index {
+  display: none;
+}
+
+/* ── PHASES ── */
+.timeline--static .timeline__phase {
+  position: relative;
+  width: auto;
+  padding: clamp(1.5rem, 4vh, 2.25rem) 0;
+  opacity: 1;
+  background: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.timeline--static .timeline__phase:last-child {
+  border-bottom: none;
+}
+
+/* Marker dot riding the spine — aligned to the title line. */
+.timeline--static .timeline__phase::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--tl-pad));
+  top: clamp(2.5rem, 6vw, 3rem);
+  transform: translate(-50%, -50%);
+  width: 11px;
+  height: 11px;
+  background: var(--vh-black);
+  border: 2px solid var(--vh-red);
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 0 0 3px rgba(232, 22, 5, 0.12);
+}
+
+/* Big ghost index, top-right of each card. */
+.timeline--static .timeline__phase-index {
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: clamp(3rem, 13vw, 4.75rem);
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--vh-white-faint);
+  opacity: 0.9;
+}
+
+.timeline--static .timeline__phase-main {
+  position: relative;
+  z-index: 2;
+  padding: 0 clamp(2.5rem, 10vw, 3.5rem) 0 var(--vh-gutter);
+  gap: var(--vh-space-2);
+}
+
+.timeline--static .timeline__phase-date {
+  letter-spacing: 0.22em;
+}
+
+.timeline--static .timeline__phase-title {
+  font-size: clamp(1.75rem, 6vw, 2.6rem);
+  letter-spacing: 0.04em;
+  line-height: 0.98;
+  align-items: flex-start;
+}
+
+.timeline--static .timeline__phase-mark {
+  display: none;
+}
+
+.timeline--static .timeline__phase--active {
+  border-bottom-color: rgba(232, 22, 5, 0.35);
+}
+
+.timeline--static .timeline__phase--final .timeline__phase-date {
+  color: var(--vh-red);
+}
+
+@media (max-width: 767px) {
+  .timeline--static .timeline__phase-main {
+    padding-left: calc(var(--vh-gutter) / 2);
+  }
+
+  .timeline__handoff {
+    left: calc(var(--vh-gutter) / 2);
+    opacity: 0.14;
+  }
+
+  /* Mobile: dates are unnecessary noise — the timeline becomes
+     purely editorial: number, title, description. Desktop keeps them. */
+  .timeline--static .timeline__phase-date {
+    display: none;
+  }
+
+  .timeline--static .timeline__phase-main {
+    gap: var(--vh-space-1);
+  }
+
+  .timeline--static .timeline__phase-title {
+    line-height: 1;
+  }
+
+  .timeline--static .timeline__phase-desc {
+    max-width: 30ch;
+  }
+
+  /* Ghost numeral sits quietly at the top-right of each phase card,
+     offset clear of the title/desc column. */
+  .timeline--static .timeline__phase-index {
+    top: clamp(1.25rem, 4vh, 2rem);
+    right: 0;
+    left: auto;
+  }
+}

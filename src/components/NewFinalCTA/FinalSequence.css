@@ -1,0 +1,11 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOIDHACK 2026 — FINAL SEQUENCE
+   One scroll timeline across CTA + footer.
+   The sections remain in normal document flow — the handoff is felt
+   through timing and shared graphic language, never via stacking.
+   ═══════════════════════════════════════════════════════════════ */
+
+.vseq {
+  position: relative;
+  background: var(--vh-black);
+}
