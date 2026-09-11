@@ -1,0 +1,380 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOIDHACK 2026 — PRIZE POOL
+   An award stage assembled from typography, scale and stepped geometry.
+   Three positions share one stage. The podium is read before it is said.
+   ═══════════════════════════════════════════════════════════════ */
+
+.prizes {
+  position: relative;
+  background: var(--vh-black);
+  padding: clamp(6rem, 12vh, 12rem) 0 clamp(8rem, 16vh, 14rem);
+  overflow: hidden;
+}
+
+.prizes__inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── RED HANDOFF — the timeline's progress axis continues downward,
+   becoming the stage's seam. Silent, structural, continuous. ── */
+.prizes__handoff {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(2px, 0.15vw, 3px);
+  height: clamp(3rem, 8vh, 7rem);
+  background: var(--vh-red);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── HEADER — the stage is introduced before the podium begins ── */
+.prizes__header {
+  margin-bottom: clamp(3rem, 6vh, 5rem);
+}
+
+.prizes__overline {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red);
+  margin-bottom: var(--vh-space-5);
+}
+
+.prizes__overline-bar {
+  width: 30px;
+  height: 2px;
+  background: var(--vh-red);
+  display: block;
+}
+
+.prizes__overline-index {
+  margin-left: auto;
+  color: var(--vh-white-faint);
+  letter-spacing: 0.2em;
+}
+
+.prizes__heading {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-5xl);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  color: var(--vh-white);
+  display: flex;
+  gap: 0.55em;
+  align-items: baseline;
+}
+
+.prizes__heading-accent {
+  color: var(--vh-red);
+}
+
+.prizes__lede {
+  margin-top: var(--vh-space-4);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.22em;
+  color: var(--vh-white-dim);
+  max-width: 52ch;
+}
+
+/* ── PODIUM — three architectural steps sharing one stage.
+   Grid columns widen toward the champion slab; vertical offsets
+   step each tier down. No cards, no borders, no boxes. ── */
+.prizes__podium {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.72fr 0.95fr 1.55fr;
+  align-items: start;
+  gap: clamp(1rem, 2vw, 2.5rem);
+  padding-top: clamp(2rem, 4vh, 4rem);
+}
+
+/* ── TIER — one position on the stage ── */
+.prizes__tier {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.prizes__tier-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-2);
+}
+
+/* ── 3RD — the smallest step, lowest on the stage ── */
+.prizes__tier--3rd {
+  margin-top: clamp(9rem, 22vh, 20rem);
+  padding: clamp(1.75rem, 3vw, 3rem);
+  background: var(--vh-black-soft);
+}
+
+.prizes__tier--3rd::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--vh-black-light), var(--vh-black-soft));
+  opacity: 0.6;
+}
+
+/* ── 2ND — mid-height step, between the two ── */
+.prizes__tier--2nd {
+  margin-top: clamp(4.5rem, 11vh, 10rem);
+  padding: clamp(2.25rem, 3.5vw, 3.75rem);
+  background: var(--vh-black-light);
+}
+
+.prizes__tier--2nd::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #1e1e1e, var(--vh-black-light));
+  opacity: 0.55;
+}
+
+/* ── 1ST — the championship slab. Tallest. Dominates the stage.
+   Angled left edge keeps it architectural, never a card. ── */
+.prizes__tier--1st {
+  margin-top: 0;
+  padding: clamp(3rem, 5vw, 5rem);
+  background: var(--vh-red);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 7% 100%, 0 86%, 0 0);
+  min-height: clamp(20rem, 62vh, 30rem);
+}
+
+.prizes__tier--1st::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 26%;
+  background: linear-gradient(270deg, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0));
+  pointer-events: none;
+}
+
+/* ── SHARED TIER ELEMENTS ── */
+
+.prizes__tier-mark {
+  position: absolute;
+  top: clamp(0.75rem, 1.5vw, 1.25rem);
+  right: clamp(0.75rem, 1.5vw, 1.25rem);
+  z-index: 1;
+  font-family: var(--vh-font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  color: var(--vh-white-faint);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.prizes__tier-mark--red {
+  color: var(--vh-black);
+  opacity: 0.6;
+}
+
+.prizes__tier-rank {
+  font-family: var(--vh-font-display);
+  font-size: clamp(2.5rem, 4.5vw, 4.5rem);
+  line-height: 0.85;
+  color: var(--vh-white);
+  letter-spacing: 0.04em;
+}
+
+.prizes__tier-rank--1st {
+  font-family: var(--vh-font-display);
+  font-size: clamp(3.5rem, 7vw, 7rem);
+  line-height: 0.8;
+  color: var(--vh-black);
+  opacity: 0.85;
+  letter-spacing: 0.04em;
+}
+
+.prizes__tier-rule {
+  display: block;
+  width: clamp(2.5rem, 4vw, 4rem);
+  height: 2px;
+  background: currentColor;
+  margin: var(--vh-space-1) 0;
+}
+
+.prizes__tier--3rd .prizes__tier-rule { color: var(--vh-red); }
+.prizes__tier--2nd .prizes__tier-rule { color: var(--vh-red); }
+.prizes__tier--1st .prizes__tier-rule { background: var(--vh-black); opacity: 0.6; }
+
+.prizes__tier-amount {
+  font-family: var(--vh-font-display);
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  line-height: 0.95;
+  color: var(--vh-white);
+  letter-spacing: 0.02em;
+}
+
+.prizes__tier-amount--1st {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-mega);
+  line-height: 0.82;
+  color: var(--vh-black);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.prizes__rupee {
+  font-family: var(--vh-font-body);
+  font-size: clamp(1.75rem, 3vw, 3rem);
+  font-weight: 300;
+  opacity: 0.65;
+  margin-right: 0.2rem;
+}
+
+.prizes__tier-place {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.28em;
+  color: var(--vh-red);
+  margin-top: var(--vh-space-2);
+}
+
+.prizes__tier-place--1st {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-2xl);
+  letter-spacing: 0.14em;
+  color: var(--vh-black);
+  opacity: 0.78;
+  margin-top: var(--vh-space-3);
+}
+
+.prizes__tier-note {
+  position: absolute;
+  left: clamp(1.75rem, 3vw, 3rem);
+  right: clamp(1.75rem, 3vw, 3rem);
+  bottom: clamp(0.9rem, 2vh, 1.25rem);
+  font-family: var(--vh-font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.24em;
+  color: var(--vh-white-faint);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: var(--vh-space-2);
+}
+
+.prizes__tier-note--1st {
+  position: absolute;
+  left: clamp(3rem, 5vw, 5rem);
+  bottom: clamp(1.5rem, 3vh, 2.25rem);
+  font-family: var(--vh-font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.24em;
+  color: var(--vh-black);
+  opacity: 0.55;
+  border-top: 1px solid rgba(0, 0, 0, 0.25);
+  padding-top: var(--vh-space-2);
+  width: fit-content;
+}
+
+.prizes__tier-corner {
+  position: absolute;
+  bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+  right: clamp(0.75rem, 1.5vw, 1.25rem);
+  font-family: var(--vh-font-mono);
+  font-size: 0.8rem;
+  color: var(--vh-black);
+  opacity: 0.4;
+}
+
+/* ── RESPONSIVE — the stage recomposes, never shrinks ── */
+
+@media (max-width: 1024px) {
+  .prizes__podium {
+    grid-template-columns: 0.8fr 1.2fr;
+  }
+
+  .prizes__tier--3rd {
+    margin-top: 0;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .prizes__tier--2nd {
+    margin-top: 0;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .prizes__tier--1st {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: clamp(2rem, 5vh, 4rem);
+    min-height: auto;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@media (max-width: 768px) {
+  .prizes {
+    padding-top: clamp(5rem, 10vh, 7rem);
+  }
+
+  .prizes__heading {
+    flex-direction: column;
+    gap: 0.1em;
+  }
+
+  .prizes__podium {
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 5vh, 3rem);
+    padding-top: clamp(1.5rem, 3vh, 2.5rem);
+  }
+
+  .prizes__tier--3rd,
+  .prizes__tier--2nd,
+  .prizes__tier--1st {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 0;
+  }
+
+  /* stacked mobile: the first-place card leads the column */
+  .prizes__tier--1st { order: -1; }
+  .prizes__tier--2nd { order: 0; }
+  .prizes__tier--3rd { order: 1; }
+
+  .prizes__tier--3rd,
+  .prizes__tier--2nd {
+    padding-left: var(--vh-gutter);
+  }
+
+  .prizes__tier--1st {
+    min-height: clamp(18rem, 52vh, 24rem);
+  }
+
+  .prizes__tier--3rd {
+    margin-left: 0;
+  }
+
+  .prizes__tier--2nd {
+    margin-left: clamp(1rem, 6vw, 3rem);
+  }
+
+  .prizes__tier--1st {
+    margin-left: clamp(2rem, 10vw, 5rem);
+    margin-right: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+
+  .prizes__tier-mark {
+    writing-mode: initial;
+    transform: none;
+  }
+}

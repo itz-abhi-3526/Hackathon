@@ -1,0 +1,11 @@
+.red-signal-sweep {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--red-primary), transparent);
+  z-index: 5000;
+  transform-origin: left;
+  pointer-events: none;
+}

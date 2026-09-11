@@ -1,0 +1,123 @@
+.final-cta {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 40px;
+  background: var(--black-secondary);
+  overflow: hidden;
+}
+
+.final-cta-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 80px 80px;
+  pointer-events: none;
+}
+
+.final-cta-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  text-align: center;
+}
+
+.final-cta-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--red-dark);
+}
+
+.final-cta-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.final-cta-line {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 9vw, 110px);
+  line-height: 0.95;
+  color: var(--white);
+}
+
+.final-cta-line--red {
+  color: var(--red-primary);
+}
+
+.final-cta-sub {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.25em;
+}
+
+.final-cta-sub-label {
+  color: var(--white-ghost);
+}
+
+.final-cta-sub-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--white-muted);
+}
+
+.final-cta-sub-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--red-primary);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.final-cta-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 48px;
+  background: var(--red-primary);
+  color: var(--black-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  transition: all 0.4s var(--ease-out-expo);
+  position: relative;
+  overflow: hidden;
+}
+
+.final-cta-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--red-dark);
+  transform: translateX(-101%);
+  transition: transform 0.5s var(--ease-out-expo);
+}
+
+.final-cta-button:hover::before {
+  transform: translateX(0);
+}
+
+.final-cta-button-label,
+.final-cta-button-arrow {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .final-cta {
+    padding: 80px 20px;
+  }
+}

@@ -1,0 +1,323 @@
+/* THE VOID FACILITY — GLOBAL DESIGN SYSTEM
+   Black = space. Red = energy. White = information. */
+
+/* ---- Atmosphere overlays (App level) ---- */
+
+.facility-grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 9990;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  animation: grain-shift 0.9s steps(2) infinite;
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(1.5%, -1%); }
+  100% { transform: translate(-1%, 1.5%); }
+}
+
+.facility-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 9991;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 42%, transparent 46%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+.facility-scanline {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 30vh;
+  z-index: 9992;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(255, 30, 5, 0.018), transparent);
+  animation: scan-drift 9s linear infinite;
+}
+
+@keyframes scan-drift {
+  from { transform: translateY(-30vh); }
+  to { transform: translateY(130vh); }
+}
+
+/* ---- Zone stage ---- */
+
+.zone {
+  position: relative;
+  min-height: 100vh;
+  padding: 0 6vw;
+  overflow: hidden;
+  isolation: isolate;
+  z-index: 1;
+}
+
+.zone--tall { min-height: 130vh; }
+.zone--deep { min-height: 160vh; }
+
+.zone-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+}
+
+.facility-journey {
+  position: relative;
+  z-index: 1;
+}
+
+.facility-terminal {
+  position: relative;
+  z-index: 1;
+}
+
+.zone-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 18px 0 0 6vw;
+  z-index: 20;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  opacity: 0.4;
+}
+
+.zone-hud-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--info-white);
+}
+
+.zone-hud-name {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--info-ghost);
+  text-transform: uppercase;
+}
+
+.zone-hud-rule {
+  width: 26px;
+  height: 1px;
+  background: var(--signal-dark);
+}
+
+/* ---- Environment layers (parallax) ---- */
+
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.env-bg,
+.env-mid,
+.env-fg {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.env-bg { z-index: 1; }
+.env-mid { z-index: 2; }
+.env-fg { z-index: 3; }
+
+.layer {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+/* ---- Physical objects ---- */
+
+.obj {
+  position: absolute;
+  background:
+    linear-gradient(145deg, var(--mat-graphite), var(--mat-charcoal) 55%, var(--mat-vantablack));
+  border: 1px solid rgba(255, 255, 255, 0.018);
+  border-radius: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.wall {
+  position: absolute;
+  background:
+    radial-gradient(120% 90% at 50% 20%, var(--mat-charcoal) 0%, var(--mat-vantablack) 74%);
+  border: 1px solid rgba(255, 255, 255, 0.014);
+}
+
+.plate {
+  position: relative;
+  background:
+    linear-gradient(180deg, var(--mat-metal), var(--mat-charcoal) 68%, var(--mat-vantablack));
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.028),
+    0 1px 0 rgba(0, 0, 0, 0.7),
+    0 30px 70px rgba(0, 0, 0, 0.5);
+}
+
+.plate::before,
+.plate::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #2a2a2c, #0a0a0a);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.9);
+}
+
+.plate::before { top: 8px; left: 8px; }
+.plate::after { bottom: 8px; right: 8px; }
+
+.edge {
+  position: absolute;
+  background: var(--edge-red);
+  box-shadow:
+    0 0 6px var(--glow-red),
+    0 0 18px var(--glow-soft),
+    0 0 42px var(--glow-faint);
+}
+
+.edge-t { top: 0; left: 0; right: 0; height: 2px; }
+.edge-b { bottom: 0; left: 0; right: 0; height: 2px; }
+.edge-l { left: 0; top: 0; bottom: 0; width: 2px; }
+.edge-r { right: 0; top: 0; bottom: 0; width: 2px; }
+
+.edge--dim {
+  box-shadow: 0 0 10px var(--glow-faint);
+  background: var(--signal-dark);
+}
+
+/* ---- Signage (typography belongs to the world) ---- */
+
+.sign {
+  font-family: var(--font-body);
+  color: var(--info-muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sign--white { color: var(--info-white); }
+.sign--dim { color: var(--info-dim); }
+.sign--red { color: var(--signal-bright); }
+.sign--ghost { color: var(--info-ghost); }
+
+.sign-metal {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.34em;
+  color: var(--info-faint);
+}
+
+.label { font-family: var(--font-mono); }
+
+.label-dim {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: var(--info-ghost);
+}
+
+/* A mounted sign: dark plate + thin red edge + engraved text */
+.signage {
+  position: relative;
+  background: var(--mat-plate);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6), 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.signage-text {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--info-white);
+  font-weight: 500;
+}
+
+.signage--red {
+  border-color: rgba(255, 34, 0, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 30px var(--glow-faint);
+}
+
+.signage--red .signage-text { color: var(--signal-bright); }
+
+.mono-log { font-family: var(--font-mono); }
+
+/* ---- Energy: light that belongs to a source ---- */
+
+.beam {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--signal-mid), transparent);
+  filter: blur(0.4px);
+}
+
+.beam-h { left: -10%; right: -10%; }
+.beam-v {
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, var(--signal-mid), transparent);
+}
+
+.scan {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent rgba(0,0,0,0) 0%, rgba(255, 34, 0, 0.05) 50%, transparent 100%);
+}
+
+.active-led {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--signal-bright);
+  box-shadow: 0 0 8px var(--signal-bright), 0 0 20px var(--glow-red);
+  animation: led-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes led-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+.blink { animation: led-blink 1.1s steps(2) infinite; }
+
+@keyframes led-blink {
+  0% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0.1; }
+  100% { opacity: 0.1; }
+}
+
+/* ---- Monograms / portrait blocks ---- */
+
+.monogram {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  color: var(--info-muted);
+  letter-spacing: 0.02em;
+}
+
+/* ---- Interaction affordances ---- */
+
+[data-cursor] { cursor: none; }
+
+.zone strong { color: var(--info-white); font-weight: 600; }
+
+@media (max-width: 768px) {
+  .zone { padding: 0 5vw; }
+  .zone-hud { padding-left: 5vw; }
+}

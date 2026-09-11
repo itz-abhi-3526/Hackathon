@@ -1,0 +1,231 @@
+.prizes {
+  position: relative;
+  padding: 160px 40px;
+  background: var(--black-primary);
+}
+
+.prizes-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.prizes-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prizes-number {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--red-primary);
+}
+
+.prizes-label-divider {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--white-ghost);
+}
+
+.prizes-label-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--white-dim);
+}
+
+.prizes-title {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 7vw, 80px);
+  line-height: 1;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+
+.prizes-title-red {
+  color: var(--red-primary);
+}
+
+.prizes-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 24px;
+}
+
+.prize-grand {
+  background: var(--black-surface);
+  border: 1px solid var(--black-border);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.prize-grand::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red-primary), transparent);
+}
+
+.prize-grand::after {
+  content: '';
+  position: absolute;
+  top: -200px;
+  right: -200px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(176, 0, 32, 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.prize-grand-top,
+.prize-secondary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prize-grand-tag,
+.prize-grand-cash,
+.prize-secondary-top span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--red-dark);
+}
+
+.prize-grand-amount {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 9vw, 110px);
+  color: var(--white);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+}
+
+.prize-grand-amount .prize-rupee,
+.prize-secondary-amount .prize-rupee {
+  color: var(--red-primary);
+  font-size: 0.5em;
+  vertical-align: super;
+  margin-right: 4px;
+}
+
+.prize-grand-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--red-dark), transparent);
+}
+
+.prize-grand-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.prize-grand-label {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--red-primary);
+}
+
+.prize-grand-sublabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--white-ghost);
+}
+
+.prizes-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.prize-secondary {
+  background: var(--black-surface);
+  border: 1px solid var(--black-border);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.prize-secondary-top span:nth-child(2) {
+  color: var(--white-ghost);
+}
+
+.prize-secondary-amount {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  color: var(--white);
+  line-height: 1;
+}
+
+.prize-secondary-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--white-dim);
+}
+
+.prizes-special {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.prize-special {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border: 1px solid var(--black-border);
+  transition: all 0.3s;
+}
+
+.prize-special:hover {
+  border-color: var(--red-dark);
+}
+
+.prize-special-amount {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--white);
+}
+
+.prize-special-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--white-ghost);
+}
+
+@media (max-width: 900px) {
+  .prizes {
+    padding: 100px 20px;
+  }
+
+  .prizes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prize-grand {
+    padding: 32px;
+  }
+
+  .prizes-special {
+    grid-template-columns: 1fr;
+  }
+}

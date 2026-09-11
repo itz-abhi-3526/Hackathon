@@ -1,0 +1,382 @@
+/* ═══════════════════════════════════════════════════════════════
+   VOIDHACK 2026 — FAQ
+   The calm between the Sponsors wall and the Registration CTA.
+   It inherits the partners' red axis, speaks in editorial rows,
+   and hands off the page by seeding the red field of the CTA.
+   No cards, no panels, no dashboards — rows and rules only.
+   ═══════════════════════════════════════════════════════════════ */
+
+.faq {
+  --faq-num-w: clamp(2.4rem, 4vw, 3.4rem);
+  position: relative;
+  background: var(--vh-black);
+  padding-top: clamp(5rem, 10vh, 10rem);
+  overflow: hidden;
+}
+
+.faq__inner {
+  position: relative;
+  z-index: 1;
+  padding-bottom: clamp(5rem, 10vh, 8rem);
+  /* Space-based breakpoint: columns stack once the container gets
+     too narrow for heading + questions to sit side by side. */
+  container-type: inline-size;
+  container-name: faq;
+}
+
+/* ── BACKGROUND MARK — quiet VOIDHACK, medium step of the crescendo ── */
+.faq__watermark {
+  position: absolute;
+  right: -3vw;
+  top: 8%;
+  font-family: var(--vh-font-display);
+  font-size: clamp(9rem, 22vw, 22rem);
+  line-height: 0.8;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(242, 240, 237, 0.06);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── RED AXIS — continues the sponsors spine, feeds the tail ── */
+.faq__spine {
+  position: absolute;
+  left: var(--vh-gutter);
+  top: clamp(5rem, 10vh, 10rem);
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(232, 22, 5, 0.55),
+    rgba(232, 22, 5, 0.18) 60%,
+    rgba(232, 22, 5, 0.05)
+  );
+  pointer-events: none;
+}
+
+/* ── LAYOUT — two dedicated columns.
+   The heading column is a measured track (16–23rem, scaled by the space
+   actually available) so "FREQUENTLY" can never stretch into the FAQ
+   list. The list column is minmax(0, 1fr) so it can never be pushed
+   sideways by content or collision. ── */
+.faq__layout {
+  display: grid;
+  grid-template-columns: clamp(16rem, 30vw, 23rem) minmax(0, 1fr);
+  gap: clamp(3rem, 6vw, 6rem);
+  align-items: start;
+}
+
+/* ── HEADING COLUMN ── */
+.faq__overline {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red);
+  margin-bottom: var(--vh-space-5);
+}
+
+.faq__overline-bar {
+  width: 30px;
+  height: 2px;
+  background: var(--vh-red);
+  display: block;
+}
+
+/* Capped so the widest word ("FREQUENTLY") always fits inside its own
+   column and wraps naturally instead of bleeding into the FAQ list. */
+.faq__heading {
+  max-width: 100%;
+  font-family: var(--vh-font-display);
+  font-size: clamp(2.6rem, 4.6vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--vh-white);
+}
+
+.faq__heading-accent {
+  display: block;
+  white-space: nowrap;
+  color: var(--vh-red);
+}
+
+.faq__axis {
+  margin-top: var(--vh-space-6);
+}
+
+.faq__axis-rule {
+  display: block;
+  width: clamp(7rem, 12vw, 12rem);
+  height: 2px;
+  background: var(--vh-red);
+}
+
+.faq__axis-note {
+  display: block;
+  margin-top: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.28em;
+  color: var(--vh-white-faint);
+}
+
+/* ── QUESTION COLUMN ── */
+.faq__list {
+  min-width: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.faq__item {
+  position: relative;
+}
+
+.faq__item--open {
+  background: rgba(232, 22, 5, 0.03);
+}
+
+.faq__item--last .faq__question {
+  padding-top: clamp(1.7rem, 3vh, 2.3rem);
+}
+
+.faq__question {
+  width: 100%;
+  display: grid;
+  grid-template-columns: var(--faq-num-w) minmax(0, 1fr) auto;
+  gap: var(--vh-space-4);
+  align-items: center;
+  padding: clamp(1.35rem, 2.1vh, 1.9rem) 0;
+  text-align: left;
+}
+
+.faq__question:focus-visible {
+  outline: 1px solid var(--vh-red);
+  outline-offset: 6px;
+}
+
+.faq__question-number {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.15em;
+  color: var(--vh-red);
+  opacity: 0.45;
+  transition: color 0.3s, opacity 0.3s;
+}
+
+.faq__question-text {
+  font-family: var(--vh-font-body);
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--vh-white);
+  transition: color 0.3s;
+}
+
+.faq__question-icon {
+  position: relative;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--vh-white-faint);
+  transition: color 0.3s, transform 0.45s var(--vh-ease-out);
+}
+
+.faq__question-icon::before,
+.faq__question-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: currentColor;
+}
+
+.faq__question-icon::before {
+  width: 100%;
+  height: 1px;
+  transform: translate(-50%, -50%);
+}
+
+.faq__question-icon::after {
+  width: 1px;
+  height: 100%;
+  transform: translate(-50%, -50%);
+}
+
+/* Red = interaction/state; white = information. Only hints, never floods. */
+.faq__question:hover .faq__question-number,
+.faq__item--open .faq__question-number {
+  color: var(--vh-red);
+  opacity: 1;
+}
+
+.faq__question:hover .faq__question-icon {
+  color: var(--vh-white);
+  transform: rotate(45deg);
+}
+
+.faq__item--open .faq__question-icon {
+  color: var(--vh-red);
+  transform: rotate(45deg);
+}
+
+.faq__item--open .faq__item-line {
+  background: rgba(232, 22, 5, 0.4);
+}
+
+/* ── ROW SEPARATORS ── */
+.faq__item-line {
+  display: block;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  transform-origin: left center;
+}
+
+/* The final rule — tinted red, extends itself as the section hands off. */
+.faq__item-line--last {
+  background: linear-gradient(
+    90deg,
+    rgba(232, 22, 5, 0.9),
+    rgba(232, 22, 5, 0.25) 55%,
+    rgba(232, 22, 5, 0)
+  );
+}
+
+/* ── ANSWER — editorial body copy, natural expansion ── */
+.faq__answer {
+  overflow: hidden;
+}
+
+.faq__answer-inner {
+  padding: 0 0 clamp(1.5rem, 2.6vh, 2rem) calc(var(--faq-num-w) + var(--vh-space-4));
+}
+
+.faq__answer-inner p {
+  font-family: var(--vh-font-body);
+  font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+  line-height: 1.75;
+  color: var(--vh-white-dim);
+  max-width: 60ch;
+}
+
+/* ── RED CRESCENDO — the seed of the registration CTA's red field ── */
+.faq__tail {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 0;
+  width: 64%;
+  pointer-events: none;
+}
+
+/* Width matches the CTA field's top seam (64%) so the red footprint
+   hands over seamlessly into the CTA. Hidden below the section until
+   the questions have settled, then it rises into place. */
+.faq__tail-field {
+  display: block;
+  height: clamp(4rem, 8vh, 6.5rem);
+  background: var(--vh-red);
+}
+
+/* ── NARROW — stack before any possible collision. The breakpoint is
+   based on the space available inside the layout container, not the
+   device name. ── */
+@container faq (max-width: 800px) {
+  .faq {
+    padding-top: clamp(4rem, 9vh, 6rem);
+  }
+
+  .faq__layout {
+    grid-template-columns: 1fr;
+    gap: var(--vh-space-6);
+  }
+
+  .faq__inner {
+    padding-bottom: clamp(5rem, 11vh, 7rem);
+  }
+
+  .faq__heading {
+    font-size: clamp(2.6rem, 14vw, 4rem);
+  }
+
+  .faq__spine {
+    display: none;
+  }
+
+  .faq__watermark {
+    right: -8vw;
+    top: 4%;
+    font-size: clamp(7rem, 46vw, 12rem);
+    -webkit-text-stroke: 1px rgba(242, 240, 237, 0.05);
+  }
+
+  .faq__question {
+    gap: var(--vh-space-3);
+    padding: clamp(1.1rem, 2.6vh, 1.5rem) 0;
+  }
+
+  .faq__question-text {
+    font-size: var(--vh-text-base);
+    line-height: 1.35;
+  }
+
+  .faq__answer-inner {
+    padding-left: calc(var(--faq-num-w) + var(--vh-space-3));
+  }
+
+  /* The handoff grows to full width, matching the mobile CTA field. */
+  .faq__tail {
+    width: 100%;
+  }
+}
+
+/* Fallback for browsers without container-query support. */
+@media (max-width: 768px) {
+  .faq {
+    padding-top: clamp(4rem, 9vh, 6rem);
+  }
+
+  .faq__layout {
+    grid-template-columns: 1fr;
+    gap: var(--vh-space-6);
+  }
+
+  .faq__inner {
+    padding-bottom: clamp(5rem, 11vh, 7rem);
+  }
+
+  .faq__heading {
+    font-size: clamp(2.6rem, 14vw, 4rem);
+  }
+
+  .faq__spine {
+    display: none;
+  }
+
+  .faq__watermark {
+    right: -8vw;
+    top: 4%;
+    font-size: clamp(7rem, 46vw, 12rem);
+    -webkit-text-stroke: 1px rgba(242, 240, 237, 0.05);
+  }
+
+  .faq__question {
+    gap: var(--vh-space-3);
+    padding: clamp(1.1rem, 2.6vh, 1.5rem) 0;
+  }
+
+  .faq__question-text {
+    font-size: var(--vh-text-base);
+    line-height: 1.35;
+  }
+
+  .faq__answer-inner {
+    padding-left: calc(var(--faq-num-w) + var(--vh-space-3));
+  }
+
+  .faq__tail {
+    width: 100%;
+  }
+}

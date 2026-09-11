@@ -1,0 +1,76 @@
+.vh-cursor {
+  position: fixed;
+  top: -6px;
+  left: -6px;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.3s;
+  mix-blend-mode: difference;
+}
+
+.vh-cursor--visible {
+  opacity: 1;
+}
+
+.vh-cursor-dot {
+  position: absolute;
+  inset: 0;
+  background: var(--vh-red);
+  border-radius: 50%;
+  transition: transform 0.2s var(--vh-ease-out);
+}
+
+.vh-cursor-ring {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--vh-red);
+  border-radius: 50%;
+  opacity: 0.4;
+  transition: all 0.3s var(--vh-ease-out);
+}
+
+.vh-cursor--active .vh-cursor-dot {
+  transform: scale(0.5);
+}
+
+.vh-cursor--active .vh-cursor-ring {
+  top: -14px;
+  left: -14px;
+  width: 40px;
+  height: 40px;
+  opacity: 0.6;
+  border-color: var(--vh-white);
+}
+
+.vh-cursor-label {
+  position: fixed;
+  top: 0;
+  left: 20px;
+  pointer-events: none;
+  z-index: 10001;
+  font-family: var(--vh-font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--vh-white);
+  opacity: 0;
+  transition: opacity 0.3s;
+  transform: translateY(-50%);
+  mix-blend-mode: difference;
+}
+
+.vh-cursor-label--visible {
+  opacity: 0.8;
+}
+
+@media (pointer: coarse) {
+  .vh-cursor,
+  .vh-cursor-label {
+    display: none !important;
+  }
+}

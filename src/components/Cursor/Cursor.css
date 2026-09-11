@@ -1,0 +1,69 @@
+.cursor-dot {
+  position: fixed;
+  left: -2px;
+  top: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--signal-bright);
+  box-shadow: 0 0 6px var(--signal-bright), 0 0 14px var(--glow-red);
+  pointer-events: none;
+  z-index: 10000;
+}
+
+.cursor-ring {
+  position: fixed;
+  left: -12px;
+  top: -12px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255, 34, 0, 0.28);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  filter: blur(0.2px);
+  transition:
+    width 0.22s var(--ease-quart),
+    height 0.22s var(--ease-quart),
+    left 0.22s var(--ease-quart),
+    top 0.22s var(--ease-quart),
+    border-color 0.22s var(--ease-quart),
+    border-radius 0.22s var(--ease-quart),
+    background-color 0.22s var(--ease-quart);
+}
+
+.cursor-ring--active {
+  width: 40px;
+  height: 40px;
+  left: -20px;
+  top: -20px;
+  border-color: var(--signal-primary);
+  background: rgba(255, 28, 4, 0.04);
+  border-radius: 2px;
+}
+
+.cursor-ring--label {
+  border-radius: 50%;
+}
+
+.cursor-tag {
+  position: fixed;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.24em;
+  color: var(--signal-bright);
+  background: rgba(4, 0, 0, 0.78);
+  border: 1px solid rgba(255, 34, 0, 0.22);
+  padding: 5px 9px;
+  pointer-events: none;
+  z-index: 10000;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot,
+  .cursor-ring,
+  .cursor-tag {
+    display: none;
+  }
+}
