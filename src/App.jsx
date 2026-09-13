@@ -16,7 +16,7 @@ import People from './components/NewPeople/People.jsx';
 import FAQ from './components/NewFAQ/FAQ.jsx';
 import FinalSequence from './components/NewFinalCTA/FinalSequence.jsx';
 import Registration from './components/NewRegistration/Registration.jsx';
-import Admin from './components/Admin/Admin.jsx';
+import AdminApp from './admin/AdminApp.jsx';
 import useRegistrationStore from './store/registrationStore.js';
 
 export default function App() {
@@ -31,8 +31,24 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    /* The /admin path is an alias for the hash route the app already
+       uses (#admin/<view>). Only admin URLs are rewritten — the public
+       site never redirects. */
+    const match = window.location.pathname.match(/^\/admin(\/.*)?$/);
+    if (match) {
+      const sub = (match[1] ?? '').replace(/^\/+/, '');
+      const target = sub ? `#admin/${sub}` : '#admin';
+      window.location.replace(
+        window.location.pathname.replace(/\/admin(\/.*)?$/, '') +
+          (window.location.search || '') +
+          target
+      );
+    }
+  }, []);
+
+  useEffect(() => {
     const syncHash = () => {
-      if (window.location.hash === '#admin') setPhase('admin');
+      if (window.location.hash.startsWith('#admin')) setPhase('admin');
     };
     window.addEventListener('hashchange', syncHash);
     syncHash();
@@ -115,7 +131,7 @@ export default function App() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <Admin onExit={exitAdmin} />
+              <AdminApp onExit={exitAdmin} />
             </motion.div>
           )}
         </AnimatePresence>

@@ -108,6 +108,10 @@ const useRegistrationStore = create((set, get) => ({
   /* Public problem arena, loaded at boot from problem_statements. */
   problems: [],
 
+  /* Current active registration round (from public_active_round).
+     null until fetched; {} means "no round / registration closed". */
+  round: null,
+
   /* Orchestration flags. */
   loading: {
     boot: false,
@@ -183,6 +187,8 @@ const useRegistrationStore = create((set, get) => ({
   }),
 
   setProblems: (problems) => set({ problems }),
+
+  setRound: (round) => set({ round: round ?? null }),
 
   setLoading: (key, value) => set((state) => ({
     loading: { ...state.loading, [key]: value },
@@ -492,6 +498,7 @@ const useRegistrationStore = create((set, get) => ({
       teamId: null,
       registrationCode: '',
       teamSaved: { ...EMPTY_TEAM_SAVED },
+      round: null,
       payment: {
         status: 'awaiting_payment',
         uploadStatus: 'idle',

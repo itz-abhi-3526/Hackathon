@@ -28,7 +28,6 @@ const COLUMNS = [
     links: [
       { label: 'FAQ', href: '#faq' },
       { label: 'REGISTER', href: '#register', featured: true },
-      { label: 'ADMIN', href: '#admin' },
     ],
   },
 ];

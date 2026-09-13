@@ -74,6 +74,86 @@
   min-width: 0;
 }
 
+/* ── Registration Round banner ── */
+.reg__round {
+  margin-top: var(--vh-space-6);
+  padding: var(--vh-space-5) var(--vh-space-6);
+  border: 1px solid rgba(232, 22, 5, 0.35);
+  background: linear-gradient(135deg, rgba(232, 22, 5, 0.08), rgba(232, 22, 5, 0.02));
+  position: relative;
+  overflow: hidden;
+}
+
+.reg__round::after {
+  content: 'V/2026';
+  position: absolute;
+  right: -0.5rem;
+  top: -0.6rem;
+  font-family: var(--vh-font-display);
+  font-size: 4rem;
+  color: rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+}
+
+.reg__round-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--vh-space-3) var(--vh-space-6);
+  position: relative;
+  z-index: 1;
+}
+
+.reg__round-kicker {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red);
+}
+
+.reg__round-title {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-lg);
+  letter-spacing: 0.14em;
+  color: var(--vh-white);
+}
+
+.reg__round-fee {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-md);
+  color: var(--vh-white);
+}
+
+.reg__round-fee em {
+  font-style: normal;
+  font-size: var(--vh-text-xs);
+  color: var(--vh-white-dim);
+  margin-left: 0.15rem;
+}
+
+.reg__round-cap {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.08em;
+  color: var(--vh-red-light);
+  margin-left: auto;
+}
+
+.reg__round-bar {
+  margin-top: var(--vh-space-4);
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 1;
+}
+
+.reg__round-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--vh-red);
+  transition: width 0.6s ease;
+}
+
 /* ── Step Pills (indicator) ── */
 .reg__steps-bar {
   display: flex;

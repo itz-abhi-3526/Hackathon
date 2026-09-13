@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useCountdown } from '../../hooks/index.js';
 import { HACKATHON } from '../../data/index.js';
 import { fetchProblemAvailability } from '../../services/problemService.js';
+import { getActiveRegistrationRound } from '../../services/registrationService.js';
 import './Hero.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -22,6 +23,7 @@ export default function Hero({ onRegister }) {
   const countdown = useCountdown(HACKATHON.date);
   const [isWide, setIsWide] = useState(false);
   const [regState, setRegState] = useState('CHECK');
+  const [heroFee, setHeroFee] = useState(null);
   const coordsRef = useRef(null);
 
   const sd = new Date(HACKATHON.date);
@@ -45,6 +47,27 @@ export default function Hero({ onRegister }) {
       if (!alive) return;
       setRegState(available ? 'OPEN' : 'CLOSED');
     });
+    return () => { alive = false; };
+  }, []);
+
+  /* The registration fee is the ADMIN-CONFIGURED active round's fee —
+     the legacy constant is a fallback only for the pre-rounds/degraded
+     legacy flow. Shown as a placeholder until the round resolves so a
+     stale hardcoded price never flashes. */
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      let fee = HACKATHON.registrationFee;
+      try {
+        const round = await getActiveRegistrationRound();
+        if (round?.id && round.open === true && Number.isFinite(Number(round.fee))) {
+          fee = Number(round.fee);
+        }
+      } catch {
+        fee = HACKATHON.registrationFee;
+      }
+      if (alive) setHeroFee(fee);
+    })();
     return () => { alive = false; };
   }, []);
 
@@ -284,7 +307,7 @@ export default function Hero({ onRegister }) {
           </div>
 
           <div className="hero__bar-act">
-            <span className="hero__fee">₹{HACKATHON.registrationFee} / TEAM</span>
+            <span className="hero__fee">₹{heroFee === null ? '\u2014' : heroFee} / TEAM</span>
             <motion.button
               className="hero__cta"
               onClick={onRegister}

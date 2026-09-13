@@ -49,6 +49,115 @@ const pageVariants = {
   exit: (dir) => ({ x: dir > 0 ? -50 : 50, opacity: 0 }),
 };
 
+/* ═══════════════════════════════════════════════════════════════
+   REGISTRATION ROUND — banner + closed/full gate
+   The wizard itself is untouched; the round is displayed above it and
+   the form is replaced by a professional closed state whenever there
+   is no open round. The DATABASE (register_team) enforces
+   capacity — this UI is only ever a reflection of what the server
+   reported.
+   ═══════════════════════════════════════════════════════════════ */
+
+const inrLabel = (fee) => {
+  const n = Number(fee ?? 0);
+  if (!Number.isFinite(n)) return '\u20B90';
+  const decimals = n % 1 === 0 ? 0 : 2;
+  return `\u20B9${n.toLocaleString('en-IN', { maximumFractionDigits: decimals })}`;
+};
+
+/* The fee is NEVER hardcoded on the form: it always comes from the
+   active registration round (registration_rounds.fee). The constant is
+   only a fallback for the pre-rounds legacy flow. */
+const activeFee = (store) => {
+  const n = Number(store?.round?.fee);
+  return Number.isFinite(n) && n >= 0 ? n : HACKATHON.registrationFee;
+};
+
+function RoundBanner({ round }) {
+  const remaining = Math.max(Number(round?.remaining ?? 0), 0);
+  const capacity = Number(round?.capacity ?? 0);
+  const pct = capacity ? Math.min(100, (Number(round?.registered ?? 0) / capacity) * 100) : 0;
+  return (
+    <div className="reg__round">
+      <div className="reg__round-stats">
+        <span className="reg__round-kicker">CURRENT PHASE</span>
+        <span className="reg__round-title">
+          {`${String(round?.title ?? 'REGISTRATION').toUpperCase()}${round?.title ? ' REGISTRATION' : ''}`}
+        </span>
+        <span className="reg__round-fee">
+          {inrLabel(round?.fee)} <em>/ TEAM</em>
+        </span>
+        <span className="reg__round-cap">
+          {capacity ? `${remaining} OF ${capacity} TEAM SLOTS AVAILABLE` : '\u00D7'}
+        </span>
+      </div>
+      <div className="reg__round-bar">
+        <span className="reg__round-bar-fill" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function RegistrationGate({ round, onExit }) {
+  const hasRound = Boolean(round?.id);
+  const remaining = Number(round?.remaining ?? 0);
+  const startsFuture = Boolean(round?.starts_at && new Date(round.starts_at).getTime() > Date.now());
+  const isFull = hasRound && remaining <= 0;
+
+  let tag;
+  let title;
+  let sub;
+  let note = '';
+  if (isFull) {
+    tag = 'ERR.ROUND.FULL';
+    title = 'REGISTRATION CLOSED';
+    sub = 'THIS REGISTRATION ROUND IS FULL.';
+    note = 'NEXT REGISTRATION PHASE WILL BE ANNOUNCED SOON.';
+  } else if (!hasRound) {
+    tag = 'ERR.ROUND.NONE';
+    title = 'REGISTRATION CURRENTLY CLOSED';
+    sub = 'Registration will reopen when the next registration phase begins.';
+  } else if (startsFuture) {
+    tag = 'ERR.ROUND.EARLY';
+    title = String(round.title ?? 'REGISTRATION').toUpperCase();
+    sub = 'REGISTRATION NOT OPEN YET.';
+    note = `This phase opens on ${new Date(round.starts_at).toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })}.`;
+  } else {
+    tag = 'ERR.ROUND.WINDOW';
+    title = String(round.title ?? 'REGISTRATION').toUpperCase();
+    sub = 'REGISTRATION CLOSED.';
+    note = 'Registration will reopen when the next registration phase begins.';
+  }
+
+  return (
+    <div className="reg">
+      <div className="reg__header">
+        <button type="button" className="reg__header-back" onClick={onExit}>&larr; BACK TO SITE</button>
+        <span className="reg__header-brand">VOIDHACK 2026</span>
+      </div>
+      <div className="reg__fatal">
+        <span className="reg__fatal-num">! !</span>
+        <h2 className="reg__fatal-title">{title}</h2>
+        <p className="reg__fatal-desc">{sub}</p>
+        {note && <p className="reg__fatal-note">{note}</p>}
+        {hasRound && !isFull && (
+          <p className="reg__fatal-note">
+            {inrLabel(round.fee)} / TEAM &middot; {remaining} OF {round.capacity} TEAM SLOTS AVAILABLE
+          </p>
+        )}
+        <span className="reg__fatal-code">{tag}</span>
+      </div>
+    </div>
+  );
+}
+
 const barCodeFrom = (str) => {
   if (!str) return [];
   const bars = [];
@@ -97,7 +206,7 @@ function BookingSummary({ store, onExit }) {
 
         <div className="bk__total">
           <span className="bk__label">TOTAL</span>
-          <span className="bk__price">{'\u20B9'}{HACKATHON.registrationFee}</span>
+          <span className="bk__price">{'\u20B9'}{activeFee(store)}</span>
         </div>
       </div>
 
@@ -129,7 +238,7 @@ function MobileBar({ store }) {
       </div>
       <div className="mbar__total">
         <span className="mbar__label">TOTAL</span>
-        <span className="mbar__price">{'\u20B9'}{HACKATHON.registrationFee}</span>
+        <span className="mbar__price">{'\u20B9'}{activeFee(store)}</span>
       </div>
     </div>
   );
@@ -546,7 +655,7 @@ function StepPayment({ store, onUploadProof }) {
         <div className="pay__side">
           <div className="pay__amount">
             <span className="pay__amount-cur">{'\u20B9'}</span>
-            <span className="pay__amount-num">{HACKATHON.registrationFee}</span>
+            <span className="pay__amount-num">{activeFee(store)}</span>
           </div>
 
           <div className="pay__label-line">
@@ -764,7 +873,7 @@ function StepReview({ store, goToStep }) {
             </div>
             <div className="rev__kv">
               <span className="rev__k">TOTAL</span>
-              <span className="rev__v rev__v--big">{'\u20B9'}{HACKATHON.registrationFee}</span>
+              <span className="rev__v rev__v--big">{'\u20B9'}{activeFee(store)}</span>
             </div>
           </div>
         </div>
@@ -1076,6 +1185,13 @@ export default function Registration({ onExit }) {
             title: 'SERVICE TEMPORARILY UNAVAILABLE',
             note: 'The event data could not be reached. Retry in a moment.',
           };
+        case 'ROUNDS_LOAD_FAILED':
+        case 'ROUNDS_RPC_MISSING':
+          return {
+            tag: 'ERR.ROUNDS.SERVICE',
+            title: 'REGISTRATION UNAVAILABLE',
+            note: 'The registration rounds service could not be reached. Retry in a moment.',
+          };
         case 'CONFIG':
           return {
             tag: 'ERR.CONFIG.ENV',
@@ -1133,8 +1249,17 @@ export default function Registration({ onExit }) {
     );
   }
 
+  /* No open registration round (closed / full / not yet open) — the
+     form is replaced by the professional closed state. The database is
+     the real gate; this is only the reflection it reported. A finished
+     run (step 5 + code) always shows its success pass first, even if
+     the round reported full at the moment the write landed. */
   if (store.currentStep === 5 && store.registrationCode) {
     return <SuccessPass store={store} onExit={onExit} />;
+  }
+
+  if (store.round && (store.round.open === false || !store.round.id)) {
+    return <RegistrationGate round={store.round} onExit={onExit} />;
   }
 
   return (
@@ -1154,6 +1279,8 @@ export default function Registration({ onExit }) {
 
       <div className="reg__layout">
         <div className="reg__main">
+          {store.round && store.round.open === true && <RoundBanner round={store.round} />}
+
           <div className="reg__steps-bar">
             {STEPS.map((s) => (
               <div
