@@ -16,6 +16,7 @@ export const T = {
   PROBLEM_STATEMENTS: 'problem_statements',
   TEAMS: 'teams',
   PARTICIPANTS: 'participants',
+  REGISTRATION_ROUNDS: 'registration_rounds',
 };
 
 export const PROBLEM_COLS = {
@@ -36,6 +37,8 @@ export const TEAM_COLS = {
   problemStatementId: 'problem_statement_id',
   paymentImageUrl: 'payment_image_url',
   paymentStatus: 'payment_status',
+  registrationRoundId: 'registration_round_id',
+  registrationFee: 'registration_fee',
   createdAt: 'created_at',
 };
 
@@ -57,6 +60,16 @@ export const TEAM_PAYMENT_STATUS = {
   VERIFIED: 'verified',
   REJECTED: 'rejected',
 };
+
+/* Registration resolution rounds. Exactly one row has status='active'
+   at a time (enforced by a database trigger). */
+export const ROUND_STATUS = {
+  DRAFT: 'draft',
+  ACTIVE: 'active',
+  CLOSED: 'closed',
+};
+
+export const ROUND_STATUS_ORDER = ['draft', 'active', 'closed'];
 
 /* Participant role — exactly one lead per team. Stored verbatim on
    participants.role. The database CHECK constraint (see migration) only

@@ -5,16 +5,16 @@
    registrations, team_members, payments, hackathons or
    hackathon_settings tables anywhere.
 
-   ONE write path only: the atomic submit_registration RPC (a
-   SECURITY DEFINER function). The wizard performs NO per-step
-   database writes, so partial rows can never exist and there is no
-   second flow to drift from the real one. Every rejected call carries
-   its PostgREST code/message/details/hint so the UI (and dev console)
-   surfaces exactly which write was refused.
+   ONE write path only: the atomic register_team(payload jsonb) RPC
+   (SECURITY DEFINER). The wizard performs NO per-step database writes,
+   so partial rows can never exist and there is no second flow to drift
+   from the real one. The database resolves the ACTIVE registration
+   round, enforces capacity, stamps the round + fee, and validates
+   every field inside the single transaction.
 
    Anonymous clients may only:
-     • SELECT problem_statements  (public problem arena)
-     • execute submit_registration (the single atomic submit)
+     • SELECT problem_statements        (public problem arena)
+     • execute register_team(payload)   (the single atomic submit)
 
    There are no anonymous INSERT/SELECT-write policies on teams or
    participants — those rows exist on the server only after a
@@ -138,7 +138,92 @@ export function validateEntry({ team, problemStatement, players, payment }) {
 
 /* ── Final submission — the ONE atomic write ── */
 
-const SUBMIT_RPC = 'submit_registration';
+const SUBMIT_RPC = 'register_team';
+const PUBLIC_ACTIVE_ROUND_RPC = 'public_active_round';
+
+/**
+ * Registration round reads for the PUBLIC form.
+ *
+ * The public NEVER reads the registration_rounds table directly — RLS
+ * restricts that table to authenticated admins. Everything flows through
+ * the public_active_round() SECURITY DEFINER RPC, and the database
+ * guarantees at most ONE active round at a time. So "the rounds the
+ * public may register in right now" is a one-element list: the active
+ * round, or [] when registration is closed.
+ */
+export async function getRegistrationRounds() {
+  assertSupabaseConfigured();
+  const supabase = getSupabase();
+  const { data, error } = await supabase.rpc(PUBLIC_ACTIVE_ROUND_RPC);
+  if (error) {
+    logDbFailure('registrationService', 'public_active_round RPC', error);
+    if (isRpcMissing(error)) {
+      throw new AppError(
+        'REGISTRATION UNAVAILABLE — The registration rounds service is not deployed yet. Please try again later.',
+        'ROUNDS_RPC_MISSING',
+        error
+      );
+    }
+    throw new AppError(
+      'REGISTRATION STATUS COULD NOT BE LOADED — Try again in a moment.',
+      'ACTIVE_ROUND_LOAD_FAILED',
+      error
+    );
+  }
+  /* PostgREST returns single-scalar RPC results wrapped in an array
+     unless the object Accept header is requested. Normalize the real
+     network contract here so both `[ {...} ]` and `{...}` work. */
+  const round = unwrapRpcData(data);
+  return round && round.id ? [round] : [];
+}
+
+/** Current active registration round, or {} when registration is closed. */
+export async function getActiveRegistrationRound() {
+  const [round] = await getRegistrationRounds();
+  return round ?? {};
+}
+
+/**
+ * Classify the registration round state for the UI. ONE source of truth
+ * so every caller interprets the same database answer the same way:
+ *
+ *   active    → an open round is live and accepting
+ *   full      → the active round has reached its team capacity
+ *   not_open  → the active round has not started yet
+ *   closed    → the active round's window has elapsed
+ *   no_round  → no round is configured / active (registration closed)
+ *   error     → the rounds service could not be reached (never a
+ *               "registration closed" signal; the caller surfaces a real
+ *               load/configuration error instead)
+ */
+export async function getRegistrationStatus() {
+  try {
+    const round = await getActiveRegistrationRound();
+    if (!round?.id) return { phase: 'no_round', round: {} };
+    const remaining = Number(round.remaining ?? 0);
+    const startsAt = round.starts_at ?? round.startsAt ?? null;
+    const startsFuture = Boolean(startsAt && new Date(startsAt).getTime() > Date.now());
+
+    let phase = 'active';
+    if (round.open === false || round.open === 'false' || round.open === 0) {
+      phase = remaining <= 0 ? 'full' : startsFuture ? 'not_open' : 'closed';
+    }
+    return { phase, round };
+  } catch (err) {
+    /* RPC missing or network failure — hand the raw error back so the
+       caller can show a real load error, never a fake "closed". */
+    return { phase: 'error', round: {}, error: err };
+  }
+}
+
+/* RPC responses arrive as a bare object or as a one-element array
+   depending on the request/Accept path. Empty → {} (registration
+   closed). */
+function unwrapRpcData(data) {
+  if (!data) return {};
+  const value = Array.isArray(data) ? data[0] : data;
+  return value && typeof value === 'object' ? value : {};
+}
 
 /* PostgREST 404 / function-missing detection. The migration installs
    the function; until it runs this surfaces a clear dev error instead
@@ -159,7 +244,10 @@ function isRpcMissing(error) {
 }
 
 /**
- * Build the single JSONB payload the submit_registration RPC consumes.
+ * Build the normalized submit values the register_team RPC consumes.
+ * The active registration round is resolved SERVER-SIDE by the RPC —
+ * the browser never sends a round id or a fee, so a stale form can
+ * never be charged the wrong fee or counted against the wrong round.
  * All values are normalized here (trimmed / null-coerced / role and
  * food preference constrained) before any server-side validation.
  */
@@ -185,19 +273,97 @@ function buildSubmitPayload({ team, problemStatement, players, payment, registra
   };
 }
 
+/* Round / duplicate / data failures → clean, user-facing messages.
+   Every message comes from a raised exception inside register_team
+   (never from raw PostgreSQL internals); unknown failures fall through
+   to the generic branch in submitRegistration. */
+function mapRegistrationFailure(error) {
+  if (!error) return null;
+  const message = String(error?.message ?? '');
+  const code = String(error?.code ?? '');
+
+  if (/REGISTRATION FULL/i.test(message)) {
+    return new AppError(
+      'REGISTRATION IS FULL FOR THIS ROUND — new registrations are closed until the next phase opens.',
+      'ROUND_FULL',
+      error
+    );
+  }
+  if (/NOT OPEN YET/i.test(message)) {
+    return new AppError(
+      'REGISTRATION NOT OPEN YET — This round opens at its scheduled time.',
+      'ROUND_NOT_OPEN',
+      error
+    );
+  }
+  if (/REGISTRATION CLOSED/i.test(message)) {
+    return new AppError(
+      'REGISTRATION IS CURRENTLY CLOSED — Registration will reopen when the next phase begins.',
+      'ROUND_CLOSED',
+      error
+    );
+  }
+  if (code === '23505' || /DUPLICATE|already been submitted|unique/i.test(message)) {
+    return new AppError(
+      'THIS REGISTRATION HAS ALREADY BEEN SUBMITTED — Check the issued pass or refresh and try again.',
+      'DUPLICATE_REGISTRATION',
+      error
+    );
+  }
+  if (/INVALID PROBLEM STATEMENT|PROBLEM STATEMENT IS REQUIRED/i.test(message)) {
+    return new AppError(
+      'PLEASE SELECT A VALID PROBLEM STATEMENT — Refresh the list and try again.',
+      'INVALID_PROBLEM_STATEMENT',
+      error
+    );
+  }
+  if (code === '23514' || code === '23503') {
+    return new AppError(
+      'PLEASE CHECK YOUR REGISTRATION DETAILS AND TRY AGAIN.',
+      'INVALID_REGISTRATION_DATA',
+      error
+    );
+  }
+  return null;
+}
+
+function parseSubmitData(data) {
+  if (!data) throw new AppError('EMPTY SUBMIT RESPONSE', 'SUBMIT_RPC_EMPTY');
+  const parsed = typeof data === 'string' ? JSON.parse(data) : unwrapRpcData(data);
+  if (parsed && parsed.success === false) {
+    throw new AppError(
+      'SUBMIT FAILED — The server could not complete your entry. Please try again.',
+      'SUBMIT_RPC_FAILED'
+    );
+  }
+  return {
+    teamId: parsed.team_id ?? parsed.teamId ?? null,
+    registrationCode: parsed.registration_code ?? parsed.registrationCode ?? '',
+    paymentStatus: parsed.payment_status ?? parsed.paymentStatus ?? TEAM_PAYMENT_STATUS.SUBMITTED,
+    submittedAt: parsed.submitted_at ?? parsed.submittedAt ?? new Date().toISOString(),
+    registrationRoundId: parsed.registration_round_id ?? parsed.registrationRoundId ?? null,
+    registrationFee: parsed.registration_fee ?? parsed.registrationFee ?? null,
+    roundTitle: parsed.round_title ?? parsed.roundTitle ?? '',
+  };
+}
+
 /**
  * Atomic final submission. The single source of truth for every write:
- * submit_registration performs the entire team + participants + payment
- * write in one transaction, validates every field, enforces exactly one
- * lead and is idempotent — a retry with the same registration_code (or
- * team_id) updates the existing rows instead of duplicating them.
+ * register_team(payload jsonb) performs the entire team + participants
+ * + payment write in one transaction, resolves the CURRENT active
+ * round from registration_rounds server-side, enforces team capacity
+ * (auto-closing the round at 0 slots), stamps registration_round_id +
+ * registration_fee (the database picks the round and the fee — never
+ * the browser), and is idempotent — a retry with the same
+ * registration_code updates the existing rows instead of duplicating
+ * them. This is the ONLY write path, active round or not.
  *
  * There is NO fallback to per-row inserts from the browser, so a
  * partial registration can never exist.
  *
  * @returns {Promise<{teamId: string, registrationCode: string, paymentStatus: string, submittedAt: string}>}
  */
-export async function submitEntry({
+export async function submitRegistration({
   team,
   problemStatement,
   players,
@@ -214,53 +380,37 @@ export async function submitEntry({
   const supabase = getSupabase();
   const payload = buildSubmitPayload({ team, problemStatement, players, payment, registrationCode });
 
-  const { data, error } = await supabase.rpc(SUBMIT_RPC, {
-  p_registration_code: payload.registration_code,
-  p_team_name: payload.team_name,
-  p_college: payload.college,
-  p_problem_statement_id: payload.problem_statement_id,
-  p_payment_status: payload.payment_status,
-  p_payment_image_url: payload.payment_image_url,
-  p_participants: payload.participants,
-});
+  /* The deployed submit path is ONE function with ONE signature:
+     register_team(payload jsonb) — and it is called with the single
+     `payload` argument (never positional/named p_* params, which caused
+     the PGRST202 signature mismatch). The database resolves the round,
+     enforces capacity, stamps round + fee, and returns the accepted
+     entry. The shop shows registration_rounds as the source of truth. */
+  const { data, error } = await supabase.rpc(SUBMIT_RPC, { payload });
   if (error) {
-    logDbFailure('registrationService', 'submit_registration RPC', error);
+    logDbFailure('registrationService', 'register_team RPC', error);
     if (isRpcMissing(error)) {
       throw new AppError(
-        'SUBMIT UNAVAILABLE — The submit_registration database function has not been deployed. Run the atomic submit migration, then retry.',
+        'SUBMIT UNAVAILABLE — The registration service is not deployed yet. Please try again in a moment.',
         'SUBMIT_RPC_MISSING',
         error
       );
     }
-    const detail = String(error?.message ?? '').trim();
-    /* The RPC raises clear, human-readable messages (see the
-       migration) — surface them instead of masking the failure. */
-    const readable = /^(EXACTLY|SUBMIT|REGISTRATION|TEAM|COLLEGE|CREW|PAYMENT|INVALID|FOOD|LEAD|PROBLEM)/i.test(
-      detail
-    );
+
+    const mapped = mapRegistrationFailure(error);
+    if (mapped) throw mapped;
+
+    /* Never surface raw PostgreSQL diagnostics (PGRST202 / 42883 /
+       23514 / "function … in the schema cache") to the user — those stay
+       in the dev log above. */
     throw new AppError(
-      readable
-        ? `SUBMIT FAILED — ${detail}`
-        : 'SUBMIT FAILED — The server could not complete your entry. Please try again.',
+      'REGISTRATION COULD NOT BE COMPLETED — Please check your details and try again.',
       'SUBMIT_RPC_FAILED',
       error
     );
   }
 
-  if (!data) throw new AppError('EMPTY SUBMIT RESPONSE', 'SUBMIT_RPC_EMPTY');
-  const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-  if (parsed && parsed.success === false) {
-    throw new AppError(
-      'SUBMIT FAILED — The server could not complete your entry. Please try again.',
-      'SUBMIT_RPC_FAILED'
-    );
-  }
-  return {
-    teamId: parsed.team_id ?? parsed.teamId ?? null,
-    registrationCode: parsed.registration_code ?? parsed.registrationCode ?? '',
-    paymentStatus: parsed.payment_status ?? parsed.paymentStatus ?? TEAM_PAYMENT_STATUS.SUBMITTED,
-    submittedAt: parsed.submitted_at ?? parsed.submittedAt ?? new Date().toISOString(),
-  };
+  return parseSubmitData(data);
 }
 
 /* ── Admin reads / writes (authenticated RLS) ── */
