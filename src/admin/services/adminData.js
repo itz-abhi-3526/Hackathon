@@ -14,8 +14,13 @@ import { AppError } from '../../lib/api.js';
 
 const ROUND_EMBED = '*, teams(count)';
 
+/* participants(full_name, email, role) is embedded (not the count
+   aggregate) so each team row also carries its LEAD's email/name for the
+   verification-email UI. memberCount derives from the embedded length —
+   with teams capped at 4 members this stays lightweight even for paginated
+   queries. */
 const TEAM_EMBED =
-  '*, problem_statements(id, track, title, difficulty), participants(count), registration_rounds(id, title, fee, capacity, status)';
+  '*, problem_statements(id, track, title, difficulty), participants(full_name, email, role), registration_rounds(id, title, fee, capacity, status)';
 const PARTICIPANT_EMBED =
   '*, teams(team_name, college, registration_code, payment_status, problem_statement_id, registration_round_id, registration_fee, problem_statements(id, track, title, difficulty), registration_rounds(id, title, fee, capacity, status))';
 
@@ -142,6 +147,12 @@ export async function adminFetchTeams({
 export function normalizeTeam(row) {
   const problem = row?.problem_statements ?? null;
   const round = row?.registration_rounds ?? null;
+  const participants = Array.isArray(row.participants) ? row.participants : [];
+  const count =
+    participants.length > 0 && 'count' in participants[0]
+      ? participants[0].count
+      : participants.length;
+  const leadParticipant = participants.find((p) => p.role === 'lead') ?? null;
   return {
     id: row.id,
     registrationCode: row.registration_code,
@@ -150,12 +161,25 @@ export function normalizeTeam(row) {
     problemStatementId: row.problem_statement_id,
     paymentStatus: row.payment_status,
     paymentImageUrl: row.payment_image_url,
+    rejectionReason: row.rejection_reason,
     createdAt: row.created_at,
     registrationRoundId: row.registration_round_id,
     registrationFee: row.registration_fee,
     registrationRound: round,
     problem,
-    memberCount: row.participants?.[0]?.count ?? 0,
+    memberCount: count,
+    leadEmail: leadParticipant?.email ?? '',
+    leadName: leadParticipant?.full_name ?? '',
+    verificationEmailStatus: row.verification_email_status ?? 'pending',
+    verificationEmailSentAt: row.verification_email_sent_at ?? null,
+    verificationEmailLastError: row.verification_email_last_error ?? null,
+    verificationEmailSendCount: row.verification_email_send_count ?? 0,
+    verificationEmailLastSentTo: row.verification_email_last_sent_to ?? null,
+    rejectionEmailStatus: row.rejection_email_status ?? 'pending',
+    rejectionEmailSentAt: row.rejection_email_sent_at ?? null,
+    rejectionEmailLastError: row.rejection_email_last_error ?? null,
+    rejectionEmailSendCount: row.rejection_email_send_count ?? 0,
+    rejectionEmailLastSentTo: row.rejection_email_last_sent_to ?? null,
   };
 }
 
@@ -416,18 +440,107 @@ export async function adminFetchTeamDetail(teamId) {
   return { team, members: (members ?? []).map(normalizeParticipant) };
 }
 
-/* Status change ── the ONLY admin write (payment verification) ──── */
-
-export async function adminSetPaymentStatus(teamId, status) {
+/* Status change ── the ONLY admin write (payment verification) ────
+   Rejecting stores the admin-supplied reason on teams.rejection_reason
+   (reads back to NULL on any other status, so a re-verified team stops
+   carrying stale rejection text). */
+export async function adminSetPaymentStatus(teamId, status, reason = '') {
   if (!Object.values(TEAM_PAYMENT_STATUS).includes(status)) {
     throw new AppError('INVALID PAYMENT STATUS', 'INVALID_STATUS');
   }
-  const supabase = getAdminSupabase();
-  const { error } = await supabase
-    .from(T.TEAMS)
-    .update({ payment_status: status })
-    .eq('id', teamId);
+  const supr = getAdminSupabase();
+  const patch = { payment_status: status };
+  patch.rejection_reason =
+    status === TEAM_PAYMENT_STATUS.REJECTED
+      ? String(reason ?? '').trim() || null
+      : null;
+  const { error } = await supr.from(T.TEAMS).update(patch).eq('id', teamId);
   if (error) throw wrapError(error, 'STATUS COULD NOT BE UPDATED');
+}
+
+/* Confirmation email trigger — fires the send-registration-email Edge
+   Function with the admin's own session JWT (the function re-checks
+   is_admin() server-side). Email is best-effort and called AFTER the
+   status write, so a mail outage never blocks payment verification. */
+export async function adminSendStatusEmail(teamId, action, reason = '') {
+  const supabase = getAdminSupabase();
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if (!token) {
+    throw new AppError('ADMIN SESSION EXPIRED \u2014 Sign in again.', 'ADMIN_SESSION_EXPIRED');
+  }
+
+  const { data, error } = await supabase.functions.invoke(
+    'send-registration-email',
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      body: {
+        teamId,
+        action,
+        reason: String(reason ?? '').trim() || undefined,
+      },
+    }
+  );
+
+  if (error) {
+    const message = /401/.test(String(error.message))
+      ? 'ADMIN SESSION EXPIRED \u2014 Sign in again.'
+      : /403/.test(String(error.message))
+      ? 'ACCESS DENIED \u2014 This account cannot send registration emails.'
+      : error.message || 'EMAIL SERVICE FAILED';
+    throw new AppError(message, 'ADMIN_EMAIL_SEND_FAILED', error);
+  }
+  return data;
+}
+
+/* ── Send verification/rejection email (admin Registrations page) ──
+   Calls the send-registration-email Edge Function with the tracked
+   'send_verification' / 'send_rejection' actions, which perform the
+   payment-status check server-side, resolve the lead email, and write
+   tracking columns only after a successful SMTP send. No arbitrary
+   recipient can be supplied by the browser. */
+async function invokeSendEmail(teamId, action) {
+  const supabase = getAdminSupabase();
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if (!token) {
+    throw new AppError('ADMIN SESSION EXPIRED \u2014 Sign in again.', 'ADMIN_SESSION_EXPIRED');
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      'send-registration-email',
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        body: { teamId, action },
+      }
+    );
+
+    if (error) {
+      const message = /401/.test(String(error.message))
+        ? 'ADMIN SESSION EXPIRED \u2014 Sign in again.'
+        : /403/.test(String(error.message))
+        ? 'ACCESS DENIED \u2014 This account cannot send registration emails.'
+        : error.message || 'EMAIL SERVICE FAILED';
+      throw new AppError(message, 'ADMIN_EMAIL_SEND_FAILED', error);
+    }
+    return data;
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(
+      'EMAIL SERVICE UNREACHABLE \u2014 Check network or try again later.',
+      'ADMIN_EMAIL_UNREACHABLE',
+      err
+    );
+  }
+}
+
+export async function adminSendVerificationEmail(teamId) {
+  return invokeSendEmail(teamId, 'send_verification');
+}
+
+export async function adminSendRejectionEmail(teamId) {
+  return invokeSendEmail(teamId, 'send_rejection');
 }
 
 /* Filter option sources ────────────────────────────────────────── */

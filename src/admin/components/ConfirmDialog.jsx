@@ -14,6 +14,7 @@ export default function ConfirmDialog({
   busy = false,
   onConfirm,
   onCancel,
+  children,
 }) {
   useEffect(() => {
     const onKey = (e) => {
@@ -33,6 +34,7 @@ export default function ConfirmDialog({
         <div className="cpa-modal__body">
           <h3 className="cpa-modal__title cpa-modal__title--lg">{title}</h3>
           {message && <p className="cpa-modal__msg">{message}</p>}
+          {children && <div className="cpa-modal__extra">{children}</div>}
         </div>
         <div className="cpa-modal__foot">
           <button type="button" className="cpa-btn cpa-btn--ghost" onClick={onCancel} disabled={busy}>

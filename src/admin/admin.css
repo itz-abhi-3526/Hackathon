@@ -716,6 +716,17 @@
 .cpa-actions__btn--bad:hover:not(:disabled) { border-color: var(--cpa-bad); color: var(--cpa-bad); background: var(--cpa-bad-dim); }
 .cpa-actions__btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* ── verification email cell ──────────────────────────────── */
+.cpa-email-cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cpa-email-cell__btn { width: 100%; margin-top: 2px; }
+.cpa-email-cell__locked { font-style: italic; }
+.cpa-email-cell__to { font-size: 9px; word-break: break-all; }
+.cpa-email-cell__at { font-size: 9px; }
+
+/* ── drawer verification email section ────────────────────── */
+.cpa-drawer__email-actions { display: flex; gap: 6px; margin-top: 6px; }
+.cpa-drawer__email-actions .cpa-btn { flex: 1; }
+
 /* ── login ──────────────────────────────────────────────── */
 .cpa-login {
   min-height: 100vh;

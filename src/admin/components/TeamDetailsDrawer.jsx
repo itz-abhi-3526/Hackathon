@@ -8,13 +8,22 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useState } from 'react';
-import { adminFetchTeamDetail, adminSetPaymentStatus } from '../services/adminData.js';
+import { adminFetchTeamDetail, adminSetPaymentStatus, adminSendVerificationEmail, adminSendRejectionEmail } from '../services/adminData.js';
 import { TEAM_PAYMENT_STATUS } from '../../lib/schema.js';
 import { codeFor, dateLabel, feeLabel, foodLabel, problemLabel, roleLabel, roundLabel } from '../utils/format.js';
 import StatusBadge from './StatusBadge.jsx';
 import PaymentProofViewer from './PaymentProofViewer.jsx';
 import ConfirmDialog from './ConfirmDialog.jsx';
 import { useToast } from './Toast.jsx';
+
+const EMAIL_MESSAGES = {
+  TEAM_NOT_FOUND: 'Registration not found.',
+  PAYMENT_NOT_VERIFIED: 'Payment must be verified before sending the verification email.',
+  PAYMENT_NOT_REJECTED: 'Payment must be rejected before sending the rejection email.',
+  LEAD_EMAIL_MISSING: 'Team leader email is missing.',
+  INVALID_LEAD_EMAIL: 'The registered leader email is invalid.',
+  EMAIL_SEND_FAILED: 'Failed to send email. Please try again.',
+};
 
 const STATUS_ORDER = Object.values(TEAM_PAYMENT_STATUS);
 
@@ -55,6 +64,9 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [proofOpen, setProofOpen] = useState(false);
   const [confirmReject, setConfirmReject] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [confirmResendEmail, setConfirmResendEmail] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -80,11 +92,23 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const changeStatus = async (status) => {
+  const changeStatus = async (status, reason = '') => {
     setBusy(true);
     try {
-      await adminSetPaymentStatus(teamId, status);
-      setDetail((d) => (d ? { ...d, team: { ...d.team, paymentStatus: status } } : d));
+      await adminSetPaymentStatus(teamId, status, reason);
+      setDetail((d) =>
+        d
+          ? {
+              ...d,
+              team: {
+                ...d.team,
+                paymentStatus: status,
+                rejectionReason:
+                  status === 'rejected' ? (String(reason ?? '').trim() || d.team.rejectionReason) : null,
+              },
+            }
+          : d
+      );
       push(`PAYMENT MARKED ${String(status).toUpperCase()}`, 'success');
       onChanged?.();
     } catch (err) {
@@ -94,9 +118,56 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
     }
   };
 
+  const sendEmail = useCallback(async (kind = 'verify') => {
+    if (!teamId) return;
+    const isReject = kind === 'reject';
+    setEmailBusy(true);
+    try {
+      const result = isReject
+        ? await adminSendRejectionEmail(teamId)
+        : await adminSendVerificationEmail(teamId);
+      if (result?.ok) {
+        if (result.statusUpdated === false) {
+          push('EMAIL SENT \u2014 STATUS NOT RECORDED ON SERVER. CHECK LOGS.', 'error');
+        } else {
+          push(isReject ? 'REJECTION EMAIL SENT' : 'VERIFICATION EMAIL SENT', 'success');
+        }
+        onChanged?.();
+        await load();
+      } else {
+        push(EMAIL_MESSAGES[result?.code] ?? result?.error ?? 'FAILED TO SEND EMAIL', 'error');
+      }
+    } catch (err) {
+      push(err?.message || 'FAILED TO SEND EMAIL', 'error');
+    } finally {
+      setEmailBusy(false);
+    }
+  }, [teamId, load, onChanged, push]);
+
   const team = detail?.team;
   const members = detail?.members ?? [];
   const lead = members.find((m) => m.role === 'lead');
+
+  const emailKind = team?.paymentStatus === 'rejected' ? 'reject' : 'verify';
+  const emailFields =
+    emailKind === 'reject'
+      ? {
+          status: team?.rejectionEmailStatus ?? 'pending',
+          sentAt: team?.rejectionEmailSentAt,
+          sentTo: team?.rejectionEmailLastSentTo,
+          lastError: team?.rejectionEmailLastError,
+          sendCount: team?.rejectionEmailSendCount ?? 0,
+        }
+      : {
+          status: team?.verificationEmailStatus ?? 'pending',
+          sentAt: team?.verificationEmailSentAt,
+          sentTo: team?.verificationEmailLastSentTo,
+          lastError: team?.verificationEmailLastError,
+          sendCount: team?.verificationEmailSendCount ?? 0,
+        };
+  const emailEligible =
+    team?.paymentStatus === 'verified' || team?.paymentStatus === 'rejected';
+  const sendVerb = emailKind === 'reject' ? 'SEND REJECTION EMAIL' : 'SEND VERIFICATION EMAIL';
 
   return (
     <div className="cpa-drawer" role="dialog" aria-modal="true" aria-label="Team details">
@@ -171,6 +242,12 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
                   ) : (
                     <span className="cpa-kv__value">NO PROOF UPLOADED</span>
                   )}
+                  <div className="cpa-kvs">
+                    <KV label="PAYMENT STATUS" value={String(team.paymentStatus ?? '—').toUpperCase()} />
+                    {team.rejectionReason && (
+                      <KV label="REJECTION REASON" value={team.rejectionReason} copy={team.rejectionReason} />
+                    )}
+                  </div>
                   <div className="cpa-status-pick">
                     {STATUS_ORDER.map((s) => (
                       <button
@@ -188,6 +265,68 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
                     ))}
                   </div>
                   {busy && <span className="cpa-muted-sm">SAVING…</span>}
+                </div>
+              </section>
+
+              <section className="cpa-drawer__section">
+                <h4 className="cpa-drawer__section-title">REGISTRATION EMAIL</h4>
+                <div className="cpa-drawer__email">
+                  {!emailEligible ? (
+                    <span className="cpa-muted-sm">
+                      VERIFY OR REJECT THE PAYMENT BEFORE SENDING THE REGISTRATION EMAIL
+                    </span>
+                  ) : emailFields.status === 'sent' ? (
+                    <div className="cpa-kvs">
+                      <KV label="EMAIL STATUS" value="SENT ✓" />
+                      <KV label="TYPE" value={emailKind === 'reject' ? 'REJECTION' : 'VERIFICATION'} />
+                      <KV label="SENT TO" value={emailFields.sentTo ?? '—'} copy={emailFields.sentTo ?? ''} />
+                      <KV label="SENT AT" value={dateLabel(emailFields.sentAt)} />
+                      <KV label="SEND COUNT" value={String(emailFields.sendCount)} />
+                      <div className="cpa-drawer__email-actions">
+                        <button
+                          type="button"
+                          className="cpa-btn cpa-btn--ghost cpa-btn--sm"
+                          disabled={emailBusy}
+                          onClick={() => setConfirmResendEmail(true)}
+                        >
+                          {emailBusy ? 'SENDING…' : 'RESEND EMAIL'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : emailFields.status === 'failed' ? (
+                    <div className="cpa-kvs">
+                      <KV label="EMAIL STATUS" value="FAILED ✗" />
+                      <KV label="TYPE" value={emailKind === 'reject' ? 'REJECTION' : 'VERIFICATION'} />
+                      {emailFields.lastError && (
+                        <KV label="LAST ERROR" value={emailFields.lastError} />
+                      )}
+                      <div className="cpa-drawer__email-actions">
+                        <button
+                          type="button"
+                          className="cpa-btn cpa-btn--ok cpa-btn--sm"
+                          disabled={emailBusy}
+                          onClick={() => sendEmail(emailKind)}
+                        >
+                          {emailBusy ? 'SENDING…' : 'RETRY EMAIL'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="cpa-kvs">
+                      <KV label="EMAIL STATUS" value="NOT SENT" />
+                      <KV label="TYPE" value={emailKind === 'reject' ? 'REJECTION' : 'VERIFICATION'} />
+                      <div className="cpa-drawer__email-actions">
+                        <button
+                          type="button"
+                          className="cpa-btn cpa-btn--ok cpa-btn--sm"
+                          disabled={emailBusy}
+                          onClick={() => sendEmail(emailKind)}
+                        >
+                          {emailBusy ? 'SENDING…' : sendVerb}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </section>
 
@@ -260,8 +399,41 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
           busy={busy}
           onCancel={() => setConfirmReject(false)}
           onConfirm={async () => {
+            const reason = rejectReason.trim();
             setConfirmReject(false);
-            await changeStatus('rejected');
+            setRejectReason('');
+            await changeStatus('rejected', reason);
+          }}
+        >
+          <label className="cpa-field">
+            <span className="cpa-field__label">REASON FOR REJECTION — SENT TO THE TEAM LEAD VIA THE REJECTION EMAIL</span>
+            <textarea
+              className="cpa-field__textarea"
+              rows={3}
+              placeholder="e.g. Payment amount does not match the registration fee for this round."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              autoFocus
+            />
+          </label>
+        </ConfirmDialog>
+      )}
+
+      {confirmResendEmail && (
+        <ConfirmDialog
+          title={emailKind === 'reject' ? 'RESEND REJECTION EMAIL?' : 'RESEND VERIFICATION EMAIL?'}
+          message={
+            emailKind === 'reject'
+              ? `A rejection email has already been sent to ${team?.rejectionEmailLastSentTo ?? 'the team lead'}. Do you want to send it again?`
+              : `A verification email has already been sent to ${team?.verificationEmailLastSentTo ?? 'the team lead'}. Do you want to send it again?`
+          }
+          confirmLabel="RESEND EMAIL"
+          tone="ok"
+          busy={emailBusy}
+          onCancel={() => setConfirmResendEmail(false)}
+          onConfirm={async () => {
+            setConfirmResendEmail(false);
+            await sendEmail(emailKind);
           }}
         />
       )}

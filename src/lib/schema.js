@@ -37,8 +37,19 @@ export const TEAM_COLS = {
   problemStatementId: 'problem_statement_id',
   paymentImageUrl: 'payment_image_url',
   paymentStatus: 'payment_status',
+  rejectionReason: 'rejection_reason',
   registrationRoundId: 'registration_round_id',
   registrationFee: 'registration_fee',
+  verificationEmailStatus: 'verification_email_status',
+  verificationEmailSentAt: 'verification_email_sent_at',
+  verificationEmailLastError: 'verification_email_last_error',
+  verificationEmailSendCount: 'verification_email_send_count',
+  verificationEmailLastSentTo: 'verification_email_last_sent_to',
+  rejectionEmailStatus: 'rejection_email_status',
+  rejectionEmailSentAt: 'rejection_email_sent_at',
+  rejectionEmailLastError: 'rejection_email_last_error',
+  rejectionEmailSendCount: 'rejection_email_send_count',
+  rejectionEmailLastSentTo: 'rejection_email_last_sent_to',
   createdAt: 'created_at',
 };
 
@@ -77,6 +88,23 @@ export const ROUND_STATUS_ORDER = ['draft', 'active', 'closed'];
 export const PARTICIPANT_ROLE = {
   LEAD: 'lead',
   MEMBER: 'member',
+};
+
+/* Verification email tracking on the team row. 'pending' is the
+   default (never sent); the Edge Function flips it to 'sent' only after
+   a successful SMTP send, or 'failed' when the send errored. */
+export const VERIFICATION_EMAIL_STATUS = {
+  PENDING: 'pending',
+  SENT: 'sent',
+  FAILED: 'failed',
+};
+
+/* Rejection email tracking on the team row — mirrors the verification
+   email tracking. */
+export const REJECTION_EMAIL_STATUS = {
+  PENDING: 'pending',
+  SENT: 'sent',
+  FAILED: 'failed',
 };
 
 export const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'];

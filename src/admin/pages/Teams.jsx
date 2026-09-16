@@ -11,6 +11,8 @@ import {
   adminFetchColleges,
   adminFetchAllTeams,
   adminFetchProblems,
+  adminSendVerificationEmail,
+  adminSendRejectionEmail,
 } from '../services/adminData.js';
 import { TEAM_PAYMENT_STATUS } from '../../lib/schema.js';
 import { useAsync } from '../hooks/useAsync.js';
@@ -19,7 +21,9 @@ import { PageHeader } from '../components/Page.jsx';
 import { DataTable } from '../components/DataTable.jsx';
 import { SearchBar, SelectField, FilterChips, Pagination, ExportButton, RefreshButton } from '../components/Toolbar.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
+import EmailStatusCell from '../components/EmailStatusCell.jsx';
 import TeamDetailsDrawer from '../components/TeamDetailsDrawer.jsx';
+import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import { codeFor, dateLabel, problemLabel, roundLabel, feeLabel } from '../utils/format.js';
 import { downloadExcel } from '../services/adminExcel.js';
 
@@ -28,15 +32,27 @@ const STATUS_OPTIONS = Object.values(TEAM_PAYMENT_STATUS).map((s) => ({
   label: String(s).toUpperCase(),
 }));
 
+const EMAIL_MESSAGES = {
+  TEAM_NOT_FOUND: 'Registration not found.',
+  PAYMENT_NOT_VERIFIED: 'Payment must be verified before sending the verification email.',
+  PAYMENT_NOT_REJECTED: 'Payment must be rejected before sending the rejection email.',
+  LEAD_EMAIL_MISSING: 'Team leader email is missing.',
+  INVALID_LEAD_EMAIL: 'The registered leader email is invalid.',
+  EMAIL_SEND_FAILED: 'Failed to send email. Please try again.',
+};
+
 function TeamCell({ row }) {
   return (
     <div className="cpa-cell">
       <span className="cpa-cell__name">{row.teamName}</span>
+      {row.leadEmail && (
+        <span className="cpa-cell__code">{row.leadEmail}</span>
+      )}
     </div>
   );
 }
 
-function buildColumns(onOpen) {
+function buildColumns(onOpen, { emailBusy, onEmailSend, onEmailResend }) {
   return [
     {
       key: 'teamName',
@@ -87,6 +103,18 @@ function buildColumns(onOpen) {
       render: (row) => <StatusBadge status={row.paymentStatus} size="sm" />,
     },
     {
+      key: 'email',
+      label: 'EMAIL',
+      render: (row) => (
+        <EmailStatusCell
+          row={row}
+          busy={emailBusy === row.id}
+          onSend={onEmailSend}
+          onResend={onEmailResend}
+        />
+      ),
+    },
+    {
       key: 'createdAt',
       label: 'REGISTERED',
       sortable: true,
@@ -123,11 +151,11 @@ export default function Teams() {
   const [pageSize, setPageSize] = useState(20);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [exporting, setExporting] = useState('');
+  const [emailBusy, setEmailBusy] = useState('');
+  const [emailDialog, setEmailDialog] = useState(null);
 
   const problems = useAsync(() => adminFetchProblems(), []);
   const colleges = useAsync(() => adminFetchColleges(), []);
-
-  const columns = useMemo(() => buildColumns(setSelectedTeam), []);
 
   const query = useCallback(
     () =>
@@ -149,6 +177,49 @@ export default function Teams() {
     page,
     pageSize,
   ]);
+
+  const sendEmail = useCallback(
+    async (row, kind) => {
+      const isReject = kind === 'reject';
+      setEmailBusy(row.id);
+      try {
+        const result = isReject
+          ? await adminSendRejectionEmail(row.id)
+          : await adminSendVerificationEmail(row.id);
+        if (result?.ok) {
+          if (result.statusUpdated === false) {
+            push('EMAIL SENT \u2014 STATUS NOT RECORDED ON SERVER. CHECK LOGS.', 'error');
+          } else {
+            push(isReject ? 'REJECTION EMAIL SENT' : 'VERIFICATION EMAIL SENT', 'success');
+          }
+          reload();
+        } else {
+          push(EMAIL_MESSAGES[result?.code] ?? result?.error ?? 'FAILED TO SEND EMAIL', 'error');
+        }
+      } catch (err) {
+        push(err?.message || 'FAILED TO SEND EMAIL', 'error');
+      } finally {
+        setEmailBusy('');
+        setEmailDialog(null);
+      }
+    },
+    [push, reload]
+  );
+
+  const handleEmailSend = useCallback(
+    (row, kind) => { sendEmail(row, kind); },
+    [sendEmail]
+  );
+
+  const handleEmailResend = useCallback(
+    (row, kind) => { setEmailDialog({ row, kind }); },
+    []
+  );
+
+  const columns = useMemo(
+    () => buildColumns(setSelectedTeam, { emailBusy, onEmailSend: handleEmailSend, onEmailResend: handleEmailResend }),
+    [handleEmailSend, handleEmailResend, emailBusy]
+  );
 
   useEffect(() => {
     setPage(0);
@@ -284,6 +355,22 @@ export default function Teams() {
           teamId={selectedTeam}
           onClose={() => setSelectedTeam(null)}
           onChanged={reload}
+        />
+      )}
+
+      {emailDialog && (
+        <ConfirmDialog
+          title={emailDialog.kind === 'reject' ? 'RESEND REJECTION EMAIL?' : 'RESEND VERIFICATION EMAIL?'}
+          message={
+            emailDialog.kind === 'reject'
+              ? `A rejection email has already been sent to ${emailDialog.row.rejectionEmailLastSentTo ?? 'the team lead'}. Do you want to send it again?`
+              : `A verification email has already been sent to ${emailDialog.row.verificationEmailLastSentTo ?? 'the team lead'}. Do you want to send it again?`
+          }
+          confirmLabel="RESEND EMAIL"
+          tone="ok"
+          busy={emailBusy === emailDialog.row.id}
+          onCancel={() => setEmailDialog(null)}
+          onConfirm={() => sendEmail(emailDialog.row, emailDialog.kind)}
         />
       )}
     </>
