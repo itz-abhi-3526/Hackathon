@@ -7,7 +7,6 @@ export const HACKATHON = {
   date: "2026-10-17T09:00:00",
   endDate: "2026-10-19T09:00:00",
   location: "NEXUS CAMPUS, BENGALURU",
-  registrationFee: 500,
   minTeamSize: 2,
   maxTeamSize: 4,
 };
@@ -215,7 +214,7 @@ export const FAQ_DATA = [
   {
     id: 4,
     question: "IS THERE A REGISTRATION FEE?",
-    answer: "Yes. The registration fee is ₹500 per team (not per person). This covers venue access, meals during the hackathon, swag kits, mentorship sessions, and infrastructure credits from our technology partners.",
+    answer: "Yes. The registration fee is per team (not per person) and depends on your crew size — a 2-member team pays less than a 4-member team. The exact amount for the current phase is shown on the registration page when you select your team size. The fee covers venue access, meals during the hackathon, swag kits, mentorship sessions, and infrastructure credits from our technology partners.",
   },
   {
     id: 5,

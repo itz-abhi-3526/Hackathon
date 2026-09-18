@@ -48,6 +48,52 @@ export const isValidRole = (value) =>
   value === PARTICIPANT_ROLE.LEAD || value === PARTICIPANT_ROLE.MEMBER;
 
 /**
+ * The ONE authoritative frontend fee lookup.
+ *
+ * Fee exists ONLY when a team size has been selected:
+ *
+ *   teamSize 2 → round.fee_2_members
+ *   teamSize 3 → round.fee_3_members
+ *   teamSize 4 → round.fee_4_members
+ *   otherwise  → null (no default fee, no fallback, never assume a size)
+ *
+ * The amount comes ONLY from the three per-size columns
+ * (registration_rounds.fee_2/3/4_members — the single source of truth;
+ * the legacy generic `fee` column was removed). The DATABASE
+ * (register_team) recomputes the real fee from the active round +
+ * participant count and ignores whatever the browser sends, so this
+ * helper is never authoritative.
+ */
+const toFeeNumber = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+};
+
+export function getRegistrationFee(round, teamSize) {
+  const size = Number(teamSize);
+
+  if (!round || typeof round !== 'object' || !round.id) return null;
+
+  if (size === 2) return toFeeNumber(round.fee_2_members ?? round.fee_2Members);
+  if (size === 3) return toFeeNumber(round.fee_3_members ?? round.fee_3Members);
+  if (size === 4) return toFeeNumber(round.fee_4_members ?? round.fee_4Members);
+  return null;
+}
+
+/** Lowest of the per-size prices — the "FROM ₹X" entry price for
+ *  marketing surfaces that have no team-size selection. Derived only
+ *  from registration_rounds.fee_2/3/4_members; null when no round or
+ *  no prices are configured. */
+export function startingRegistrationFee(round) {
+  let min = null;
+  for (const size of [2, 3, 4]) {
+    const f = getRegistrationFee(round, size);
+    if (f !== null) min = min === null ? f : Math.min(min, f);
+  }
+  return min;
+}
+
+/**
  * Collision-safe client-side registration code. Sent inline with the
  * submit so a retry after a lost response reuses the same team (the
  * RPC a re-submit with the same code updates an existing row instead
@@ -59,16 +105,20 @@ export function generateRegistrationCode() {
   return `VH-2026-${(hex || Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')).slice(0, 6)}`;
 }
 
-/* Structured dev-only failure log with the PostgREST fields every
-   rejected write carries (code / message / details / hint). */
+/* Structured failure log with every PostgREST field a rejected write
+   carries (code / message / details / hint / status). Logged in dev AND
+   production so a failing submission is always diagnosable from the
+   browser console — the friendly copy shown to the user never hides the
+   real database error. */
 function logDbFailure(tag, operation, error) {
-  if (!import.meta.env.DEV) return;
   console.error(`[${tag}] ${operation} failed`, {
-    code: error?.code ?? null,
     message: error?.message ?? null,
+    code: error?.code ?? null,
     details: error?.details ?? null,
     hint: error?.hint ?? null,
-    cause: error,
+    status: error?.status ?? error?.statusCode ?? null,
+    raw: error,
+    rawJson: JSON.stringify(error, Object.getOwnPropertyNames(error)),
   });
 }
 

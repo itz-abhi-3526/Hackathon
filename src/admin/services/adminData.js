@@ -20,9 +20,9 @@ const ROUND_EMBED = '*, teams(count)';
    with teams capped at 4 members this stays lightweight even for paginated
    queries. */
 const TEAM_EMBED =
-  '*, problem_statements(id, track, title, difficulty), participants(full_name, email, role), registration_rounds(id, title, fee, capacity, status)';
+  '*, problem_statements(id, track, title, difficulty), participants(full_name, email, role), registration_rounds(id, title, fee_2_members, fee_3_members, fee_4_members, capacity, status)';
 const PARTICIPANT_EMBED =
-  '*, teams(team_name, college, registration_code, payment_status, problem_statement_id, registration_round_id, registration_fee, problem_statements(id, track, title, difficulty), registration_rounds(id, title, fee, capacity, status))';
+  '*, teams(team_name, college, registration_code, payment_status, problem_statement_id, registration_round_id, registration_fee, problem_statements(id, track, title, difficulty), registration_rounds(id, title, fee_2_members, fee_3_members, fee_4_members, capacity, status))';
 
 export const TEAM_SORTS = {
   teamName: { column: 'team_name', asc: true },
@@ -336,7 +336,9 @@ export function normalizeRound(row) {
     id: row.id,
     title: row.title,
     slug: row.slug ?? '',
-    fee: row.fee,
+    fee2Members: row.fee_2_members,
+    fee3Members: row.fee_3_members,
+    fee4Members: row.fee_4_members,
     capacity: row.capacity,
     status: row.status,
     startsAt: row.starts_at,
@@ -352,18 +354,31 @@ export function normalizeRound(row) {
    Status is intentionally excluded from the editable patch below. */
 export async function adminCreateRound(input) {
   const supabase = getAdminSupabase();
+  const fee2 = Number(input?.fee2Members ?? input?.fee_2_members);
+  const fee3 = Number(input?.fee3Members ?? input?.fee_3_members);
+  const fee4 = Number(input?.fee4Members ?? input?.fee_4_members);
   const row = {
     title: String(input?.title ?? '').trim(),
     slug: slugifyRound(input?.slug || input?.title),
-    fee: Number(input?.fee),
+    fee_2_members: fee2,
+    fee_3_members: fee3,
+    fee_4_members: fee4,
     capacity: Number(input?.capacity),
     starts_at: input?.startsAt || null,
     ends_at: input?.endsAt || null,
     status: ROUND_STATUS.DRAFT,
   };
   if (!row.title) throw new AppError('ROUND TITLE IS REQUIRED', 'ROUND_VALIDATION');
-  if (!Number.isFinite(row.fee) || row.fee < 0)
-    throw new AppError('ROUND FEE MUST BE A POSITIVE NUMBER', 'ROUND_VALIDATION');
+  if (
+    !Number.isFinite(fee2) || fee2 < 0 ||
+    !Number.isFinite(fee3) || fee3 < 0 ||
+    !Number.isFinite(fee4) || fee4 < 0
+  ) {
+    throw new AppError(
+      'EVERY TEAM-SIZE FEE IS REQUIRED — 2, 3 AND 4 MEMBER FEES MUST BE NON-NEGATIVE NUMBERS',
+      'ROUND_VALIDATION'
+    );
+  }
   if (!Number.isInteger(row.capacity) || row.capacity <= 0)
     throw new AppError('ROUND CAPACITY MUST BE A WHOLE NUMBER > 0', 'ROUND_VALIDATION');
   const { data, error } = await supabase.from(T.REGISTRATION_ROUNDS).insert(row).select('*').limit(1);
@@ -377,15 +392,21 @@ export async function adminUpdateRound(id, patch) {
   const row = {};
   if ('title' in patch) row.title = String(patch.title ?? '').trim();
   if ('slug' in patch) row.slug = slugifyRound(patch.slug || patch.title);
-  if ('fee' in patch) row.fee = Number(patch.fee);
+  if ('fee2Members' in patch) row.fee_2_members = Number(patch.fee2Members);
+  if ('fee3Members' in patch) row.fee_3_members = Number(patch.fee3Members);
+  if ('fee4Members' in patch) row.fee_4_members = Number(patch.fee4Members);
   if ('capacity' in patch) row.capacity = Number(patch.capacity);
   if ('startsAt' in patch) row.starts_at = patch.startsAt || null;
   if ('endsAt' in patch) row.ends_at = patch.endsAt || null;
   if (!Object.keys(row).length) return null;
   if (row.title !== undefined && !row.title)
     throw new AppError('ROUND TITLE IS REQUIRED', 'ROUND_VALIDATION');
-  if (row.fee !== undefined && (!Number.isFinite(row.fee) || row.fee < 0))
-    throw new AppError('ROUND FEE MUST BE A POSITIVE NUMBER', 'ROUND_VALIDATION');
+  if (row.fee_2_members !== undefined && (!Number.isFinite(row.fee_2_members) || row.fee_2_members < 0))
+    throw new AppError('2-MEMBER FEE MUST BE A NON-NEGATIVE NUMBER', 'ROUND_VALIDATION');
+  if (row.fee_3_members !== undefined && (!Number.isFinite(row.fee_3_members) || row.fee_3_members < 0))
+    throw new AppError('3-MEMBER FEE MUST BE A NON-NEGATIVE NUMBER', 'ROUND_VALIDATION');
+  if (row.fee_4_members !== undefined && (!Number.isFinite(row.fee_4_members) || row.fee_4_members < 0))
+    throw new AppError('4-MEMBER FEE MUST BE A NON-NEGATIVE NUMBER', 'ROUND_VALIDATION');
   if (row.capacity !== undefined && (!Number.isInteger(row.capacity) || row.capacity <= 0))
     throw new AppError('ROUND CAPACITY MUST BE A WHOLE NUMBER > 0', 'ROUND_VALIDATION');
   const { data, error } = await supabase

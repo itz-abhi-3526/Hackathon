@@ -89,7 +89,7 @@ function CapacityCell({ round }) {
   );
 }
 
-const EMPTY_FORM = { title: '', fee: '', capacity: '', startsAt: '', endsAt: '', status: 'draft' };
+const EMPTY_FORM = { title: '', fee2Members: '', fee3Members: '', fee4Members: '', capacity: '', startsAt: '', endsAt: '', status: 'draft' };
 
 function RoundFormModal({ round, busy, onSave, onCancel }) {
   const editing = Boolean(round);
@@ -97,7 +97,9 @@ function RoundFormModal({ round, busy, onSave, onCancel }) {
     editing
       ? {
           title: round.title ?? '',
-          fee: String(round.fee ?? ''),
+          fee2Members: String(round.fee2Members ?? ''),
+          fee3Members: String(round.fee3Members ?? ''),
+          fee4Members: String(round.fee4Members ?? ''),
           capacity: String(round.capacity ?? ''),
           startsAt: isoToLocalInput(round.startsAt),
           endsAt: isoToLocalInput(round.endsAt),
@@ -111,7 +113,9 @@ function RoundFormModal({ round, busy, onSave, onCancel }) {
     e.preventDefault();
     onSave({
       title: form.title.trim(),
-      fee: form.fee === '' ? undefined : Number(form.fee),
+      fee2Members: form.fee2Members === '' ? undefined : Number(form.fee2Members),
+      fee3Members: form.fee3Members === '' ? undefined : Number(form.fee3Members),
+      fee4Members: form.fee4Members === '' ? undefined : Number(form.fee4Members),
       capacity: form.capacity === '' ? undefined : Number(form.capacity),
       startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : null,
       endsAt: form.endsAt ? new Date(form.endsAt).toISOString() : null,
@@ -145,15 +149,44 @@ function RoundFormModal({ round, busy, onSave, onCancel }) {
 
           <div className="cpa-form__row">
             <label className="cpa-field">
-              <span className="cpa-field__label">FEE (₹) *</span>
+              <span className="cpa-field__label">REGISTRATION FEE (₹) * — 2 MEMBERS</span>
               <input
                 className="cpa-field__input"
                 type="number"
                 min="0"
                 step="0.01"
-                value={form.fee}
-                onChange={set('fee')}
-                placeholder="999"
+                value={form.fee2Members}
+                onChange={set('fee2Members')}
+                placeholder="150"
+                required
+              />
+            </label>
+            <label className="cpa-field">
+              <span className="cpa-field__label">REGISTRATION FEE (₹) * — 3 MEMBERS</span>
+              <input
+                className="cpa-field__input"
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.fee3Members}
+                onChange={set('fee3Members')}
+                placeholder="200"
+                required
+              />
+            </label>
+          </div>
+
+          <div className="cpa-form__row">
+            <label className="cpa-field">
+              <span className="cpa-field__label">REGISTRATION FEE (₹) * — 4 MEMBERS</span>
+              <input
+                className="cpa-field__input"
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.fee4Members}
+                onChange={set('fee4Members')}
+                placeholder="250"
                 required
               />
             </label>
@@ -207,7 +240,7 @@ function RoundFormModal({ round, busy, onSave, onCancel }) {
           </div>
 
           <p className="cpa-form__note">
-            ONLY ONE ROUND CAN BE ACTIVE AT A TIME — ACTIVATING A DRAFT / REOPENING A CLOSED ROUND PROMPTLY CLOSES THE CURRENT ACTIVE ONE. CAPACITY COUNTS TEAMS, NOT PARTICIPANTS. DEACTIVATING A ROUND WITH REGISTERED TEAMS ONLY STOPS FUTURE SIGN-UPS; THE TEAMS ALREADY IN IT ARE UNCHANGED.
+            THE THREE FEES ARE THE PRICE PER TEAM BY CREW SIZE — 2, 3 AND 4 MEMBERS. EACH TEAM IS CHARGED THE FEE FOR ITS SELECTED SIZE. ONLY ONE ROUND CAN BE ACTIVE AT A TIME — ACTIVATING A DRAFT / REOPENING A CLOSED ROUND PROMPTLY CLOSES THE CURRENT ACTIVE ONE. CAPACITY COUNTS TEAMS, NOT PARTICIPANTS. DEACTIVATING A ROUND WITH REGISTERED TEAMS ONLY STOPS FUTURE SIGN-UPS; THE TEAMS ALREADY IN IT ARE UNCHANGED.
           </p>
         </div>
 
@@ -328,7 +361,7 @@ export default function Rounds() {
         case 'title':
           return String(r.title ?? '').toLowerCase();
         case 'fee':
-          return Number(r.fee ?? 0);
+          return Number(r.fee2Members ?? 0);
         case 'capacity':
           return Number(r.capacity ?? 0);
         case 'registered':
@@ -364,7 +397,13 @@ export default function Rounds() {
       </div>
     ), className: 'cpa-grid--grow' },
     { key: 'status', label: 'STATUS', render: (r) => <RoundStatus round={r} /> },
-    { key: 'fee', label: 'FEE', sortable: true, render: (r) => <span className="cpa-nowrap">{feeLabel(r.fee)}</span> },
+    { key: 'fee', label: 'FEE 2/3/4', sortable: true, render: (r) => (
+      <div className="cpa-cell">
+        <span className="cpa-cell__code">{feeLabel(r.fee2Members)}</span>
+        <span className="cpa-cell__code">{feeLabel(r.fee3Members)}</span>
+        <span className="cpa-cell__code">{feeLabel(r.fee4Members)}</span>
+      </div>
+    ) },
     { key: 'capacity', label: 'SLOTS', sortable: true, render: (r) => <CapacityCell round={r} /> },
     { key: 'registered', label: 'REGISTERED', sortable: true, align: 'center', render: (r) => <span className="cpa-num">{String(r.registered).padStart(2, '0')}</span> },
     { key: 'remaining', label: 'REMAINING', sortable: true, align: 'center', render: (r) => <span className="cpa-num">{String(Math.max(0, r.capacity - r.registered)).padStart(2, '0')}</span> },
@@ -467,7 +506,7 @@ export default function Rounds() {
         <StatCard
           label="ACTIVE ROUND"
           value={activeRound ? String(activeRound.title).toUpperCase() : 'NONE'}
-          hint={activeRound ? `${feeLabel(activeRound.fee)} / TEAM · ${activeRound.registered} REGISTERED` : !hasAnyRound ? 'NO REGISTRATION ROUNDS CONFIGURED' : 'NO ACTIVE REGISTRATION PHASE'}
+          hint={activeRound ? `${feeLabel(activeRound.fee2Members)} · ${feeLabel(activeRound.fee3Members)} · ${feeLabel(activeRound.fee4Members)} /TEAM BY SIZE · ${activeRound.registered} REGISTERED` : !hasAnyRound ? 'NO REGISTRATION ROUNDS CONFIGURED' : 'NO ACTIVE REGISTRATION PHASE'}
           tone={activeRound ? 'ok' : ''}
         />
         <StatCard label="TOTAL ROUNDS" value={rounds.length} hint="ALL PHASES (DRAFT + ACTIVE + CLOSED)" />

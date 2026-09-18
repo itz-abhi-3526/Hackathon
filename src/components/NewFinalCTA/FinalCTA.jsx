@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import { getActiveRegistrationRound } from '../../services/registrationService.js';
-import { HACKATHON } from '../../data/index.js';
+import { getActiveRegistrationRound, startingRegistrationFee } from '../../services/registrationService.js';
 import './FinalCTA.css';
 
 export default function FinalCTA({ onRegister, progress }) {
@@ -20,18 +19,20 @@ export default function FinalCTA({ onRegister, progress }) {
   }, []);
 
   /* The published fee comes from the active registration round, never a
-     hardcoded price. The constant is only the pre-rounds legacy value. */
+     hardcoded price. With per-team-size pricing the entry ("FROM")
+     price shown here is the lowest of the configured fees — set only
+     from the database payload; otherwise the readout stays "FROM ₹—". */
   useEffect(() => {
     let alive = true;
     (async () => {
-      let f = HACKATHON.registrationFee;
+      let f = null;
       try {
         const round = await getActiveRegistrationRound();
-        if (round?.id && round.open === true && Number.isFinite(Number(round.fee))) {
-          f = Number(round.fee);
+        if (round?.id && round.open === true) {
+          f = startingRegistrationFee(round);
         }
       } catch {
-        f = HACKATHON.registrationFee;
+        /* keep null — never invent a price */
       }
       if (alive) setFee(f);
     })();
@@ -94,7 +95,7 @@ export default function FinalCTA({ onRegister, progress }) {
         <motion.div className="finalcta__meta" style={{ opacity: typeA }}>
           <div className="finalcta__meta-rule" aria-hidden="true" />
           <div className="finalcta__meta-row">
-            <span className="finalcta__meta-item">{fee === null ? '\u20B9\u2014' : `\u20B9${fee}`} / TEAM</span>
+            <span className="finalcta__meta-item">{fee === null ? 'FROM \u20B9\u2014' : `FROM \u20B9${fee}`} / TEAM</span>
             <span className="finalcta__meta-item">02—04 / CREW</span>
             <span className="finalcta__meta-item">17—19 / OCT 2026</span>
           </div>

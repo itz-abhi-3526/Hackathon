@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HACKATHON } from '../../data/index.js';
 import { PARTICIPANT_ROLE } from '../../lib/schema.js';
-import { isParticipantComplete } from '../../services/registrationService.js';
+import { isParticipantComplete, getRegistrationFee, startingRegistrationFee } from '../../services/registrationService.js';
 import useRegistration from '../../hooks/useRegistration.js';
 import {
   ACCEPTED_PROOF_TYPES,
@@ -66,14 +66,14 @@ const inrLabel = (fee) => {
 };
 
 /* The fee is NEVER hardcoded on the form: it always comes from the
-   active registration round (registration_rounds.fee). The constant is
-   only a fallback for the pre-rounds legacy flow. */
-const activeFee = (store) => {
-  const n = Number(store?.round?.fee);
-  return Number.isFinite(n) && n >= 0 ? n : HACKATHON.registrationFee;
-};
+   active registration round, keyed by the SELECTED TEAM SIZE
+   (fee_2_members / fee_3_members / fee_4_members from the round).
+   Display only — register_team recomputes the authoritative fee
+   server-side and ignores whatever the browser sends. */
+const activeFee = (store) =>
+  getRegistrationFee(store?.round, store?.team?.size);
 
-function RoundBanner({ round }) {
+function RoundBanner({ round, hasSize }) {
   const remaining = Math.max(Number(round?.remaining ?? 0), 0);
   const capacity = Number(round?.capacity ?? 0);
   const pct = capacity ? Math.min(100, (Number(round?.registered ?? 0) / capacity) * 100) : 0;
@@ -84,9 +84,11 @@ function RoundBanner({ round }) {
         <span className="reg__round-title">
           {`${String(round?.title ?? 'REGISTRATION').toUpperCase()}${round?.title ? ' REGISTRATION' : ''}`}
         </span>
-        <span className="reg__round-fee">
-          {inrLabel(round?.fee)} <em>/ TEAM</em>
-        </span>
+        {hasSize && (
+          <span className="reg__round-fee">
+            FROM {inrLabel(startingRegistrationFee(round))} <em>/ TEAM</em>
+          </span>
+        )}
         <span className="reg__round-cap">
           {capacity ? `${remaining} OF ${capacity} TEAM SLOTS AVAILABLE` : '\u00D7'}
         </span>
@@ -149,7 +151,7 @@ function RegistrationGate({ round, onExit }) {
         {note && <p className="reg__fatal-note">{note}</p>}
         {hasRound && !isFull && (
           <p className="reg__fatal-note">
-            {inrLabel(round.fee)} / TEAM &middot; {remaining} OF {round.capacity} TEAM SLOTS AVAILABLE
+            FROM {inrLabel(startingRegistrationFee(round))} / TEAM &middot; {remaining} OF {round.capacity} TEAM SLOTS AVAILABLE
           </p>
         )}
         <span className="reg__fatal-code">{tag}</span>
@@ -173,6 +175,7 @@ const barCodeFrom = (str) => {
    ═══════════════════════════════════════════════════════════════ */
 
 function BookingSummary({ store, onExit }) {
+  const hasSize = Boolean(store.teamSizeSelected && store.team.size);
   return (
     <aside className="bk">
       <div className="bk__inner">
@@ -206,7 +209,9 @@ function BookingSummary({ store, onExit }) {
 
         <div className="bk__total">
           <span className="bk__label">TOTAL</span>
-          <span className="bk__price">{'\u20B9'}{activeFee(store)}</span>
+          <span className="bk__price">
+            {hasSize ? `\u20B9${activeFee(store) ?? '\u2014'}` : 'SELECT TEAM SIZE'}
+          </span>
         </div>
       </div>
 
@@ -220,6 +225,7 @@ function BookingSummary({ store, onExit }) {
    ═══════════════════════════════════════════════════════════════ */
 
 function MobileBar({ store }) {
+  const hasSize = Boolean(store.teamSizeSelected && store.team.size);
   return (
     <div className="mbar">
       <div className="mbar__row">
@@ -238,7 +244,9 @@ function MobileBar({ store }) {
       </div>
       <div className="mbar__total">
         <span className="mbar__label">TOTAL</span>
-        <span className="mbar__price">{'\u20B9'}{activeFee(store)}</span>
+        <span className="mbar__price">
+          {hasSize ? `\u20B9${activeFee(store) ?? '\u2014'}` : 'SELECT TEAM SIZE'}
+        </span>
       </div>
     </div>
   );
@@ -365,6 +373,11 @@ function StepCrewSize({ store }) {
             <span className="sz__num">{String(s.value).padStart(2, '0')}</span>
             <span className="sz__label">{s.label}</span>
             <span className="sz__desc">{s.desc}</span>
+            <span className="sz__fee">
+              {store?.round?.[`fee_${s.value}_members`] != null
+                ? inrLabel(store.round[`fee_${s.value}_members`])
+                : '\u2014'}
+            </span>
           </motion.button>
         ))}
       </div>
@@ -989,6 +1002,11 @@ function SuccessPass({ store, onExit }) {
                   </div>
                 </div>
 
+                <div className="ticket__fee">
+                  <span className="ticket__fee-label">REGISTRATION FEE</span>
+                  <span className="ticket__fee-val">{store.registrationFee ? inrLabel(store.registrationFee) : '\u2014'}</span>
+                </div>
+
                 <div className="ticket__crew">
                   {store.players.map((p, i) => (
                     <div key={p.id} className="ticket__member">
@@ -1279,7 +1297,7 @@ export default function Registration({ onExit }) {
 
       <div className="reg__layout">
         <div className="reg__main">
-          {store.round && store.round.open === true && <RoundBanner round={store.round} />}
+          {store.round && store.round.open === true && <RoundBanner round={store.round} hasSize={Boolean(store.teamSizeSelected && store.team.size)} />}
 
           <div className="reg__steps-bar">
             {STEPS.map((s) => (
