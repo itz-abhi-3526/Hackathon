@@ -75,6 +75,11 @@ const useRegistrationStore = create((set, get) => ({
   completedSteps: [],
 
   team: { ...EMPTY_TEAM },
+  /* True from the first explicit Step 02 (TEAM SIZE) selection. The
+     sidebar/mobile TOTAL only becomes a real amount after a size is
+     chosen — until then Step 01 stays price-neutral and shows
+     "SELECT TEAM SIZE" even though the store's default size is 2. */
+  teamSizeSelected: false,
   players: [createEmptyPlayer(1), createEmptyPlayer(2)],
   problemStatement: null,
 
@@ -127,6 +132,10 @@ const useRegistrationStore = create((set, get) => ({
   paymentStatus: '',
   submittedAt: null,
   isSubmitting: false,
+  /* Authoritative fee returned by register_team for THIS team (active
+     round + team size). Displayed on the success pass; never edited
+     client-side. */
+  registrationFee: null,
 
   setStep: (step) => set({ currentStep: step }),
 
@@ -156,7 +165,7 @@ const useRegistrationStore = create((set, get) => ({
     }
     const team = { ...state.team, size };
     writeSession(serialize(state.currentStep, state, team, newPlayers, state.problemStatement, state.payment));
-    return { team, players: newPlayers };
+    return { team, players: newPlayers, teamSizeSelected: true };
   }),
 
   /* Exactly one lead — setting one clears every other. */
@@ -394,7 +403,7 @@ const useRegistrationStore = create((set, get) => ({
     loading: { ...state.loading, submitting: value },
   })),
 
-  finalizeSubmission: ({ registrationCode, paymentStatus, submittedAt, teamId }) => {
+  finalizeSubmission: ({ registrationCode, paymentStatus, submittedAt, teamId, registrationFee }) => {
     const code = registrationCode || get().registrationCode || '';
     if (code) {
       /* mark the run as done so a refresh lands on the success state
@@ -405,6 +414,10 @@ const useRegistrationStore = create((set, get) => ({
       registrationCode: code,
       paymentStatus: paymentStatus || 'submitted',
       submittedAt: submittedAt || new Date().toISOString(),
+      registrationFee:
+        registrationFee !== undefined && registrationFee !== null
+          ? Number(registrationFee)
+          : get().registrationFee,
       currentStep: 5,
       completedSteps: [0, 1, 2, 3, 4],
       teamId: teamId || get().teamId,
@@ -470,6 +483,16 @@ const useRegistrationStore = create((set, get) => ({
       payment,
       teamId: session.teamId ?? null,
       registrationCode: session.registrationCode ?? '',
+      /* A stored session that reached Step 02+ has already had its team
+         size fixed — treat that as "selected" so a refresh keeps showing
+         the chosen amount instead of reverting to "SELECT TEAM SIZE". */
+      teamSizeSelected:
+        session.teamSizeSelected ??
+        (Number(session.step) >= 1 && Boolean(session.team?.size)),
+      registrationFee:
+        session.registrationFee !== undefined && session.registrationFee !== null
+          ? Number(session.registrationFee)
+          : null,
       currentStep: session.finished
         ? 5
         : Math.min(Math.max(Number(session.step) || 0, 0), 4),
@@ -493,6 +516,7 @@ const useRegistrationStore = create((set, get) => ({
       currentStep: 0,
       completedSteps: [],
       team: { ...EMPTY_TEAM },
+      teamSizeSelected: false,
       players: [createEmptyPlayer(1), createEmptyPlayer(2)],
       problemStatement: null,
       teamId: null,
@@ -512,6 +536,7 @@ const useRegistrationStore = create((set, get) => ({
       paymentStatus: '',
       submittedAt: null,
       isSubmitting: false,
+      registrationFee: null,
       stepError: '',
       bootError: '',
       bootErrorCode: '',
@@ -565,6 +590,11 @@ function serialize(step, state, team, players, problemStatement, payment) {
     step,
     teamId: state?.teamId ?? null,
     registrationCode: state?.registrationCode ?? '',
+    teamSizeSelected: Boolean(state?.teamSizeSelected),
+    registrationFee:
+      state?.registrationFee !== undefined && state?.registrationFee !== null
+        ? Number(state.registrationFee)
+        : null,
     team,
     players: players.map((p) => ({
       id: p.id,

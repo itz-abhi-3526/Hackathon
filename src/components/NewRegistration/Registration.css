@@ -721,6 +721,16 @@
   max-width: 140px;
 }
 
+.sz__fee {
+  margin-top: var(--vh-space-2);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.16em;
+  color: var(--vh-red);
+}
+
+.sz--on .sz__fee { color: var(--vh-white); }
+
 /* ── Step 03: Member Passes ── */
 .step__passes {
   display: flex;
@@ -1862,6 +1872,29 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--vh-white);
+}
+
+.ticket__fee {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--vh-space-3);
+  padding: var(--vh-space-2) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ticket__fee-label {
+  font-family: var(--vh-font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.25em;
+  color: var(--vh-white-faint);
+}
+
+.ticket__fee-val {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-xl);
+  line-height: 1;
+  color: var(--vh-red);
 }
 
 .ticket__crew {

@@ -123,7 +123,9 @@ export function roundsColumns() {
   return [
     { label: 'Round Title', width: 28, value: (r) => r.title },
     { label: 'Status', width: 12, value: (r) => String(r.status ?? '').toUpperCase() },
-    { label: 'Registration Fee', width: 14, value: (r) => (r.fee ?? '') },
+    { label: 'Fee 2 Members', width: 14, value: (r) => (r.fee2Members ?? '') },
+    { label: 'Fee 3 Members', width: 14, value: (r) => (r.fee3Members ?? '') },
+    { label: 'Fee 4 Members', width: 14, value: (r) => (r.fee4Members ?? '') },
     { label: 'Capacity', width: 10, value: (r) => r.capacity },
     { label: 'Registered Teams', width: 16, value: (r) => r.registered },
     { label: 'Remaining Slots', width: 16, value: (r) => Math.max(0, r.capacity - r.registered) },

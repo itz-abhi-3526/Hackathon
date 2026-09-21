@@ -73,7 +73,7 @@ export default function useRegistration() {
     } catch (err) {
       if (err?.code === 'ROUNDS_RPC_MISSING') {
         /* public_active_round() is absent â€” the rounds migrations were
-           not deployed. This must NOT silently become the â‚¹500 legacy
+           not deployed. This must NOT silently become the flat-fee legacy
            flow while a round system is expected: surface a clean
            service-unavailable state instead. */
         console.error(

@@ -5,7 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useCountdown } from '../../hooks/index.js';
 import { HACKATHON } from '../../data/index.js';
 import { fetchProblemAvailability } from '../../services/problemService.js';
-import { getActiveRegistrationRound } from '../../services/registrationService.js';
+import { getActiveRegistrationRound, startingRegistrationFee } from '../../services/registrationService.js';
 import './Hero.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -50,21 +50,22 @@ export default function Hero({ onRegister }) {
     return () => { alive = false; };
   }, []);
 
-  /* The registration fee is the ADMIN-CONFIGURED active round's fee —
-     the legacy constant is a fallback only for the pre-rounds/degraded
-     legacy flow. Shown as a placeholder until the round resolves so a
-     stale hardcoded price never flashes. */
+  /* The registration fee is the ADMIN-CONFIGURED active round's fee,
+     keyed by team size — the entry ("FROM") price is the lowest of the
+     per-size fees. It comes ONLY from the database round payload; there
+     is no hardcoded fallback. The readout shows "FROM ₹—" until a real
+     active round resolves. */
   useEffect(() => {
     let alive = true;
     (async () => {
-      let fee = HACKATHON.registrationFee;
+      let fee = null;
       try {
         const round = await getActiveRegistrationRound();
-        if (round?.id && round.open === true && Number.isFinite(Number(round.fee))) {
-          fee = Number(round.fee);
+        if (round?.id && round.open === true) {
+          fee = startingRegistrationFee(round);
         }
       } catch {
-        fee = HACKATHON.registrationFee;
+        /* keep null — never invent a price */
       }
       if (alive) setHeroFee(fee);
     })();
@@ -307,7 +308,7 @@ export default function Hero({ onRegister }) {
           </div>
 
           <div className="hero__bar-act">
-            <span className="hero__fee">₹{heroFee === null ? '\u2014' : heroFee} / TEAM</span>
+            <span className="hero__fee">FROM ₹{heroFee === null ? '\u2014' : heroFee} / TEAM</span>
             <motion.button
               className="hero__cta"
               onClick={onRegister}

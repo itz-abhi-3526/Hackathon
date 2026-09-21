@@ -176,7 +176,7 @@ export default function Overview({ onOpenTeam, refreshToken = 0 }) {
               value={data?.activeRound ? String(data.activeRound.title).toUpperCase() : 'NONE'}
               hint={
                 data?.activeRound
-                  ? `${feeLabel(data.activeRound.fee)} / TEAM · ${Math.max(0, data.activeRound.capacity - data.activeRound.registered)} SLOTS LEFT · ${data.activeRound.registered} REGISTERED`
+                  ? `${feeLabel(data.activeRound.fee2Members)} · ${feeLabel(data.activeRound.fee3Members)} · ${feeLabel(data.activeRound.fee4Members)} /TEAM BY SIZE · ${Math.max(0, data.activeRound.capacity - data.activeRound.registered)} SLOTS LEFT · ${data.activeRound.registered} REGISTERED`
                   : 'NO ACTIVE REGISTRATION PHASE'
               }
               tone={data?.activeRound ? 'ok' : ''}
