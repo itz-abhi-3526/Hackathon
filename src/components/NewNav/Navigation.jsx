@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NAV_LINKS, NAV_GROUPS } from '../../data/index.js';
+import { LEADERBOARD_URL } from '../../lib/config.js';
 import './Navigation.css';
 
 const PANEL = {
@@ -73,10 +74,15 @@ export default function Navigation({ onRegister }) {
             ))}
           </div>
 
-          {/* Register */}
-          <button className="nav__register" onClick={onRegister}>
-            REGISTER
-          </button>
+          {/* CTAs — leaderboard redirects to its own standalone site, register stays primary */}
+          <div className="nav__cta">
+            <a className="nav__leaderboard" href={LEADERBOARD_URL}>
+              LEADERBOARD
+            </a>
+            <button className="nav__register" onClick={onRegister}>
+              REGISTER
+            </button>
+          </div>
 
           {/* Mobile Toggle */}
           <button
@@ -147,6 +153,15 @@ export default function Navigation({ onRegister }) {
             >
               <span className="nav__mobile-register-line">{'/>'} REGISTER NOW</span>
             </motion.button>
+
+            <motion.a
+              className="nav__mobile-leaderboard"
+              href={LEADERBOARD_URL}
+              variants={ITEM}
+              onClick={() => setMobileOpen(false)}
+            >
+              <span className="nav__mobile-leaderboard-line">{'▤'} LIVE SCORES</span>
+            </motion.a>
 
             <div className="nav__mobile-foot">
               <span>VOIDHACK 2026</span>

@@ -14,6 +14,8 @@ export const SIDEBAR_ITEMS = [
   { view: 'participants', label: 'PARTICIPANTS', icon: '◉' },
   { view: 'problem-statements', label: 'PROBLEM STATEMENTS', icon: '✎' },
   { view: 'rounds', label: 'REGISTRATION', icon: '◫' },
+  { view: 'leaderboard', label: 'LEADERBOARD', icon: '▤' },
+  { view: 'judging', label: 'JUDGING', icon: '✓' },
   { view: 'payments', label: 'PAYMENTS', icon: '₹' },
   { view: 'reports', label: 'REPORTS / DOWNLOADS', icon: '⇩' },
 ];
@@ -24,6 +26,8 @@ const VIEW_TITLES = {
   participants: 'PARTICIPANTS',
   'problem-statements': 'PROBLEM STATEMENTS',
   rounds: 'REGISTRATION ROUNDS',
+  leaderboard: 'LEADERBOARD',
+  judging: 'JUDGING',
   payments: 'PAYMENTS',
   reports: 'REPORTS & DOWNLOADS',
 };

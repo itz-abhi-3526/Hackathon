@@ -17,6 +17,13 @@ export const CLOUDINARY_CLOUD_NAME =
 export const CLOUDINARY_UPLOAD_PRESET =
   import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? '';
 
+/* The live scoreboard lives on its OWN standalone website. The nav's
+   LEADERBOARD button redirects there. In dev the scoreboard runs on
+   http://localhost:5174 (Vite's next free port while the main site
+   holds 5173). Set VITE_LEADERBOARD_URL to the real deployed URL. */
+export const LEADERBOARD_URL =
+  import.meta.env.VITE_LEADERBOARD_URL || 'http://localhost:5174';
+
 export function isSupabaseConfigured() {
   return Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 }

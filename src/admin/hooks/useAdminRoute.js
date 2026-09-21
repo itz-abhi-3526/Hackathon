@@ -15,6 +15,8 @@ export const ADMIN_VIEWS = {
   participants: 'participants',
   'problem-statements': 'problem-statements',
   rounds: 'rounds',
+  leaderboard: 'leaderboard',
+  judging: 'judging',
   payments: 'payments',
   reports: 'reports',
 };

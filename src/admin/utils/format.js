@@ -7,7 +7,7 @@
 const DASH = '\u2014';
 
 export function codeFor(team) {
-  const code = String(team?.registration_code ?? '').trim();
+  const code = String(team?.registration_code ?? team?.registrationCode ?? '').trim();
   if (code) return code;
   const suffix = String(team?.id ?? '').replace(/[^a-f0-9]/gi, '').slice(-6).toUpperCase();
   return suffix ? `VH-2026-${suffix}` : DASH;

@@ -93,6 +93,31 @@
   width: 100%;
 }
 
+/* ── CTA cluster (leaderboard + register) ── */
+.nav__cta {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+}
+
+/* ── Leaderboard Button (secondary CTA) ── */
+.nav__leaderboard {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.18em;
+  padding: 0.62rem 1.1rem;
+  color: var(--vh-white-dim);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+
+.nav__leaderboard:hover {
+  color: var(--vh-white);
+  border-color: var(--vh-red);
+  background: rgba(232, 22, 5, 0.08);
+}
+
 /* ── Register Button ── */
 .nav__register {
   font-family: var(--vh-font-display);
@@ -279,6 +304,24 @@
   left: 110%;
 }
 
+/* ── Mobile Leaderboard Button (secondary) ── */
+.nav__mobile-leaderboard {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-lg);
+  letter-spacing: 0.12em;
+  color: var(--vh-red);
+  background: transparent;
+  border: 1px solid rgba(232, 22, 5, 0.55);
+  margin-top: var(--vh-space-3);
+  padding: var(--vh-space-4) var(--vh-space-6);
+  text-align: left;
+  transition: background 0.3s var(--vh-ease-out), color 0.3s;
+}
+
+.nav__mobile-leaderboard:active {
+  background: rgba(232, 22, 5, 0.12);
+}
+
 .nav__mobile-foot {
   margin-top: auto;
   padding-top: var(--vh-space-6);
@@ -304,7 +347,7 @@
     display: none;
   }
 
-  .nav__register {
+  .nav__cta {
     display: none;
   }
 

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { LEADERBOARD_URL } from '../../lib/config.js';
 import './Footer.css';
 
 const COLUMNS = [
@@ -27,6 +28,7 @@ const COLUMNS = [
     label: 'INFO',
     links: [
       { label: 'FAQ', href: '#faq' },
+      { label: 'LEADERBOARD', href: LEADERBOARD_URL },
       { label: 'REGISTER', href: '#register', featured: true },
     ],
   },

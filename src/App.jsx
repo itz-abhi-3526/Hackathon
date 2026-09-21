@@ -48,7 +48,8 @@ export default function App() {
 
   useEffect(() => {
     const syncHash = () => {
-      if (window.location.hash.startsWith('#admin')) setPhase('admin');
+      const hash = window.location.hash;
+      if (hash.startsWith('#admin')) setPhase('admin');
     };
     window.addEventListener('hashchange', syncHash);
     syncHash();

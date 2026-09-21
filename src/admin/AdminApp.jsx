@@ -21,6 +21,8 @@ import Participants from './pages/Participants.jsx';
 import ProblemStatements from './pages/ProblemStatements.jsx';
 import Payments from './pages/Payments.jsx';
 import Rounds from './pages/Rounds.jsx';
+import Leaderboard from './pages/Leaderboard.jsx';
+import Judging from './pages/Judging.jsx';
 import Reports from './pages/Reports.jsx';
 import './admin.css';
 
@@ -46,6 +48,10 @@ function PageFor({ view, onOpenTeam, refreshToken }) {
       return <ProblemStatements />;
     case 'rounds':
       return <Rounds />;
+    case 'leaderboard':
+      return <Leaderboard />;
+    case 'judging':
+      return <Judging />;
     case 'payments':
       return <Payments />;
     case 'reports':

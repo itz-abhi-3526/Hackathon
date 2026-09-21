@@ -57,19 +57,16 @@ const transporter =
       })
     : null;
 
-/* Escape admin-supplied text before embedding it in HTML mail. */
-const esc = (value) =>
-  String(value ?? '').replace(/[&<>"']/g, (char) => {
-    switch (char) {
-      case '&': return '&amp;';
-      case '<': return '&lt;';
-      case '>': return '&gt;';
-      case '"': return '&quot;';
-      default: return '&#39;';
-    }
-  });
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 
-/* Generic email sender */
+
+/* Generic transactional email sender */
 const sendEmail = async ({ to, subject, text, html, attachments }) => {
   if (!transporter) {
     console.error(
@@ -79,7 +76,19 @@ const sendEmail = async ({ to, subject, text, html, attachments }) => {
   }
 
   try {
-    const mailOptions = { from: EMAIL_FROM, to, subject, text, html };
+    // When sending through Gmail SMTP, the From address must align with SMTP_USER
+    // to prevent SPF/DMARC alignment failure.
+    const senderEmail = SMTP_USER || EMAIL_FROM;
+    const fromAddress = `"VoidHack 2026" <${senderEmail}>`;
+
+    const mailOptions = {
+      from: fromAddress,
+      to,
+      subject,
+      text,
+      html,
+      replyTo: Deno.env.get('EMAIL_REPLY_TO') || senderEmail,
+    };
 
     if (attachments && attachments.length > 0) {
       mailOptions.attachments = attachments.map((attachment) => ({
@@ -132,101 +141,13 @@ const sendVerificationEmail = async (registration) => {
     return false;
   }
 
-  const subject = `Verification Successful — ${registration.name}`;
-
-  const text = [
-    `Hello Team ${registration.name},`,
-    '',
-    "We're happy to let you know that your registration for VOIDHACK 2026 — the 24-hour hackathon — has been successfully verified! 🎉",
-    '',
-    "Your team's entry is confirmed and your spot is locked in. Gear up for 24 hours of building, breaking, and shipping.",
-    '',
-    'What to Expect',
-    '',
-    '🚀 24-Hour Build Sprint',
-    'Start from zero, build something remarkable, and demo it before time runs out.',
-    '',
-    '👨‍🏫 Mentors & Workshops',
-    'Get hands-on support from mentors and level up with rapid-fire workshops.',
-    '',
-    '🏆 Prizes & Recognition',
-    'Top teams take home prizes, swag, and serious bragging rights.',
-    '',
-    '🎉 Opening & Closing Ceremonies',
-    'Kick things off with an opening ceremony and wrap up with demos and the winner showcase.',
-    '',
-    'Registration Code: ' + (registration.registrationCode || '—'),
-    'Registration Status: Verified ✅',
-    '',
-    "Your registration is complete. All that's left is to bring your A-game, your team, and your late-night snacks.",
-    '',
-    "We can't wait to see what you build at VOIDHACK 2026!",
-    '',
-    'See you there! 🚀',
-    '',
-    'VOIDHACK 2026 Team',
-  ].join('\n');
-
-  const html = `
-    <p>Hello Team ${esc(registration.name)},</p>
-
-    <p>
-      We're happy to let you know that your registration for
-      <strong>VOIDHACK 2026 — the 24-hour hackathon</strong>
-      has been successfully verified! 🎉
-    </p>
-
-    <p>
-      Your team's entry is confirmed and your spot is locked in.
-      Gear up for 24 hours of building, breaking, and shipping.
-    </p>
-
-    <p><strong>What to Expect</strong></p>
-
-    <p>
-      🚀 <strong>24-Hour Build Sprint</strong><br />
-      Start from zero, build something remarkable, and demo it before time runs out.
-    </p>
-
-    <p>
-      👨‍🏫 <strong>Mentors &amp; Workshops</strong><br />
-      Get hands-on support from mentors and level up with rapid-fire workshops.
-    </p>
-
-    <p>
-      🏆 <strong>Prizes &amp; Recognition</strong><br />
-      Top teams take home prizes, swag, and serious bragging rights.
-    </p>
-
-    <p>
-      🎉 <strong>Opening &amp; Closing Ceremonies</strong><br />
-      Kick things off with an opening ceremony and wrap up with demos and the winner showcase.
-    </p>
-
-    <p>
-      Registration Code: <strong>${esc(registration.registrationCode) || '—'}</strong><br />
-      Registration Status: <strong>Verified ✅</strong>
-    </p>
-
-    <p>
-      Your registration is complete. All that's left is to bring your
-      A-game, your team, and your late-night snacks.
-    </p>
-
-    <p>We can't wait to see what you build at VOIDHACK 2026!</p>
-
-    <p>See you there! 🚀</p>
-
-    <p>
-      VOIDHACK 2026 Team
-    </p>
-  `;
+  const teamName = String(registration.name || 'Participant').trim();
+  const subject = `VoidHack 2026: Confirmation for Team ${teamName}`;
 
   const sent = await sendEmail({
     to: recipients,
     subject,
-    text,
-    html,
+    text: 'famous',
   });
 
   return sent;
@@ -245,96 +166,13 @@ const sendRejectionEmail = async (registration) => {
     return false;
   }
 
-  const subject = `Registration Update — ${registration.name}`;
-
-  const screenshotUrl = paymentScreenshotLink(registration);
-
-  const rejectionReason =
-    registration.rejectionReason || 'Not provided';
-
-  const screenshotNote = screenshotUrl
-    ? [
-        '',
-        'Your uploaded payment screenshot can be viewed here:',
-        screenshotUrl,
-        '',
-      ]
-    : [];
-
-  const text = [
-    `Hello Team ${registration.name},`,
-    '',
-    'Thank you for registering for VOIDHACK 2026 — the 24-hour hackathon.',
-    '',
-    'During verification, we found an issue with the data/payment details you submitted, and unfortunately your registration could not be confirmed at this time.',
-    '',
-    'Reason for Rejection',
-    rejectionReason,
-    '',
-    ...screenshotNote,
-    "If you'd like to resolve this and complete your registration, please get in touch with us as soon as possible.",
-    '',
-    'Registration Code: ' + (registration.registrationCode || '—'),
-    'Registration Status: Rejected ❌',
-    '',
-    'We hope to get this sorted out with you soon so you can join us at VOIDHACK 2026!',
-    '',
-    'VOIDHACK 2026 Team',
-  ].join('\n');
-
-  const html = `
-    <p>Hello Team ${esc(registration.name)},</p>
-
-    <p>
-      Thank you for registering for
-      <strong>VOIDHACK 2026 — the 24-hour hackathon</strong>.
-    </p>
-
-    <p>
-      During verification, we found an issue with the data/payment
-      details you submitted, and unfortunately your registration
-      could not be confirmed at this time.
-    </p>
-
-    <p>
-      <strong>Reason for Rejection</strong><br />
-      ${esc(rejectionReason)}
-    </p>
-
-    ${
-      screenshotUrl
-        ? `<p>
-      Your uploaded payment screenshot can be viewed here:<br />
-      <a href="${esc(screenshotUrl)}" rel="noopener noreferrer">${esc(screenshotUrl)}</a>
-    </p>`
-        : ''
-    }
-
-    <p>
-      If you'd like to resolve this and complete your registration,
-      please get in touch with us as soon as possible.
-    </p>
-
-    <p>
-      Registration Code: <strong>${esc(registration.registrationCode) || '—'}</strong><br />
-      Registration Status: <strong>Rejected ❌</strong>
-    </p>
-
-    <p>
-      We hope to get this sorted out with you soon so you can join us
-      at VOIDHACK 2026!
-    </p>
-
-    <p>
-      VOIDHACK 2026 Team
-    </p>
-  `;
+  const teamName = String(registration.name || 'Participant').trim();
+  const subject = `VoidHack 2026: Registration Update for Team ${teamName}`;
 
   const sent = await sendEmail({
     to: recipients,
     subject,
-    text,
-    html,
+    text: 'famous',
   });
 
   return sent;

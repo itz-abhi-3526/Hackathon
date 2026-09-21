@@ -9,8 +9,25 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { getAdminSupabase } from '../../lib/supabase.js';
-import { T, TEAM_PAYMENT_STATUS, ROUND_STATUS } from '../../lib/schema.js';
+import {
+  T,
+  TEAM_PAYMENT_STATUS,
+  ROUND_STATUS,
+  STAGES,
+  STAGE_CRITERIA_SLOTS,
+  STAGE_CRITERIA_MAX_SCORE,
+  ADMIN_JUDGING_LEADERBOARD_COLS,
+} from '../../lib/schema.js';
 import { AppError } from '../../lib/api.js';
+import {
+  normalizeLeaderboardTeam as normalizeLeaderboardTeamPure,
+  normalizeLeaderboardRoundResult as normalizeLeaderboardRoundResultPure,
+  leaderboardWriteError,
+  assertLeaderboardTeamName,
+  assertLeaderboardScore,
+  assertLeaderboardAdjustDelta,
+} from './leaderboardValidation.js';
+import { judgingStatus, sumScores, latestEvaluationAt, roundToTwo, scoredTeamsStats } from './judgingValidation.js';
 
 const ROUND_EMBED = '*, teams(count)';
 
@@ -678,4 +695,631 @@ export async function adminFetchAllParticipants({ search = '', paymentStatus = '
   const { data, error } = await q.order('created_at', { ascending: false });
   if (error) throw wrapError(error, 'PARTICIPANT REPORT COULD NOT BE LOADED');
   return (data ?? []).map(normalizeParticipant);
+}
+
+/* Live leaderboard ──────────────────────────────────────────────── */
+
+/* Small boards (< a few hundred teams) — fetch the full set, exactly
+   like rounds. Ordering IS the rank: score DESC, then registration age
+   (older team wins a tie), then id as a final deterministic tiebreak so
+   equal-score rows never shuffle between refreshes. Never stored,
+   always derived. */
+export async function adminFetchLeaderboard() {
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.LEADERBOARD)
+    .select('*')
+    .order('score', { ascending: false })
+    .order('created_at', { ascending: true })
+    .order('id', { ascending: true });
+  if (error) throw wrapError(error, 'LEADERBOARD COULD NOT BE LOADED');
+  return (data ?? []).map(normalizeLeaderboardTeam);
+}
+
+export function normalizeLeaderboardTeam(row) {
+  return normalizeLeaderboardTeamPure(row);
+}
+
+/* Increase / decrease by a fixed delta — routed through the atomic
+   leaderboard_adjust_score RPC so concurrent clicks never race. */
+export async function adminLeaderboardAdjustScore(id, delta) {
+  const d = assertLeaderboardAdjustDelta(delta);
+  if (!id) throw new AppError('NO LEADERBOARD TEAM SELECTED', 'NO_LEADERBOARD_TEAM');
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase.rpc('leaderboard_adjust_score', { p_id: id, p_delta: d });
+  if (error) throw wrapError(leaderboardWriteError(error), 'SCORE COULD NOT BE ADJUSTED');
+  return Number(data);
+}
+
+export async function adminCreateLeaderboardTeam({ teamName, score } = {}) {
+  const name = assertLeaderboardTeamName(teamName);
+  const value = assertLeaderboardScore(score);
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.LEADERBOARD)
+    .insert({ team_name: name, score: value })
+    .select('*')
+    .limit(1);
+  if (error) throw wrapError(leaderboardWriteError(error), 'LEADERBOARD TEAM COULD NOT BE CREATED');
+  return normalizeLeaderboardTeam(data?.[0] ?? { team_name: name, score: value });
+}
+
+export async function adminUpdateLeaderboardTeam(id, { teamName, score } = {}) {
+  if (!id) throw new AppError('NO LEADERBOARD TEAM SELECTED', 'NO_LEADERBOARD_TEAM');
+  const patch = {};
+  if (teamName !== undefined) patch.team_name = assertLeaderboardTeamName(teamName);
+  if (score !== undefined) patch.score = assertLeaderboardScore(score);
+  if (!Object.keys(patch).length) throw new AppError('NO CHANGES TO SAVE', 'LEADERBOARD_VALIDATION');
+
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.LEADERBOARD)
+    .update(patch)
+    .eq('id', id)
+    .select('*')
+    .limit(1);
+  if (error) throw wrapError(leaderboardWriteError(error), 'LEADERBOARD TEAM COULD NOT BE UPDATED');
+  if (!data?.length) throw new AppError('LEADERBOARD TEAM NOT FOUND', 'LEADERBOARD_TEAM_MISSING');
+  return normalizeLeaderboardTeam(data[0]);
+}
+
+/* Change an exact score (also used for reset-to-zero). */
+export async function adminLeaderboardSetScore(id, score) {
+  if (!id) throw new AppError('NO LEADERBOARD TEAM SELECTED', 'NO_LEADERBOARD_TEAM');
+  return adminUpdateLeaderboardTeam(id, { score });
+}
+
+export async function adminDeleteLeaderboardTeam(id) {
+  if (!id) throw new AppError('NO LEADERBOARD TEAM SELECTED', 'NO_LEADERBOARD_TEAM');
+  const supabase = getAdminSupabase();
+  const { error } = await supabase.from(T.LEADERBOARD).delete().eq('id', id);
+  if (error) throw wrapError(error, 'LEADERBOARD TEAM COULD NOT BE DELETED');
+}
+
+/* Round-separated judging roll-up (view leaderboard_round_results).
+   Every scored (team × round): raw total, weight, weighted score,
+   possible ceiling and judge/criterion counts. Detail rows stay in
+   judging_evaluation_rows — nothing is flattened here. */
+export function normalizeLeaderboardRoundResult(row) {
+  return normalizeLeaderboardRoundResultPure(row);
+}
+
+export async function adminFetchLeaderboardRoundResults() {
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.LEADERBOARD_ROUND_RESULTS)
+    .select('*');
+  if (error) throw wrapError(error, 'ROUND RESULTS COULD NOT BE LOADED');
+  return (data ?? []).map(normalizeLeaderboardRoundResult);
+}
+
+/* Publish the judged aggregates onto the LIVE board.
+   roundId = null → combined standings (weighted across all non-draft
+   rounds); roundId set → that round alone, raw (unweighted) totals.
+   Returns the number of leaderboard rows written. */
+export async function adminSyncLeaderboardFromJudgings(roundId = null) {
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase.rpc('leaderboard_sync_from_judgings', {
+    p_round: roundId,
+  });
+  if (error) throw wrapError(error, 'JUDGED SCORES COULD NOT BE PUBLISHED');
+  return Number(data ?? 0);
+}
+
+/* Judging / evaluations ────────────────────────────────────────── */
+
+/* Team rows for the Judging page: the standard team shape plus the
+   round's embedded judge_evaluations so total / status / last-update
+   can be derived exactly, without a second query per row. */
+const JUDGING_TEAM_EMBED =
+  `${TEAM_EMBED}, judge_evaluations(judging_round_id, evaluation_criteria_id, judge_id, score, updated_at)`;
+
+export const JUDGING_SORTS = {
+  teamName: { column: 'team_name', asc: true },
+  college: { column: 'college', asc: true },
+  createdAt: { column: 'created_at', asc: false },
+};
+
+export async function adminFetchJudgingRounds() {
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.JUDGING_ROUNDS)
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) throw wrapError(error, 'JUDGING ROUNDS COULD NOT BE LOADED');
+  return (data ?? []).map(normalizeJudgingRound);
+}
+
+export function normalizeJudgingRound(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug ?? '',
+    description: row.description ?? '',
+    status: row.status,
+    weight: Number(row.weight ?? 1),
+    stage: row.stage ?? null,
+    startsAt: row.starts_at ?? null,
+    endsAt: row.ends_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+/* Create a judging round from the admin UI (no migration needed to add
+   a new evaluation phase). Each round carries its own criteria set. */
+export async function adminCreateJudgingRound({ title, description = '', status = 'draft' } = {}) {
+  const cleanTitle = String(title ?? '').trim();
+  if (!cleanTitle) throw new AppError('ROUND TITLE IS REQUIRED', 'ROUND_VALIDATION');
+  if (!['draft', 'active', 'closed'].includes(status)) {
+    throw new AppError('INVALID ROUND STATUS', 'ROUND_VALIDATION');
+  }
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.JUDGING_ROUNDS)
+    .insert({
+      title: cleanTitle,
+      description: String(description ?? '').trim() || null,
+      status,
+    })
+    .select('*')
+    .limit(1);
+  if (error) throw wrapError(error, 'ROUND COULD NOT BE CREATED');
+  return normalizeJudgingRound(data?.[0]);
+}
+
+export async function adminFetchJudges() {
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.JUDGES)
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) throw wrapError(error, 'JUDGES COULD NOT BE LOADED');
+  return (data ?? []).map(normalizeJudge);
+}
+
+export function normalizeJudge(row) {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    email: row.email,
+    affiliation: row.affiliation ?? '',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+/* Scoring dimensions for a round — the configurable structure the
+   evaluation screen renders. Never hard-coded on the client; the rows
+   here ARE the (current, replaceable) marking scheme. */
+export async function adminFetchEvaluationCriteria(roundId) {
+  if (!roundId) throw new AppError('NO JUDGING ROUND SELECTED', 'NO_ROUND');
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.EVALUATION_CRITERIA)
+    .select('*')
+    .eq('judging_round_id', roundId)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error) throw wrapError(error, 'EVALUATION CRITERIA COULD NOT BE LOADED');
+  return (data ?? []).map(normalizeEvaluationCriterion);
+}
+
+export function normalizeEvaluationCriterion(row) {
+  return {
+    id: row.id,
+    judgingRoundId: row.judging_round_id,
+    name: row.name,
+    description: row.description ?? '',
+    maxScore: Number(row.max_score),
+    sortOrder: row.sort_order,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at ?? row.created_at,
+  };
+}
+
+/* Criteria CRUD — the placeholder marking scheme is a live config here,
+   overwritten by the real scheme later. RLS keeps it admin-only. */
+function validateEvaluationCriterion({ name, description, maxScore } = {}) {
+  const cleanName = String(name ?? '').trim();
+  const cleanMax = Number(maxScore);
+  if (!cleanName) throw new AppError('CRITERION NAME IS REQUIRED', 'CRITERION_VALIDATION');
+  if (!Number.isFinite(cleanMax) || cleanMax <= 0) {
+    throw new AppError('MAXIMUM MARKS MUST BE GREATER THAN ZERO', 'CRITERION_VALIDATION');
+  }
+  return {
+    name: cleanName,
+    description: String(description ?? '').trim(),
+    maxScore: roundToTwo(cleanMax),
+  };
+}
+
+export async function adminCreateEvaluationCriterion({ judgingRoundId, name, description, maxScore } = {}) {
+  if (!judgingRoundId) throw new AppError('NO JUDGING ROUND SELECTED', 'NO_ROUND');
+  const clean = validateEvaluationCriterion({ name, description, maxScore });
+
+  const supabase = getAdminSupabase();
+  const { data: last, error: readError } = await supabase
+    .from(T.EVALUATION_CRITERIA)
+    .select('sort_order')
+    .eq('judging_round_id', judgingRoundId)
+    .order('sort_order', { ascending: false })
+    .limit(1);
+  if (readError) throw wrapError(readError, 'CRITERION COULD NOT BE CREATED');
+
+  const row = {
+    judging_round_id: judgingRoundId,
+    name: clean.name,
+    description: clean.description || null,
+    max_score: clean.maxScore,
+    sort_order: (last?.[0]?.sort_order ?? -1) + 1,
+  };
+  const { data, error } = await supabase
+    .from(T.EVALUATION_CRITERIA)
+    .insert(row)
+    .select('*')
+    .limit(1);
+  if (error) throw wrapError(error, 'CRITERION COULD NOT BE CREATED');
+  return normalizeEvaluationCriterion(data?.[0] ?? row);
+}
+
+export async function adminUpdateEvaluationCriterion(id, { name, description, maxScore } = {}) {
+  if (!id) throw new AppError('NO CRITERION SELECTED', 'CRITERION_VALIDATION');
+  const clean = validateEvaluationCriterion({ name, description, maxScore });
+
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.EVALUATION_CRITERIA)
+    .update({
+      name: clean.name,
+      description: clean.description || null,
+      max_score: clean.maxScore,
+    })
+    .eq('id', id)
+    .select('*')
+    .limit(1);
+  if (error) throw wrapError(error, 'CRITERION COULD NOT BE UPDATED');
+  return normalizeEvaluationCriterion(data?.[0] ?? { id });
+}
+
+export async function adminDeleteEvaluationCriterion(id) {
+  if (!id) throw new AppError('NO CRITERION SELECTED', 'CRITERION_VALIDATION');
+  const supabase = getAdminSupabase();
+  const { error } = await supabase.from(T.EVALUATION_CRITERIA).delete().eq('id', id);
+  if (error) throw wrapError(error, 'CRITERION COULD NOT BE DELETED');
+}
+
+/* Reorder the marking scheme by swapping the display order of two
+   adjacent criteria. A plain pair of id-keyed updates; sort_order values
+   carry no FK so existing evaluations are unaffected. */
+export async function adminSwapCriterionOrder({ roundId, firstId, secondId } = {}) {
+  if (!roundId) throw new AppError('NO JUDGING ROUND SELECTED', 'NO_ROUND');
+  if (!firstId || !secondId || firstId === secondId) return;
+
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.EVALUATION_CRITERIA)
+    .select('id, sort_order')
+    .eq('judging_round_id', roundId)
+    .in('id', [firstId, secondId]);
+  if (error) throw wrapError(error, 'CRITERIA COULD NOT BE REORDERED');
+
+  const byId = new Map((data ?? []).map((c) => [c.id, c.sort_order]));
+  if (!byId.has(firstId) || !byId.has(secondId)) {
+    throw new AppError('CRITERION NOT FOUND IN THIS ROUND', 'CRITERION_VALIDATION');
+  }
+  const firstOrder = byId.get(firstId);
+  const secondOrder = byId.get(secondId);
+  if (firstOrder === secondOrder) return;
+
+  const { error: errA } = await supabase
+    .from(T.EVALUATION_CRITERIA)
+    .update({ sort_order: secondOrder })
+    .eq('id', firstId);
+  if (errA) throw wrapError(errA, 'CRITERIA COULD NOT BE REORDERED');
+  const { error: errB } = await supabase
+    .from(T.EVALUATION_CRITERIA)
+    .update({ sort_order: firstOrder })
+    .eq('id', secondId);
+  if (errB) throw wrapError(errB, 'CRITERIA COULD NOT BE REORDERED');
+}
+
+/* Paginated team listing for the Judging page. Evaluations are scoped
+   to the selected round via the embedded-column equality filter; each
+   row is decorated with judgedCount / totalScore / lastEvaluationAt. */
+export async function adminFetchJudgingTeams({
+  roundId = '',
+  search = '',
+  sortBy = 'teamName',
+  sortDir = 'asc',
+  page = 0,
+  pageSize = DEFAULT_PAGE_SIZE,
+} = {}) {
+  const supabase = getAdminSupabase();
+  const sort = JUDGING_SORTS[sortBy] ?? JUDGING_SORTS.teamName;
+
+  let q = supabase
+    .from(T.TEAMS)
+    .select(JUDGING_TEAM_EMBED, { count: 'exact' });
+  if (search) {
+    q = q.or(
+      `team_name.ilike."%${escSearch(search)}%",college.ilike."%${escSearch(search)}%",registration_code.ilike."%${escSearch(search)}%"`
+    );
+  }
+  if (roundId) q = q.eq('judge_evaluations.judging_round_id', roundId);
+
+  const { data, count, error } = await q
+    .order(sort.column, { ascending: sortDir === 'asc' })
+    .range(page * pageSize, page * pageSize + pageSize - 1);
+  if (error) throw wrapError(error, 'TEAMS COULD NOT BE LOADED');
+  return {
+    rows: (data ?? []).map((row) => normalizeJudgingTeam(row, { roundId })),
+    count: count ?? 0,
+  };
+}
+
+export function normalizeJudgingTeam(row, { roundId = '' } = {}) {
+  const team = normalizeTeam(row);
+  const evals = (Array.isArray(row.judge_evaluations) ? row.judge_evaluations : []).filter(
+    (e) => !roundId || (e.judging_round_id ?? null) === roundId
+  );
+  return {
+    ...team,
+    judgedCount: evals.length,
+    totalScore: sumScores(evals),
+    lastEvaluationAt: latestEvaluationAt(evals),
+  };
+}
+
+export { judgingStatus };
+
+/* Persisted round-wide totals from judging_team_round_totals (maintained
+   by database triggers). Accurate for the WHOLE round — the teams list is
+   paginated, the aggregate is not. */
+export async function adminFetchRoundTotals(roundId) {
+  if (!roundId) throw new AppError('NO JUDGING ROUND SELECTED', 'NO_ROUND');
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.JUDGING_ROUND_TOTALS)
+    .select('team_id, total_score, score_possible, entries_count')
+    .eq('judging_round_id', roundId);
+  if (error) throw wrapError(error, 'ROUND TOTALS COULD NOT BE LOADED');
+  return scoredTeamsStats(data ?? []);
+}
+
+/* Shared judging / fixed stages ────────────────────────────────── */
+
+/* Fixed pipeline stages → round map. Returns { round_1: Round, round_2:
+   Round, final: Round } for whatever stage rounds exist (the migration
+   20260930000000 seeds all three idempotently). */
+export async function adminFetchStageRounds() {
+  const rounds = await adminFetchJudgingRounds();
+  const byStage = {};
+  for (const r of rounds) {
+    if (r.stage) byStage[r.stage] = r;
+  }
+  return byStage;
+}
+
+export function stageByKey(key) {
+  return STAGES.find((s) => s.key === key) ?? null;
+}
+
+/* The fixed stage rubric: exactly three placeholders "Criteria 1/2/3"
+   with a non-configurable 20-mark ceiling. Rows that already exist are
+   returned with their id; missing ones are returned as placeholders so
+   the scoring form renders three slots even before the DB is seeded. */
+export function stageCriteriaPlaceholders(criteria = []) {
+  return STAGE_CRITERIA_SLOTS.map((name, i) => {
+    const found = criteria.find((c) => c.name === name) ?? null;
+    return (
+      found ?? {
+        id: null,
+        name,
+        description: '',
+        maxScore: STAGE_CRITERIA_MAX_SCORE,
+        sortOrder: i,
+      }
+    );
+  });
+}
+
+async function fetchStageQualifiedTeamIds(stageKey, supabase) {
+  const { data, error } = await supabase
+    .from(T.STAGE_STATUS)
+    .select('team_id')
+    .eq('stage', stageKey)
+    .eq('status', 'qualified');
+  if (error) throw wrapError(error, 'QUALIFICATION STATUS COULD NOT BE LOADED');
+  return (data ?? []).map((r) => r.team_id);
+}
+
+/* Team rows for ONE fixed stage: round_1 lists every team, round_2 and
+   final list only teams explicitly qualified into that stage. Each row
+   carries the stage's scored criteria count, total, last update and the
+   shared per-round remark. */
+const STAGE_TEAM_EMBED =
+  `${TEAM_EMBED}, judge_evaluations(judging_round_id, evaluation_criteria_id, score, updated_at), team_round_remarks(judging_round_id, team_id, remark, updated_at)`;
+
+export async function adminFetchStageTeams({
+  stageKey = 'round_1',
+  search = '',
+  sortBy = 'teamName',
+  sortDir = 'asc',
+  page = 0,
+  pageSize = DEFAULT_PAGE_SIZE,
+} = {}) {
+  const byStage = await adminFetchStageRounds();
+  const round = byStage[stageKey];
+  if (!round) throw new AppError('STAGE ROUND NOT CONFIGURED', 'NO_ROUND');
+  const supabase = getAdminSupabase();
+
+  const qualifiedIds =
+    stageKey === 'round_1' ? null : await fetchStageQualifiedTeamIds(stageKey, supabase);
+
+  const sort = JUDGING_SORTS[sortBy] ?? JUDGING_SORTS.teamName;
+  let q = supabase.from(T.TEAMS).select(STAGE_TEAM_EMBED, { count: 'exact' });
+  if (search) {
+    q = q.or(
+      `team_name.ilike."%${escSearch(search)}%",college.ilike."%${escSearch(search)}%",registration_code.ilike."%${escSearch(search)}%"`
+    );
+  }
+  if (qualifiedIds) q = q.in('id', qualifiedIds);
+
+  const { data, count, error } = await q
+    .order(sort.column, { ascending: sortDir === 'asc' })
+    .range(page * pageSize, page * pageSize + pageSize - 1);
+  if (error) throw wrapError(error, 'TEAMS COULD NOT BE LOADED');
+  return {
+    round,
+    rows: (data ?? []).map((row) => normalizeStageTeam(row, { roundId: round.id })),
+    count: count ?? 0,
+  };
+}
+
+export function normalizeStageTeam(row, { roundId = '' } = {}) {
+  const team = normalizeTeam(row);
+  const evals = (Array.isArray(row.judge_evaluations) ? row.judge_evaluations : []).filter(
+    (e) => !roundId || (e.judging_round_id ?? null) === roundId
+  );
+  const remarks = (Array.isArray(row.team_round_remarks) ? row.team_round_remarks : []).filter(
+    (r) => !roundId || (r.judging_round_id ?? null) === roundId
+  );
+  return {
+    ...team,
+    judgedCount: evals.length,
+    totalScore: sumScores(evals),
+    lastEvaluationAt: latestEvaluationAt(evals),
+    remark: remarks[0]?.remark ?? '',
+    remarkUpdatedAt: remarks[0]?.updated_at ?? null,
+  };
+}
+
+/* Existing shared marks + per-round remark for one team in one stage
+   round. judge_id is ignored — the record is shared by all staff. */
+export async function adminFetchSharedEvaluations({ judgingRoundId, teamId } = {}) {
+  if (!judgingRoundId || !teamId) throw new AppError('NO EVALUATION CONTEXT', 'NO_TEAM');
+  const supabase = getAdminSupabase();
+  const [evals, remark] = await Promise.all([
+    supabase
+      .from(T.JUDGE_EVALUATIONS)
+      .select('id, evaluation_criteria_id, score, updated_at')
+      .eq('judging_round_id', judgingRoundId)
+      .eq('team_id', teamId),
+    supabase
+      .from(T.TEAM_ROUND_REMARKS)
+      .select('remark, updated_at')
+      .eq('judging_round_id', judgingRoundId)
+      .eq('team_id', teamId)
+      .maybeSingle(),
+  ]);
+  if (evals.error) throw wrapError(evals.error, 'EVALUATIONS COULD NOT BE LOADED');
+  if (remark.error) throw wrapError(remark.error, 'REMARK COULD NOT BE LOADED');
+  return {
+    rows: (evals.data ?? []).map((e) => ({
+      id: e.id,
+      evaluationCriteriaId: e.evaluation_criteria_id,
+      score: e.score != null ? String(e.score) : '',
+      updatedAt: e.updated_at,
+    })),
+    remark: remark.data?.remark ?? '',
+    remarkUpdatedAt: remark.data?.updated_at ?? null,
+  };
+}
+
+/* Persist one team's shared marks + per-round remark for a stage round
+   through the atomic save_shared_evaluation RPC. Omitted criteria stay
+   untouched — a blank score is never auto-zeroed. */
+export async function adminSaveSharedEvaluation({
+  judgingRoundId,
+  teamId,
+  rows = [],
+  remark,
+} = {}) {
+  if (!judgingRoundId || !teamId) {
+    throw new AppError('MISSING EVALUATION CONTEXT', 'EVALUATION_VALIDATION');
+  }
+  const payload = [];
+  for (const r of rows) {
+    if (!r?.evaluationCriteriaId) continue;
+    const score = Number(r.score);
+    if (!Number.isFinite(score) || score < 0) continue;
+    payload.push({ evaluationCriteriaId: r.evaluationCriteriaId, score });
+  }
+  if (!payload.length && (remark === null || remark === undefined || String(remark).trim() === '')) {
+    throw new AppError('NO SCORES TO SAVE', 'EVALUATION_VALIDATION');
+  }
+
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase.rpc('save_shared_evaluation', {
+    p_round: judgingRoundId,
+    p_team: teamId,
+    p_rows: payload,
+    p_remark: remark,
+  });
+  if (error) throw wrapError(error, 'EVALUATION COULD NOT BE SAVED');
+  return Number(data ?? 0);
+}
+
+/* Cumulative admin leaderboard (view admin_judging_leaderboard): one row
+   per team with Round 1 / Round 2 / Final / Cumulative + qualification. */
+export function normalizeJudgingLeaderboardRow(row) {
+  const num = (v) => (v === null || v === undefined ? null : Number(v));
+  return {
+    teamId: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.teamId] ?? null,
+    teamName: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.teamName] ?? '',
+    registrationCode: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.registrationCode] ?? '',
+    college: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.college] ?? '',
+    round1: num(row?.[ADMIN_JUDGING_LEADERBOARD_COLS.round1]),
+    round2: num(row?.[ADMIN_JUDGING_LEADERBOARD_COLS.round2]),
+    finalPresentation: num(row?.[ADMIN_JUDGING_LEADERBOARD_COLS.finalPresentation]),
+    cumulative: Number(row?.[ADMIN_JUDGING_LEADERBOARD_COLS.cumulative] ?? 0),
+    round2Status: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.round2Status] ?? 'pending',
+    finalStatus: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.finalStatus] ?? 'pending',
+    rank: Number(row?.[ADMIN_JUDGING_LEADERBOARD_COLS.rankNo] ?? 0),
+  };
+}
+
+export async function adminFetchJudgingLeaderboard() {
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase.from(T.ADMIN_JUDGING_LEADERBOARD).select('*');
+  if (error) throw wrapError(error, 'JUDGING LEADERBOARD COULD NOT BE LOADED');
+  return (data ?? []).map(normalizeJudgingLeaderboardRow);
+}
+
+async function runJudgingRpc(name, args = {}) {
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase.rpc(name, args);
+  if (error) throw wrapError(error, 'ACTION FAILED');
+  return Number(data ?? 0);
+}
+
+/* Explicit qualification / finalisation (DB is the source of truth). The
+   only legal transitions: qualify top-20 into Round 2, qualify top-8 into
+   the Final, finalize the top 3. Nothing is ever auto-eliminated or
+   deleted when ranks change. */
+export function adminQualifyRound2() {
+  return runJudgingRpc('judging_qualify', {
+    p_from_stage: 'round_1',
+    p_to_stage: 'round_2',
+    p_count: stageByKey('round_2').cutoff,
+  });
+}
+
+export function adminQualifyFinal() {
+  return runJudgingRpc('judging_qualify', {
+    p_from_stage: 'round_2',
+    p_to_stage: 'final',
+    p_count: stageByKey('final').cutoff,
+  });
+}
+
+export function adminFinalizeTop3() {
+  return runJudgingRpc('judging_finalize_top3');
+}
+
+/* Explicit "UPDATE MAIN LEADERBOARD" publish of the cumulative scores
+   onto the public leaderboard table. */
+export function adminSyncCumulativeLeaderboard() {
+  return runJudgingRpc('leaderboard_sync_cumulative');
 }
