@@ -46,6 +46,7 @@ export const T = {
   STAGE_STATUS: 'judging_team_stage_status',
   QUALIFICATION_EVENTS: 'judging_qualification_events',
   ADMIN_JUDGING_LEADERBOARD: 'admin_judging_leaderboard',
+  ATTENDANCE: 'attendance',
 };
 
 /* Fixed judging pipeline — the only stages the admin judging UI offers.
@@ -271,6 +272,14 @@ export const JUDGING_ROUND_STATUS_ORDER = ['draft', 'active', 'closed'];
 export const PARTICIPANT_ROLE = {
   LEAD: 'lead',
   MEMBER: 'member',
+};
+
+/* Attendance — one row per participant of a verified team. Rows are
+   created the moment a team is verified and only ever mutated by admins
+   (RLS on public.attendance is admin-only). */
+export const ATTENDANCE_STATUS = {
+  PRESENT: 'present',
+  ABSENT: 'absent',
 };
 
 /* Verification email tracking on the team row. 'pending' is the

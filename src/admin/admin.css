@@ -1,8 +1,8 @@
-/* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — ADMIN CONTROL CENTER
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   VOIDHACK 2026 â€” ADMIN CONTROL CENTER
    Fully namespaced under .cpa / .cpa-*. Loaded only through the admin
-   panel — zero interference with the public landing site.
-   ═══════════════════════════════════════════════════════════════ */
+   panel â€” zero interference with the public landing site.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .cpa {
   --cpa-bg: #0a0a0c;
@@ -46,7 +46,7 @@
   outline-offset: 2px;
 }
 
-/* ── shell ──────────────────────────────────────────────── */
+/* â”€â”€ shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa {
   display: flex;
   min-height: 100vh;
@@ -164,7 +164,7 @@
   background: var(--cpa-bg);
 }
 
-/* ── top header ─────────────────────────────────────────── */
+/* â”€â”€ top header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-top {
   display: flex;
   align-items: center;
@@ -252,14 +252,14 @@
 .cpa-top__link--danger { border-color: rgba(232, 22, 5, 0.4); color: #ff8b7a; }
 .cpa-top__link--danger:hover { background: var(--cpa-red-dim); color: #fff; }
 
-/* ── main ───────────────────────────────────────────────── */
+/* â”€â”€ main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa__main { padding: 24px 26px 64px; min-width: 0; }
 
 @media (max-width: 640px) {
   .cpa__main { padding: 18px 14px 48px; }
 }
 
-/* ── page header ────────────────────────────────────────── */
+/* â”€â”€ page header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-page-head {
   display: flex;
   align-items: flex-end;
@@ -287,7 +287,7 @@
 .cpa-page-head__meta { font-size: 11px; color: var(--cpa-mut); margin-top: 4px; }
 .cpa-page-head__actions { display: flex; align-items: center; gap: 8px; }
 
-/* ── stat cards ─────────────────────────────────────────── */
+/* â”€â”€ stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -323,7 +323,7 @@
 .cpa-stat__hint { font-family: var(--cpa-mono); font-size: 9px; color: var(--cpa-faint); letter-spacing: 0.1em; }
 .cpa-stat__sub { font-size: 11px; color: var(--cpa-mut); }
 
-/* ── panels / 2-col layout ──────────────────────────────── */
+/* â”€â”€ panels / 2-col layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-cols {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -359,7 +359,7 @@
 .cpa-panel__legend { display: flex; flex-wrap: wrap; gap: 6px; }
 .cpa-panel__tag { font-family: var(--cpa-mono); font-size: 9px; color: var(--cpa-faint); letter-spacing: 0.12em; }
 
-/* ── distribution bars ──────────────────────────────────── */
+/* â”€â”€ distribution bars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-bars { display: flex; flex-direction: column; gap: 10px; }
 .cpa-bars__row { display: grid; grid-template-columns: 90px 1fr 36px; align-items: center; gap: 12px; }
 .cpa-bars__label { font-family: var(--cpa-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--cpa-mut); }
@@ -376,7 +376,7 @@
 /* Secondary block on a page (e.g. the leaderboard's round-results roll-up). */
 .cpa-block { margin-top: 20px; }
 
-/* ── problem cluster ────────────────────────────────────── */
+/* â”€â”€ problem cluster â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-cluster { display: flex; flex-direction: column; gap: 2px; }
 .cpa-cluster__item {
   display: grid;
@@ -396,7 +396,7 @@
 .cpa-cluster__title { font-size: 11px; color: var(--cpa-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cpa-cluster__count { font-family: var(--cpa-mono); font-size: 9px; color: var(--cpa-faint); }
 
-/* ── recent lists ───────────────────────────────────────── */
+/* â”€â”€ recent lists â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-recent { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .cpa-recent__row {
   width: 100%;
@@ -422,7 +422,7 @@
 .cpa-recent__sub { font-size: 10px; color: var(--cpa-mut); font-family: var(--cpa-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cpa-recent__prob { font-size: 10px; color: var(--cpa-faint); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ── toolbar / controls ─────────────────────────────────── */
+/* â”€â”€ toolbar / controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-toolbar {
   display: flex;
   flex-direction: column;
@@ -542,7 +542,7 @@
 .cpa-refresh { width: 34px; padding: 8px 0; justify-content: center; font-size: 14px; color: var(--cpa-mut); }
 .cpa-refresh:hover { color: #fff; border-color: rgba(255, 255, 255, 0.35); }
 
-/* ── pagination ─────────────────────────────────────────── */
+/* â”€â”€ pagination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-pager {
   display: flex;
   align-items: center;
@@ -570,7 +570,7 @@
 .cpa-pager__btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .cpa-pager__page { font-family: var(--cpa-mono); font-size: 10px; color: var(--cpa-mut); min-width: 52px; text-align: center; }
 
-/* ── table ──────────────────────────────────────────────── */
+/* â”€â”€ table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-table { background: var(--cpa-panel); border: 1px solid var(--cpa-line); border-radius: 4px; overflow: hidden; }
 .cpa-table__scroll { overflow-x: auto; }
 .cpa-table__foot { border-top: 1px solid var(--cpa-line); padding: 4px 14px; }
@@ -629,7 +629,7 @@
 .cpa-num { font-family: var(--cpa-mono); color: var(--cpa-text); }
 .cpa-muted-sm { font-size: 10px; color: var(--cpa-faint); }
 
-/* ── badges ─────────────────────────────────────────────── */
+/* â”€â”€ badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-badge {
   display: inline-flex;
   align-items: center;
@@ -648,10 +648,12 @@
 .cpa-badge--submitted { color: var(--cpa-amber); border-color: rgba(232, 184, 76, 0.35); background: var(--cpa-amber-dim); }
 .cpa-badge--verified { color: var(--cpa-ok); border-color: rgba(98, 201, 122, 0.35); background: var(--cpa-ok-dim); }
 .cpa-badge--rejected { color: var(--cpa-bad); border-color: rgba(255, 106, 87, 0.35); background: var(--cpa-bad-dim); }
+.cpa-badge--present { color: var(--cpa-ok); border-color: rgba(98, 201, 122, 0.35); background: var(--cpa-ok-dim); }
+.cpa-badge--absent { color: #9a9aa2; }
 .cpa-badge--none { opacity: 0.7; }
 .cpa-badge--sm { font-size: 8px; padding: 3px 6px; gap: 4px; }
 
-/* ── states + skeletons ─────────────────────────────────── */
+/* â”€â”€ states + skeletons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-state { padding: 42px 20px; text-align: center; border: 1px dashed var(--cpa-line-2); border-radius: 4px; margin: 4px; }
 .cpa-state p { font-family: var(--cpa-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--cpa-mut); margin: 0 0 14px; }
 .cpa-state--empty { color: var(--cpa-faint); }
@@ -676,7 +678,7 @@
 .cpa-skeleton__row:nth-child(odd) .cpa-skeleton__cell { height: 34px; }
 @keyframes cpa-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-/* ── payments proof mini ────────────────────────────────── */
+/* â”€â”€ payments proof mini â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-proof-mini {
   background: none;
   border: 1px solid var(--cpa-line-2);
@@ -720,18 +722,18 @@
 .cpa-actions__btn--bad:hover:not(:disabled) { border-color: var(--cpa-bad); color: var(--cpa-bad); background: var(--cpa-bad-dim); }
 .cpa-actions__btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ── verification email cell ──────────────────────────────── */
+/* â”€â”€ verification email cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-email-cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .cpa-email-cell__btn { width: 100%; margin-top: 2px; }
 .cpa-email-cell__locked { font-style: italic; }
 .cpa-email-cell__to { font-size: 9px; word-break: break-all; }
 .cpa-email-cell__at { font-size: 9px; }
 
-/* ── drawer verification email section ────────────────────── */
+/* â”€â”€ drawer verification email section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-drawer__email-actions { display: flex; gap: 6px; margin-top: 6px; }
 .cpa-drawer__email-actions .cpa-btn { flex: 1; }
 
-/* ── login ──────────────────────────────────────────────── */
+/* â”€â”€ login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-login {
   min-height: 100vh;
   background:
@@ -798,7 +800,7 @@
 .cpa-login__note { font-family: var(--cpa-mono); font-size: 8px; letter-spacing: 0.1em; color: var(--cpa-faint); margin-top: 22px; line-height: 1.7; }
 .cpa-login__foot { font-family: var(--cpa-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--cpa-faint); text-align: center; }
 
-/* ── access denied / boot ───────────────────────────────── */
+/* â”€â”€ access denied / boot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-denied { min-height: 100vh; display: grid; place-items: center; background: var(--cpa-bg); padding: 24px; }
 .cpa-denied__card {
   max-width: 440px;
@@ -828,7 +830,7 @@
 .cpa-boot__bar span { display: block; width: 40%; height: 100%; background: var(--cpa-red); animation: cpa-slide 1.1s infinite ease-in-out; }
 @keyframes cpa-slide { 0% { transform: translateX(-120%); } 100% { transform: translateX(320%); } }
 
-/* ── toasts ─────────────────────────────────────────────── */
+/* â”€â”€ toasts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-toasts {
   position: fixed;
   right: 18px;
@@ -859,7 +861,7 @@
 .cpa-toast__close:hover { color: #fff; }
 @keyframes cpa-toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ── drawer ─────────────────────────────────────────────── */
+/* â”€â”€ drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-drawer { position: fixed; inset: 0; z-index: 60; }
 .cpa-drawer__backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.62); }
 .cpa-drawer__panel {
@@ -996,7 +998,7 @@
 .cpa-lead__name { font-size: 13px; font-weight: 700; color: #fff; }
 .cpa-lead__mail { font-size: 11px; color: var(--cpa-mut); font-family: var(--cpa-mono); }
 
-/* ── modal (proof viewer / confirm) ─────────────────────── */
+/* â”€â”€ modal (proof viewer / confirm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-modal {
   position: fixed;
   inset: 0;
@@ -1054,7 +1056,7 @@
 .cpa-proof { background: var(--cpa-bg); padding: 14px; overflow: auto; }
 .cpa-proof__img { max-width: 100%; max-height: 60vh; margin: 0 auto; display: block; }
 
-/* ── problems cards ─────────────────────────────────────── */
+/* â”€â”€ problems cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-problems { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 .cpa-problem {
   background: var(--cpa-panel);
@@ -1101,7 +1103,7 @@
 .cpa-problem__view { font-family: var(--cpa-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--cpa-faint); white-space: nowrap; }
 .cpa-problem--clickable:hover .cpa-problem__view { color: var(--cpa-red); }
 
-/* ── reports ────────────────────────────────────────────── */
+/* â”€â”€ reports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-report__count { font-family: var(--cpa-mono); font-size: 11px; color: var(--cpa-ok); letter-spacing: 0.12em; margin-bottom: 12px; }
 .cpa-report__filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
 .cpa-report__actions { display: flex; justify-content: flex-end; }
@@ -1121,7 +1123,7 @@
 .cpa-seg__btn:hover { color: #fff; }
 .cpa-seg__btn--on { background: var(--cpa-red-dim); color: #fff; }
 
-/* ── settings ───────────────────────────────────────────── */
+/* â”€â”€ settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-settings { display: flex; flex-direction: column; }
 .cpa-settings-row {
   display: grid;
@@ -1149,7 +1151,7 @@
 }
 .cpa-session__actions { display: flex; justify-content: flex-end; gap: 10px; }
 
-/* ── mobile ─────────────────────────────────────────────── */
+/* â”€â”€ mobile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-mobile-scrim {
   display: none;
   position: fixed;
@@ -1184,7 +1186,7 @@
   .cpa-top__link { padding: 5px 8px; font-size: 9px; }
 }
 
-/* ── registration rounds ─────────────────────────────────── */
+/* â”€â”€ registration rounds â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cpa-btn--ok { background: var(--cpa-ok-dim); border-color: rgba(98, 201, 122, 0.45); color: #8fe0a6; }
 .cpa-btn--ok:hover:not(:disabled) { background: var(--cpa-ok); border-color: var(--cpa-ok); color: #040406; }
 .cpa-actions__btn--warn { color: var(--cpa-amber); border-color: rgba(232, 184, 76, 0.35); }
@@ -1255,7 +1257,7 @@
   .cpa-form__row { grid-template-columns: 1fr; }
 }
 
-/* ── leaderboard ────────────────────────────────────────── */
+/* ΓöÇΓöÇ leaderboard ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .cpa-lb-rank {
   display: inline-flex;
   align-items: center;
@@ -1295,7 +1297,7 @@
 }
 .cpa-lb-score--leading { color: var(--cpa-amber); }
 
-/* ── Judging / evaluations ─────────────────────────────────── */
+/* ΓöÇΓöÇ Judging / evaluations ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 
 .cpa-nav-round { min-width: 210px; }
 
@@ -1423,7 +1425,7 @@
 
 .cpa-stat--warn { border-top-color: var(--cpa-amber); }
 
-/* ── Criteria manager ──────────────────────────────────────── */
+/* ΓöÇΓöÇ Criteria manager ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 
 .cpa-crit__toolbar { display: flex; gap: 8px; margin: 14px 0 10px; }
 .cpa-crit__list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
@@ -1532,7 +1534,7 @@
   .cpa-judge__fields { grid-template-columns: 1fr; }
 }
 
-/* ── Fixed stage judging (shared model) ─────────────────────── */
+/* ΓöÇΓöÇ Fixed stage judging (shared model) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 
 .cpa-judging__stages {
   display: flex;
@@ -1560,4 +1562,137 @@
 @media (max-width: 640px) {
   .cpa-judging__stages { flex-direction: column; align-items: stretch; }
   .cpa-judging__stages .cpa-btn { width: 100%; }
+}
+
+/* ΓöÇΓöÇ attendance: scanner + check-in modal ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+.cpa-checkin__kicker {
+  font-family: var(--cpa-mono);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: var(--cpa-red);
+  display: block;
+  margin-bottom: 6px;
+}
+.cpa-checkin__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  font-family: var(--cpa-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--cpa-mut);
+}
+.cpa-checkin__meta span { border: 1px solid var(--cpa-line-2); border-radius: 3px; padding: 3px 6px; }
+.cpa-checkin__done { margin-top: 12px; border: 1px solid rgba(98, 201, 122, 0.35); background: var(--cpa-ok-dim); color: #8fe0a6; text-align: left; padding: 10px 12px !important; font-size: 10px; }
+.cpa-state--ok { border-color: rgba(98, 201, 122, 0.35); background: var(--cpa-ok-dim); }
+.cpa-checkin__roster { margin-top: 14px; border-top: 1px solid var(--cpa-line); }
+.cpa-checkin__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--cpa-line);
+}
+.cpa-checkin__num { font-family: var(--cpa-mono); font-size: 9px; color: var(--cpa-faint); }
+.cpa-checkin__who { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.cpa-checkin__who strong { font-size: 12px; color: #fff; font-weight: 600; }
+.cpa-checkin__who em { font-style: normal; font-family: var(--cpa-mono); font-size: 9px; color: var(--cpa-mut); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cpa-checkin__toggles { display: flex; gap: 5px; flex: 0 0 auto; }
+.cpa-checkin__pill {
+  font-family: var(--cpa-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  padding: 4px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--cpa-line-2);
+  background: transparent;
+  color: var(--cpa-mut);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.cpa-checkin__pill--on { background: var(--cpa-ok); border-color: var(--cpa-ok); color: #040406; font-weight: 700; }
+.cpa-checkin__pill--absent-on { background: var(--cpa-bad-dim); border-color: rgba(255, 106, 87, 0.6); color: #ff9c8c; }
+.cpa-checkin__pill:disabled { opacity: 0.45; cursor: not-allowed; }
+.cpa-checkin__bulk { display: flex; gap: 8px; margin-top: 14px; }
+.cpa-checkin__count { margin-right: auto; font-family: var(--cpa-mono); font-size: 9px; letter-spacing: 0.16em; color: var(--cpa-mut); align-self: center; }
+.cpa-modal__card--checkin { width: min(520px, 96vw); max-height: 92vh; display: flex; flex-direction: column; }
+.cpa-modal__card--checkin .cpa-modal__body { overflow-y: auto; min-height: 0; }
+.cpa-modal__card--checkin .cpa-modal__foot { flex: 0 0 auto; }
+
+/* scanner region */
+.cpa-scanner { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(300px, 1fr); gap: 14px; margin: 4px; }
+.cpa-scanner__cam {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid var(--cpa-line-2);
+  background: #000;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cpa-scanner__cam video { width: 100%; height: auto; display: block; border-radius: 4px; }
+.cpa-scanner__reader { width: 100%; }
+.cpa-scanner__side { display: flex; flex-direction: column; gap: 12px; }
+.cpa-scanner__hint {
+  font-family: var(--cpa-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--cpa-faint);
+  line-height: 1.8;
+  border: 1px solid var(--cpa-line-2);
+  border-radius: 4px;
+  padding: 12px;
+}
+.cpa-scanner__hint strong { color: var(--cpa-mut); }
+.cpa-scanner__cam-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-family: var(--cpa-mono); font-size: 10px; letter-spacing: 0.2em; color: var(--cpa-mut); text-align: center; padding: 20px; }
+.cpa-scanner__error-band {
+  font-family: var(--cpa-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #ff8b7a;
+  border: 1px solid rgba(232, 22, 5, 0.4);
+  background: rgba(232, 22, 5, 0.05);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.cpa-scanner__manual { flex: 1; min-width: 0; }
+
+/* live indicator + attendance stats */
+.cpa-live { display: inline-flex; align-items: center; gap: 7px; font-family: var(--cpa-mono); font-size: 9px; letter-spacing: 0.2em; color: var(--cpa-ok); }
+.cpa-live__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cpa-ok); box-shadow: 0 0 0 0 rgba(98, 201, 122, 0.5); animation: cpa-pulse 1.6s ease-out infinite; }
+@keyframes cpa-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(98, 201, 122, 0.45); }
+  70% { box-shadow: 0 0 0 8px rgba(98, 201, 122, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(98, 201, 122, 0); }
+}
+.cpa-stat__pct { font-family: var(--cpa-mono); font-size: 20px; font-weight: 800; letter-spacing: 0.02em; }
+.cpa-stat__pct--hot { color: var(--cpa-ok); }
+.cpa-team-chip {
+  font-family: var(--cpa-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--cpa-faint);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--cpa-line-2);
+  border-radius: 3px;
+  padding: 2px 6px;
+  margin-left: 6px;
+}
+.cpa-row-action {
+  background: none;
+  border: none;
+  color: var(--cpa-red);
+  font-family: var(--cpa-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+.cpa-row-action:hover { color: #ff5b49; }
+@media (max-width: 900px) {
+  .cpa-scanner { grid-template-columns: 1fr; }
+  .cpa-scanner__cam { min-height: 280px; }
 }

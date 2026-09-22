@@ -17,6 +17,8 @@ const FILE_BASE = {
   participants: 'voidhack_participants_report',
   complete: 'voidhack_complete_registration_report',
   rounds: 'voidhack_registration_rounds_report',
+  attendance: 'voidhack_attendance_report',
+  attendanceTeams: 'voidhack_attendance_team_summary',
 };
 
 const SHEET_NAME = {
@@ -24,6 +26,8 @@ const SHEET_NAME = {
   participants: 'Participants',
   complete: 'Complete Registration',
   rounds: 'Registration Rounds',
+  attendance: 'Attendance',
+  attendanceTeams: 'Attendance Team Summary',
 };
 
 function problemCell(problem) {
@@ -135,11 +139,41 @@ export function roundsColumns() {
   ];
 }
 
+/* Attendance — one row per participant of a verified team. */
+export function attendanceColumns() {
+  return [
+    { label: 'Registration Code', width: 18, value: (a) => a.registrationCode },
+    { label: 'Team Name', width: 28, value: (a) => a.teamName },
+    { label: 'College', width: 30, value: (a) => a.college },
+    { label: 'Participant Name', width: 24, value: (a) => a.participantName },
+    { label: 'Email', width: 30, value: (a) => a.participantEmail },
+    { label: 'Status', width: 12, value: (a) => String(a.status ?? '').toUpperCase() },
+    { label: 'Marked At', width: 24, value: (a) => isoTime(a.markedAt) },
+    { label: 'Marked By', width: 38, value: (a) => a.markedBy ?? '' },
+  ];
+}
+
+/* Attendance team summary — one row per verified team. */
+export function attendanceTeamColumns() {
+  return [
+    { label: 'Registration Code', width: 18, value: (t) => t.registrationCode },
+    { label: 'Team Name', width: 28, value: (t) => t.teamName },
+    { label: 'College', width: 30, value: (t) => t.college },
+    { label: 'Team Size', width: 12, value: (t) => t.teamSize },
+    { label: 'Present', width: 10, value: (t) => t.present },
+    { label: 'Absent', width: 10, value: (t) => t.absent },
+    { label: 'Attendance %', width: 14, value: (t) =>
+        t.teamSize ? Math.round((t.present / t.teamSize) * 100) : 0 },
+  ];
+}
+
 const COLUMN_SETS = {
   teams: teamColumns,
   participants: participantColumns,
   complete: completeColumns,
   rounds: roundsColumns,
+  attendance: attendanceColumns,
+  attendanceTeams: attendanceTeamColumns,
 };
 
 /**

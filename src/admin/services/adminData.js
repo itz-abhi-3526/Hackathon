@@ -496,22 +496,40 @@ export async function adminSetPaymentStatus(teamId, status, reason = '') {
   if (error) throw wrapError(error, 'STATUS COULD NOT BE UPDATED');
 }
 
+/* Http status of a failed Edge Function invoke. @supabase/functions-js
+   (2.116.0) emits a CONSTANT message — "Edge Function returned a
+   non-2xx status code" — that never contains the status number, so a
+   /401/||/403/ test against error.message can never match. The real
+   status lives on error.context (the Response). */
+function emailInvokeHttpStatus(error) {
+  const status =
+    Number.isInteger(error?.context?.status)
+      ? error.context.status
+      : Number.isInteger(error?.status)
+        ? error.status
+        : NaN;
+  return Number.isInteger(status) ? status : 0;
+}
+
 /* Confirmation email trigger — fires the send-registration-email Edge
    Function with the admin's own session JWT (the function re-checks
    is_admin() server-side). Email is best-effort and called AFTER the
-   status write, so a mail outage never blocks payment verification. */
+   status write, so a mail outage never blocks payment verification.
+   The session is verified server-side FIRST (getUser()): the Edge
+   Function's auth gate performs the same stateful check, and a token
+   that is signed-but-no-longer-active in Supabase Auth is exactly what
+   produces the 401. The SDK attaches the live access_token to the
+   invoke automatically — no manually-pinned token. */
 export async function adminSendStatusEmail(teamId, action, reason = '') {
   const supabase = getAdminSupabase();
-  const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData?.session?.access_token;
-  if (!token) {
+  const { error: sessionError } = await supabase.auth.getUser();
+  if (sessionError) {
     throw new AppError('ADMIN SESSION EXPIRED \u2014 Sign in again.', 'ADMIN_SESSION_EXPIRED');
   }
 
   const { data, error } = await supabase.functions.invoke(
     'send-registration-email',
     {
-      headers: { Authorization: `Bearer ${token}` },
       body: {
         teamId,
         action,
@@ -521,11 +539,17 @@ export async function adminSendStatusEmail(teamId, action, reason = '') {
   );
 
   if (error) {
-    const message = /401/.test(String(error.message))
-      ? 'ADMIN SESSION EXPIRED \u2014 Sign in again.'
-      : /403/.test(String(error.message))
-      ? 'ACCESS DENIED \u2014 This account cannot send registration emails.'
-      : error.message || 'EMAIL SERVICE FAILED';
+    const status = emailInvokeHttpStatus(error);
+    const message =
+      status === 401
+        ? 'ADMIN SESSION EXPIRED \u2014 Sign in again.'
+        : status === 403
+        ? 'ACCESS DENIED \u2014 This account cannot send registration emails.'
+        : /401/.test(String(error.message))
+        ? 'ADMIN SESSION EXPIRED \u2014 Sign in again.'
+        : /403/.test(String(error.message))
+        ? 'ACCESS DENIED \u2014 This account cannot send registration emails.'
+        : error.message || 'EMAIL SERVICE FAILED';
     throw new AppError(message, 'ADMIN_EMAIL_SEND_FAILED', error);
   }
   return data;
@@ -539,9 +563,11 @@ export async function adminSendStatusEmail(teamId, action, reason = '') {
    recipient can be supplied by the browser. */
 async function invokeSendEmail(teamId, action) {
   const supabase = getAdminSupabase();
-  const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData?.session?.access_token;
-  if (!token) {
+  /* Same server-side session verification the Edge Function's gate
+     performs — prevents firing an invoke whose token Auth considers
+     inactive (the 401 the operator was hitting). */
+  const { error: sessionError } = await supabase.auth.getUser();
+  if (sessionError) {
     throw new AppError('ADMIN SESSION EXPIRED \u2014 Sign in again.', 'ADMIN_SESSION_EXPIRED');
   }
 
@@ -549,17 +575,22 @@ async function invokeSendEmail(teamId, action) {
     const { data, error } = await supabase.functions.invoke(
       'send-registration-email',
       {
-        headers: { Authorization: `Bearer ${token}` },
         body: { teamId, action },
       }
     );
 
     if (error) {
-      const message = /401/.test(String(error.message))
-        ? 'ADMIN SESSION EXPIRED \u2014 Sign in again.'
-        : /403/.test(String(error.message))
-        ? 'ACCESS DENIED \u2014 This account cannot send registration emails.'
-        : error.message || 'EMAIL SERVICE FAILED';
+      const status = emailInvokeHttpStatus(error);
+      const message =
+        status === 401
+          ? 'ADMIN SESSION EXPIRED \u2014 Sign in again.'
+          : status === 403
+          ? 'ACCESS DENIED \u2014 This account cannot send registration emails.'
+          : /401/.test(String(error.message))
+          ? 'ADMIN SESSION EXPIRED \u2014 Sign in again.'
+          : /403/.test(String(error.message))
+          ? 'ACCESS DENIED \u2014 This account cannot send registration emails.'
+          : error.message || 'EMAIL SERVICE FAILED';
       throw new AppError(message, 'ADMIN_EMAIL_SEND_FAILED', error);
     }
     return data;
@@ -1344,4 +1375,289 @@ export function adminFinalizeTop3() {
    onto the public leaderboard table. */
 export function adminSyncCumulativeLeaderboard() {
   return runJudgingRpc('leaderboard_sync_cumulative');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Attendance (attendance system) — see public.attendance.
+   Per-participant records for VERIFIED teams only; RLS admin-only.
+   ═══════════════════════════════════════════════════════════════ */
+
+const ATTENDANCE_EMBED =
+  '*, teams(team_name, college, registration_code, payment_status), participants(full_name, email, phone)';
+
+export const ATTENDANCE_SORTS = {
+  markedAt: { column: 'marked_at', asc: false },
+  participantName: { column: 'full_name', asc: true, referencedTable: 'participants' },
+  teamName: { column: 'team_name', asc: true, referencedTable: 'teams' },
+  status: { column: 'status', asc: true },
+};
+
+/* Resolve participant ids matching a name/email search (used to fold
+   into the attendance or() tree — mirrors resolveTeamSearchIds). */
+async function resolveParticipantSearchIds(supabase, search) {
+  const esc = escSearch(search);
+  if (!esc) return [];
+  const { data, error } = await supabase
+    .from(T.PARTICIPANTS)
+    .select('id')
+    .or(`full_name.ilike."%${esc}%",email.ilike."%${esc}%"`);
+  if (error) throw wrapError(error, 'ATTENDANCE COULD NOT BE LOADED');
+  return (data ?? []).map((r) => r.id);
+}
+
+/* Search tree for attendance rows — matches team AND participant ids.
+   When the search matches nobody, a well-formed-but-nonexistent UUID
+   keeps the or() valid and returns zero rows (never a malformed filter).
+   (Embedded-column ilike inside or() is avoided — same reason as the
+   existing participant search.) */
+async function attendanceSearchOrParts(supabase, search) {
+  const esc = escSearch(search);
+  const [teamIds, participantIds] = await Promise.all([
+    resolveTeamSearchIds(supabase, search),
+    resolveParticipantSearchIds(supabase, search),
+  ]);
+  const NOBODY = '00000000-0000-0000-0000-000000000000';
+  const orParts = [];
+  if (teamIds.length) orParts.push(`team_id.in.(${teamIds.join(',')})`);
+  else if (esc) orParts.push(`team_id.in.(${NOBODY})`);
+  if (participantIds.length) orParts.push(`participant_id.in.(${participantIds.join(',')})`);
+  else if (esc) orParts.push(`participant_id.in.(${NOBODY})`);
+  return orParts.join(',');
+}
+
+export function normalizeAttendance(row) {
+  const team = row?.teams ?? null;
+  const participant = row?.participants ?? null;
+  return {
+    id: row.id,
+    teamId: row.team_id,
+    participantId: row.participant_id,
+    status: row.status,
+    markedAt: row.marked_at,
+    markedBy: row.marked_by,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    teamName: team?.team_name ?? '',
+    college: team?.college ?? '',
+    registrationCode: team?.registration_code ?? '',
+    paymentStatus: team?.payment_status ?? '',
+    participantName: participant?.full_name ?? '',
+    participantEmail: participant?.email ?? '',
+    participantPhone: participant?.phone ?? '',
+  };
+}
+
+/* Live scanner resolution: a verified team + participant roster + its
+   saved attendance. The attendance_token is OPAQUE — the QR (or manual
+   paste) is the only entry point. */
+export async function adminResolveAttendanceToken(token) {
+  const supabase = getAdminSupabase();
+  const value = String(token ?? '').trim();
+  if (!value) throw new AppError('MISSING ATTENDANCE TOKEN', 'TOKEN_MISSING');
+  const { data, error } = await supabase
+    .from(T.TEAMS)
+    .select(`*, participants(id, full_name, email, phone, role), ${T.ATTENDANCE}(id, participant_id, status, marked_at, marked_by)`)
+    .eq('attendance_token', value)
+    .limit(1);
+  if (error) throw wrapError(error, 'TEAM COULD NOT BE RESOLVED');
+  const team = data?.[0] ?? null;
+  if (!team) throw new AppError('INVALID ATTENDANCE QR', 'INVALID_QR');
+  const attendanceByParticipant = new Map(
+    (team.attendance ?? []).map((a) => [a.participant_id, a])
+  );
+  const participants = (team.participants ?? []).map((p) => ({
+    id: p.id,
+    fullName: p.full_name,
+    email: p.email,
+    phone: p.phone,
+    role: p.role,
+    status: attendanceByParticipant.get(p.id)?.status ?? 'absent',
+    attendanceId: attendanceByParticipant.get(p.id)?.id ?? null,
+    markedAt: attendanceByParticipant.get(p.id)?.marked_at ?? null,
+    markedBy: attendanceByParticipant.get(p.id)?.marked_by ?? null,
+  }));
+  return {
+    id: team.id,
+    teamName: team.team_name,
+    registrationCode: team.registration_code,
+    college: team.college,
+    paymentStatus: team.payment_status,
+    attendanceToken: team.attendance_token,
+    participants,
+  };
+}
+
+/* Save status for a roster — update existing rows by id, insert any
+   missing ones on the (team_id, participant_id) constraint. Every write
+   stamps marked_at + marked_by (current admin) + updated_at. */
+export async function adminSaveAttendance(teamId, participantStatuses) {
+  if (!teamId) throw new AppError('NO TEAM SELECTED', 'NO_TEAM');
+  const supabase = getAdminSupabase();
+  const { data: sessionData } = await supabase.auth.getSession();
+  const adminId = sessionData?.session?.user?.id ?? null;
+
+  const now = new Date().toISOString();
+  const rows = (participantStatuses ?? [])
+    .filter((p) => p && p.id)
+    .map((p) => ({
+      id: p.attendanceId ?? undefined,
+      team_id: teamId,
+      participant_id: p.id,
+      status: p.status === 'present' ? 'present' : 'absent',
+      marked_at: now,
+      marked_by: adminId,
+      updated_at: now,
+    }));
+
+  if (!rows.length) return { updated: 0 };
+  const { data, error } = await supabase
+    .from(T.ATTENDANCE)
+    .upsert(rows, { onConflict: 'team_id,participant_id' })
+    .select('id, status');
+  if (error) throw wrapError(error, 'ATTENDANCE COULD NOT BE SAVED');
+  return { updated: data?.length ?? rows.length };
+}
+
+/* Dashboard stats — every number derived from Supabase. attendance rows
+   exist for verified teams only, so `total` == verified participants. */
+export async function adminFetchAttendanceStats() {
+  const supabase = getAdminSupabase();
+  const count = async (apply) => {
+    let q = supabase.from(T.ATTENDANCE).select('id', { count: 'exact', head: true });
+    if (apply) q = apply(q);
+    const { count: c, error } = await q;
+    if (error) throw wrapError(error, 'ATTENDANCE STATS COULD NOT BE LOADED');
+    return c ?? 0;
+  };
+
+  const total = await count();
+  const present = await count((q) => q.eq('status', 'present'));
+  const absent = await count((q) => q.eq('status', 'absent'));
+
+  /* distinct teams with at least one present participant — the count
+     head query counts ROWS (a team with 2 present members counts twice),
+     so resolve distinct team ids from a light fetch instead. */
+  const { data: presentTeams, error: teamsErr } = await supabase
+    .from(T.ATTENDANCE)
+    .select('team_id')
+    .eq('status', 'present');
+  if (teamsErr) throw wrapError(teamsErr, 'ATTENDANCE STATS COULD NOT BE LOADED');
+  const presentTeamIds = new Set((presentTeams ?? []).map((r) => r.team_id));
+
+  /* distinct verified teams with attendance rows */
+  const { data: allTeams, error: allTeamsErr } = await supabase
+    .from(T.ATTENDANCE)
+    .select('team_id');
+  if (allTeamsErr) throw wrapError(allTeamsErr, 'ATTENDANCE STATS COULD NOT BE LOADED');
+  const allTeamIds = new Set((allTeams ?? []).map((r) => r.team_id));
+
+  const teamsNotCheckedIn = Math.max(0, allTeamIds.size - presentTeamIds.size);
+
+  return {
+    total,
+    present,
+    absent,
+    pct: total ? Math.round((present / total) * 100) : 0,
+    teamsCheckedIn: presentTeamIds.size,
+    teamsTotal: allTeamIds.size,
+    teamsNotCheckedIn,
+  };
+}
+
+/* Paginated attendance records with search / status / college filters
+   and accurate counts. Search resolves team ids + participant ids first
+   (embedded columns can't be or'd in this PostgREST version). */
+export async function adminFetchAttendanceRecords({
+  search = '',
+  status = '',
+  college = '',
+  sortBy = 'markedAt',
+  sortDir = 'desc',
+  page = 0,
+  pageSize = 20,
+} = {}) {
+  const supabase = getAdminSupabase();
+  const sort = ATTENDANCE_SORTS[sortBy] ?? ATTENDANCE_SORTS.markedAt;
+
+  let q = supabase
+    .from(T.ATTENDANCE)
+    .select(ATTENDANCE_EMBED, { count: 'exact' });
+
+  if (search) {
+    const orParts = await attendanceSearchOrParts(supabase, search);
+    if (orParts) q = q.or(orParts);
+  }
+  if (status) q = q.eq('status', status);
+  if (college) q = q.eq('teams.college', college);
+
+  q = q.order(sort.column, {
+    ascending: sortDir === 'asc',
+    ...(sort.referencedTable ? { referencedTable: sort.referencedTable } : {}),
+    ...(sort.nullsFirst ? { nullsFirst: sort.nullsFirst } : {}),
+  });
+
+  const { data, count, error } = await q.range(
+    page * pageSize,
+    page * pageSize + pageSize - 1
+  );
+  if (error) throw wrapError(error, 'ATTENDANCE RECORDS COULD NOT BE LOADED');
+  return { rows: (data ?? []).map(normalizeAttendance), count: count ?? 0 };
+}
+
+/* Full dataset for exports (respects the same filters, unpaginated). */
+export async function adminFetchAttendanceAll({ search = '', status = '', college = '' } = {}) {
+  const supabase = getAdminSupabase();
+  let q = supabase.from(T.ATTENDANCE).select(ATTENDANCE_EMBED);
+  if (search) {
+    const orParts = await attendanceSearchOrParts(supabase, search);
+    if (orParts) q = q.or(orParts);
+  }
+  if (status) q = q.eq('status', status);
+  if (college) q = q.eq('teams.college', college);
+  const { data, error } = await q;
+  if (error) throw wrapError(error, 'ATTENDANCE REPORT COULD NOT BE LOADED');
+  const rows = (data ?? []).map(normalizeAttendance);
+  rows.sort((a, b) =>
+    (a.teamName + a.registrationCode).localeCompare(b.teamName + b.registrationCode)
+  );
+  return rows;
+}
+
+/* Group attendance rows per team for the TEAM SUMMARY export. */
+export function collapseAttendanceTeams(rows) {
+  const byTeam = new Map();
+  for (const row of rows) {
+    const key = row.teamId;
+    if (!byTeam.has(key)) {
+      byTeam.set(key, {
+        teamId: key,
+        registrationCode: row.registrationCode,
+        teamName: row.teamName,
+        college: row.college,
+        teamSize: 0,
+        present: 0,
+        absent: 0,
+      });
+    }
+    const t = byTeam.get(key);
+    t.teamSize += 1;
+    if (row.status === 'present') t.present += 1;
+    else t.absent += 1;
+  }
+  return [...byTeam.values()].sort((a, b) =>
+    a.teamName.localeCompare(b.teamName)
+  );
+}
+
+/* Roster + saved statuses for one team (dashboard "view team" modal). */
+export async function adminFetchAttendanceByTeam(teamId) {
+  const supabase = getAdminSupabase();
+  const { data, error } = await supabase
+    .from(T.ATTENDANCE)
+    .select(ATTENDANCE_EMBED)
+    .eq('team_id', teamId);
+  if (error) throw wrapError(error, 'TEAM ATTENDANCE COULD NOT BE LOADED');
+  const rows = (data ?? []).map(normalizeAttendance);
+  rows.sort((a, b) => a.participantName.localeCompare(b.participantName));
+  return rows;
 }
