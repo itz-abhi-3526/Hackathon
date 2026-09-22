@@ -145,7 +145,11 @@ export default function Leaderboard() {
       confirmLabel: 'UPDATE MAIN LEADERBOARD',
       key: 'sync:main',
       action: () =>
-        runAction('sync:main', adminSyncCumulativeLeaderboard, (n) => `${n} TEAMS PUBLISHED ONTO THE MAIN LEADERBOARD`),
+        runAction('sync:main', adminSyncCumulativeLeaderboard, (n) =>
+          n > 0
+            ? `${n} TEAMS PUBLISHED ONTO THE MAIN LEADERBOARD`
+            : 'NO SCORED TEAMS TO PUBLISH — SAVE SCORES IN JUDGING FIRST'
+        ),
     });
 
   const totals = useMemo(() => {

@@ -16,7 +16,7 @@ dist-ssr
 .env
 .env.*
 !.env.example
-!supabase/functions/.env.example
+!supabase/functions/**/.env.example
 
 # Editor directories and files
 .vscode/*
@@ -30,3 +30,6 @@ dist-ssr
 *.sw?
 
 supabase/.temp/
+
+# Generated screenshot artifacts from scripts/screenshot.mjs
+screenshots/

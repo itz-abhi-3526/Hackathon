@@ -1287,6 +1287,7 @@ export async function adminSaveSharedEvaluation({
 export function normalizeJudgingLeaderboardRow(row) {
   const num = (v) => (v === null || v === undefined ? null : Number(v));
   return {
+    id: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.teamId] ?? null,
     teamId: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.teamId] ?? null,
     teamName: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.teamName] ?? '',
     registrationCode: row?.[ADMIN_JUDGING_LEADERBOARD_COLS.registrationCode] ?? '',
