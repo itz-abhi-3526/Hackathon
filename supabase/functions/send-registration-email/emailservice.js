@@ -194,6 +194,12 @@ const sendVerificationEmail = async (registration) => {
     : null;
   const dateVal = has(registration.date) ? String(registration.date) : null;
   const venue = has(registration.venue) ? String(registration.venue) : null;
+  const qrImageUrl = has(registration.qrImageUrl)
+    ? String(registration.qrImageUrl)
+    : null;
+  const scanUrl = has(registration.scanUrl)
+    ? String(registration.scanUrl)
+    : null;
 
   const memberName = (m) => {
     if (!m) return null;
@@ -221,6 +227,13 @@ const sendVerificationEmail = async (registration) => {
     'TEAM             ' + registration.name,
     'BOOKING REF      ' + code,
     'PASS STATUS      CONFIRMED',
+    '',
+    'YOUR EVENT PASS',
+    'SCAN AT ENTRY',
+    ...(scanUrl ? ['OPEN: ' + scanUrl] : []),
+    'REGISTRATION     ' + code,
+    'TEAM             ' + registration.name,
+    'Present this pass at entry to check in your crew.',
     '',
     'YOUR PASS',
     'TEAM             ' + registration.name,
@@ -315,6 +328,30 @@ const sendVerificationEmail = async (registration) => {
                       </table>`;
     })
     .join('');
+
+  /* YOUR EVENT PASS — attendance QR (verification email ONLY). The QR
+     is a server-generated PNG (storage/rls-secured); the registration
+     code stays visible even if remote images are blocked. */
+  const qrSectionHtml = qrImageUrl ? `
+            <tr>
+              <td style="background-color:${VH_BLACK};padding:26px 30px 30px 30px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+                  <tr>
+                    <td align="center">
+                      <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">YOUR&nbsp;EVENT&nbsp;PASS</div>
+                      <div style="margin-top:8px;width:44px;height:2px;background-color:${VH_RED};font-size:0;line-height:0;margin-left:auto;margin-right:auto;">&nbsp;</div>
+                      <div style="margin-top:18px;display:inline-block;background-color:${VH_PAPER};border-radius:8px;padding:14px;">
+                        <img src="${esc(qrImageUrl)}" alt="VOIDHACK 2026 attendance QR code — present it at venue entry to check in" width="172" height="172" style="display:block;width:172px;height:172px;border:0;outline:none;text-decoration:none;border-radius:4px;" />
+                      </div>
+                      <div style="margin-top:16px;font-family:'Courier New',Courier,monospace;font-size:13px;letter-spacing:2px;font-weight:bold;color:${VH_WARM};">REGISTRATION&nbsp;·&nbsp;${esc(code)}</div>
+                      <div style="margin-top:6px;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:bold;color:#B4B2AA;">${esc(registration.name) || '&mdash;'}</div>
+                      <div style="margin-top:12px;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#8A887F;">Show this QR at entry — each participant checks in individually.</div>
+                      <div style="margin-top:22px;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:3px;color:#8A887F;text-transform:uppercase;">SCAN&nbsp;AT&nbsp;ENTRY</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>` : '';
 
   const html = `
 <!DOCTYPE html>
@@ -451,6 +488,8 @@ const sendVerificationEmail = async (registration) => {
                 </table>
               </td>
             </tr>
+
+            ${qrSectionHtml}
 
             <!-- small black breathing gap under the ticket -->
             <tr>

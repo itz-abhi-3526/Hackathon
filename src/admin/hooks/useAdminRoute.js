@@ -13,6 +13,8 @@ export const ADMIN_VIEWS = {
   dashboard: 'dashboard',
   teams: 'teams',
   participants: 'participants',
+  attendance: 'attendance',
+  scanner: 'scanner',
   'problem-statements': 'problem-statements',
   rounds: 'rounds',
   payments: 'payments',

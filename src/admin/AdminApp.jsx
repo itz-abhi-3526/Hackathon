@@ -18,6 +18,8 @@ import AccessDenied from './pages/AccessDenied.jsx';
 import Overview from './pages/Overview.jsx';
 import Teams from './pages/Teams.jsx';
 import Participants from './pages/Participants.jsx';
+import Attendance from './pages/Attendance.jsx';
+import Scanner from './pages/Scanner.jsx';
 import ProblemStatements from './pages/ProblemStatements.jsx';
 import Payments from './pages/Payments.jsx';
 import Rounds from './pages/Rounds.jsx';
@@ -42,6 +44,10 @@ function PageFor({ view, onOpenTeam, refreshToken }) {
       return <Teams />;
     case 'participants':
       return <Participants />;
+    case 'attendance':
+      return <Attendance />;
+    case 'scanner':
+      return <Scanner />;
     case 'problem-statements':
       return <ProblemStatements />;
     case 'rounds':

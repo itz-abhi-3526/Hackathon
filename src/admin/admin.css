@@ -644,6 +644,8 @@
 .cpa-badge--submitted { color: var(--cpa-amber); border-color: rgba(232, 184, 76, 0.35); background: var(--cpa-amber-dim); }
 .cpa-badge--verified { color: var(--cpa-ok); border-color: rgba(98, 201, 122, 0.35); background: var(--cpa-ok-dim); }
 .cpa-badge--rejected { color: var(--cpa-bad); border-color: rgba(255, 106, 87, 0.35); background: var(--cpa-bad-dim); }
+.cpa-badge--present { color: var(--cpa-ok); border-color: rgba(98, 201, 122, 0.35); background: var(--cpa-ok-dim); }
+.cpa-badge--absent { color: #9a9aa2; }
 .cpa-badge--none { opacity: 0.7; }
 .cpa-badge--sm { font-size: 8px; padding: 3px 6px; gap: 4px; }
 
@@ -1249,4 +1251,137 @@
 
 @media (max-width: 560px) {
   .cpa-form__row { grid-template-columns: 1fr; }
+}
+
+/* ── attendance: scanner + check-in modal ────────────────── */
+.cpa-checkin__kicker {
+  font-family: var(--cpa-mono);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: var(--cpa-red);
+  display: block;
+  margin-bottom: 6px;
+}
+.cpa-checkin__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  font-family: var(--cpa-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--cpa-mut);
+}
+.cpa-checkin__meta span { border: 1px solid var(--cpa-line-2); border-radius: 3px; padding: 3px 6px; }
+.cpa-checkin__done { margin-top: 12px; border: 1px solid rgba(98, 201, 122, 0.35); background: var(--cpa-ok-dim); color: #8fe0a6; text-align: left; padding: 10px 12px !important; font-size: 10px; }
+.cpa-state--ok { border-color: rgba(98, 201, 122, 0.35); background: var(--cpa-ok-dim); }
+.cpa-checkin__roster { margin-top: 14px; border-top: 1px solid var(--cpa-line); }
+.cpa-checkin__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--cpa-line);
+}
+.cpa-checkin__num { font-family: var(--cpa-mono); font-size: 9px; color: var(--cpa-faint); }
+.cpa-checkin__who { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.cpa-checkin__who strong { font-size: 12px; color: #fff; font-weight: 600; }
+.cpa-checkin__who em { font-style: normal; font-family: var(--cpa-mono); font-size: 9px; color: var(--cpa-mut); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cpa-checkin__toggles { display: flex; gap: 5px; flex: 0 0 auto; }
+.cpa-checkin__pill {
+  font-family: var(--cpa-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  padding: 4px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--cpa-line-2);
+  background: transparent;
+  color: var(--cpa-mut);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.cpa-checkin__pill--on { background: var(--cpa-ok); border-color: var(--cpa-ok); color: #040406; font-weight: 700; }
+.cpa-checkin__pill--absent-on { background: var(--cpa-bad-dim); border-color: rgba(255, 106, 87, 0.6); color: #ff9c8c; }
+.cpa-checkin__pill:disabled { opacity: 0.45; cursor: not-allowed; }
+.cpa-checkin__bulk { display: flex; gap: 8px; margin-top: 14px; }
+.cpa-checkin__count { margin-right: auto; font-family: var(--cpa-mono); font-size: 9px; letter-spacing: 0.16em; color: var(--cpa-mut); align-self: center; }
+.cpa-modal__card--checkin { width: min(520px, 96vw); max-height: 92vh; display: flex; flex-direction: column; }
+.cpa-modal__card--checkin .cpa-modal__body { overflow-y: auto; min-height: 0; }
+.cpa-modal__card--checkin .cpa-modal__foot { flex: 0 0 auto; }
+
+/* scanner region */
+.cpa-scanner { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(300px, 1fr); gap: 14px; margin: 4px; }
+.cpa-scanner__cam {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid var(--cpa-line-2);
+  background: #000;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cpa-scanner__cam video { width: 100%; height: auto; display: block; border-radius: 4px; }
+.cpa-scanner__reader { width: 100%; }
+.cpa-scanner__side { display: flex; flex-direction: column; gap: 12px; }
+.cpa-scanner__hint {
+  font-family: var(--cpa-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--cpa-faint);
+  line-height: 1.8;
+  border: 1px solid var(--cpa-line-2);
+  border-radius: 4px;
+  padding: 12px;
+}
+.cpa-scanner__hint strong { color: var(--cpa-mut); }
+.cpa-scanner__cam-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-family: var(--cpa-mono); font-size: 10px; letter-spacing: 0.2em; color: var(--cpa-mut); text-align: center; padding: 20px; }
+.cpa-scanner__error-band {
+  font-family: var(--cpa-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #ff8b7a;
+  border: 1px solid rgba(232, 22, 5, 0.4);
+  background: rgba(232, 22, 5, 0.05);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.cpa-scanner__manual { flex: 1; min-width: 0; }
+
+/* live indicator + attendance stats */
+.cpa-live { display: inline-flex; align-items: center; gap: 7px; font-family: var(--cpa-mono); font-size: 9px; letter-spacing: 0.2em; color: var(--cpa-ok); }
+.cpa-live__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cpa-ok); box-shadow: 0 0 0 0 rgba(98, 201, 122, 0.5); animation: cpa-pulse 1.6s ease-out infinite; }
+@keyframes cpa-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(98, 201, 122, 0.45); }
+  70% { box-shadow: 0 0 0 8px rgba(98, 201, 122, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(98, 201, 122, 0); }
+}
+.cpa-stat__pct { font-family: var(--cpa-mono); font-size: 20px; font-weight: 800; letter-spacing: 0.02em; }
+.cpa-stat__pct--hot { color: var(--cpa-ok); }
+.cpa-team-chip {
+  font-family: var(--cpa-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--cpa-faint);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--cpa-line-2);
+  border-radius: 3px;
+  padding: 2px 6px;
+  margin-left: 6px;
+}
+.cpa-row-action {
+  background: none;
+  border: none;
+  color: var(--cpa-red);
+  font-family: var(--cpa-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+.cpa-row-action:hover { color: #ff5b49; }
+@media (max-width: 900px) {
+  .cpa-scanner { grid-template-columns: 1fr; }
+  .cpa-scanner__cam { min-height: 280px; }
 }

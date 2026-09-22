@@ -17,6 +17,7 @@ export const T = {
   TEAMS: 'teams',
   PARTICIPANTS: 'participants',
   REGISTRATION_ROUNDS: 'registration_rounds',
+  ATTENDANCE: 'attendance',
 };
 
 export const PROBLEM_COLS = {
@@ -88,6 +89,14 @@ export const ROUND_STATUS_ORDER = ['draft', 'active', 'closed'];
 export const PARTICIPANT_ROLE = {
   LEAD: 'lead',
   MEMBER: 'member',
+};
+
+/* Attendance — one row per participant of a verified team. Rows are
+   created the moment a team is verified and only ever mutated by admins
+   (RLS on public.attendance is admin-only). */
+export const ATTENDANCE_STATUS = {
+  PRESENT: 'present',
+  ABSENT: 'absent',
 };
 
 /* Verification email tracking on the team row. 'pending' is the

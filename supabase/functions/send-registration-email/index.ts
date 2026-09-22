@@ -40,9 +40,11 @@ import {
   sendVerificationEmail,
   sendRejectionEmail,
 } from './emailservice.js';
+import { buildQrPng } from './qr.js';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const SITE_URL = (Deno.env.get('SITE_URL') ?? '').replace(/\/+$/, '');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -82,6 +84,43 @@ const bearerToken = (req) =>
   (req.headers.get('Authorization') ?? '')
     .replace(/^Bearer\s+/i, '')
     .trim();
+
+/* Attendance QR — server-generated PNG uploaded under the CALLER's
+   identity (storage RLS admits authenticated admins into the
+   attendance-qr bucket). NEVER throws: a payment screenshot + plain
+   scan link still go out if storage/QR is unavailable. */
+async function attachAttendanceQr(supabase, team, registration) {
+  try {
+    let token = String(team.attendance_token ?? '').trim();
+    if (!token) {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      token = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+      const { error: writeErr } = await supabase
+        .from('teams')
+        .update({ attendance_token: token })
+        .eq('id', team.id);
+      if (writeErr) throw writeErr;
+    }
+
+    const scanUrl = SITE_URL
+      ? `${SITE_URL}/attendance/scan?t=${encodeURIComponent(token)}`
+      : token;
+
+    const png = await buildQrPng(scanUrl);
+    const path = `${team.id}.png`;
+    const { error: upErr } = await supabase.storage
+      .from('attendance-qr')
+      .upload(path, png, { contentType: 'image/png', upsert: true });
+    if (upErr) throw upErr;
+
+    registration.qrImageUrl = `${SUPABASE_URL}/storage/v1/object/public/attendance-qr/${path}`;
+    registration.scanUrl = scanUrl;
+  } catch (err) {
+    console.error('[send-registration-email] attendance QR attach failed', err);
+  }
+  return registration;
+}
 
 /* Throws { status, message } for clear 401/403 responses. */
 const requireAdmin = async (supabase, token) => {
@@ -184,7 +223,9 @@ Deno.serve(async (req) => {
     const sent =
       action === 'reject'
         ? await sendRejectionEmail(registration)
-        : await sendVerificationEmail(registration);
+        : await sendVerificationEmail(
+            await attachAttendanceQr(supabase, team, registration)
+          );
 
     return json({ ok: sent, teamId, action });
   } catch (err) {
@@ -209,6 +250,10 @@ async function handleTrackedEmail(supabase, team, registration, spec) {
   }
   if (!isValidEmail(email)) {
     return json({ ok: false, code: 'INVALID_LEAD_EMAIL', teamId: team.id });
+  }
+
+  if (spec.kind === 'verification') {
+    registration = await attachAttendanceQr(supabase, team, registration);
   }
 
   const sent = await spec.send(registration);
