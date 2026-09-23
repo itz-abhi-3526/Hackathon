@@ -17,11 +17,28 @@ import FAQ from './components/NewFAQ/FAQ.jsx';
 import FinalSequence from './components/NewFinalCTA/FinalSequence.jsx';
 import Registration from './components/NewRegistration/Registration.jsx';
 import AdminApp from './admin/AdminApp.jsx';
+import PublicLeaderboard from './components/PublicLeaderboard/PublicLeaderboard.jsx';
 import useRegistrationStore from './store/registrationStore.js';
 
+/* The live scoreboard is reached at /leaderboard — the same SPA serves
+   it, mirroring how /admin is rewritten to the hash-routed admin app. */
+const LEADERBOARD_PATH_RE = /^\/leaderboard(\/.*)?$/;
+
+function isLeaderboardPath() {
+  return LEADERBOARD_PATH_RE.test(window.location.pathname);
+}
+
+function initialPhase() {
+  if (window.location.hash.startsWith('#admin')) return 'admin';
+  if (isLeaderboardPath()) return 'leaderboard';
+  return 'landing';
+}
+
 export default function App() {
-  const [phase, setPhase] = useState('landing');
-  const [booted, setBooted] = useState(false);
+  const [phase, setPhase] = useState(initialPhase);
+  /* Skip the terminal boot when landing directly on the scoreboard so
+     the live board appears instantly on projector/mobile screens. */
+  const [booted, setBooted] = useState(() => !isLeaderboardPath());
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -133,6 +150,18 @@ export default function App() {
               transition={{ duration: 0.5 }}
             >
               <AdminApp onExit={exitAdmin} />
+            </motion.div>
+          )}
+
+          {phase === 'leaderboard' && (
+            <motion.div
+              key="leaderboard"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <PublicLeaderboard homeUrl="/" />
             </motion.div>
           )}
         </AnimatePresence>
