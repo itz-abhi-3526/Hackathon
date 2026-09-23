@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin authentication service
+   HACK2PITCH 2026 — Admin authentication service
    Wraps the existing authenticated Supabase client (publishable key
    only — never a service-role key in the browser). Authorization is a
    two-layer check:

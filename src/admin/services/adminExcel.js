@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin Excel export
+   HACK2PITCH 2026 — Admin Excel export
    Generates proper .xlsx workbooks with headers, sensible column
    widths and readable formatting. xlsx (SheetJS) is lazy-imported so
    the main admin bundle stays small; exports are real DB rows only.

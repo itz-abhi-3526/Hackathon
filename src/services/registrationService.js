@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Registration service (teams → participants)
+   HACK2PITCH 2026 — Registration service (teams → participants)
    A team IS the registration. The data model is three tables:
    problem_statements / teams / participants — there are no
    registrations, team_members, payments, hackathons or

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Access denied
+   HACK2PITCH 2026 — Access denied
    Signed-in but not on the admin allowlist, or the is_admin() gate is
    unavailable. There is nothing further to render.
    ═══════════════════════════════════════════════════════════════ */
@@ -13,7 +13,7 @@ export default function AccessDenied({ email, error, onSignOut, onViewSite }) {
         {email && <p className="cpa-denied__who">{email}</p>}
         <p className="cpa-denied__msg">
           {error ||
-            'This account is not on the VOIDHACK admin allowlist. Administrative privileges are granted per-email only.'}
+            'This account is not on the HACK2PITCH admin allowlist. Administrative privileges are granted per-email only.'}
         </p>
         <div className="cpa-denied__actions">
           <button type="button" className="cpa-btn cpa-btn--ghost" onClick={onViewSite}>← BACK TO SITE</button>

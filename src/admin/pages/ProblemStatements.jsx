@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Problem Statements
+   HACK2PITCH 2026 — Problem Statements
    Monitoring view of the public challenge arena: track / title /
    difficulty plus how many teams chose each statement. Clicking a
    statement opens the list of teams assigned to it. Read-only — no

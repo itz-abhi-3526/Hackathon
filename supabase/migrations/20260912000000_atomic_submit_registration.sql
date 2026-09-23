@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Atomic registration submit + RLS hardening
+--   HACK2PITCH 2026 — Atomic registration submit + RLS hardening
 --   (supersedes 20260910000000 / 20260911000000 on live projects)
 --
 --   Data model (the ONLY tables — no registrations / team_members /
@@ -296,4 +296,4 @@ revoke all on function public.submit_registration(jsonb) from public;
 grant execute on function public.submit_registration(jsonb) to anon, authenticated;
 
 comment on function public.submit_registration(jsonb) is
-  'Atomic VOIDHACK 2026 registration submit. SECURITY DEFINER: validates the team + crew, enforces exactly one lead, upserts the team (idempotent on registration_code/team_id) and rewrites participants in one transaction, returning team_id + registration_code.';
+  'Atomic HACK2PITCH 2026 registration submit. SECURITY DEFINER: validates the team + crew, enforces exactly one lead, upserts the team (idempotent on registration_code/team_id) and rewrites participants in one transaction, returning team_id + registration_code.';

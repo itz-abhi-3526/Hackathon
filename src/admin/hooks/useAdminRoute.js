@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin hash router
+   HACK2PITCH 2026 — Admin hash router
    The public site routes on #hash (App.jsx), so the control center
    keeps the same architecture: #admin/<view>. Deep links, refresh and
    browser back/forward all work through the native hashchange event.

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — AdminApp (the whole control center)
+   HACK2PITCH 2026 — AdminApp (the whole control center)
    Mounted only inside the App.jsx `admin` phase. Owns:
      • Supabase auth session + admin allowlist gate (useAdminAuth)
      • #admin/<view> hash routing (useAdminRoute)

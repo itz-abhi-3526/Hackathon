@@ -93,15 +93,15 @@ export default function Footer({ progress }) {
         aria-hidden="true"
         style={{ y: ghostY, x: ghostX, scale: ghostS, opacity: ghostO }}
       >
-        VOIDHACK
+        HACK2PITCH
       </motion.span>
 
       <div className="foot__inner">
         <motion.div className="foot__brand" style={{ y: brandY, opacity: brandO }}>
           <p className="foot__brand-name">
-            VOIDHACK <span className="foot__brand-year">2026</span>
+            HACK2PITCH <span className="foot__brand-year">2026</span>
           </p>
-          <p className="foot__brand-tag">BUILD WITHOUT PERMISSION.</p>
+          <p className="foot__brand-tag">PITCH. BUILD. LAUNCH.</p>
         </motion.div>
 
         <nav className="foot__nav">
@@ -111,9 +111,9 @@ export default function Footer({ progress }) {
         </nav>
 
         <motion.div className="foot__credits" style={{ y: creditY, opacity: creditO }}>
-          <span className="foot__credit">PRESENTED BY NEXUS INSTITUTE OF TECHNOLOGY</span>
-          <span className="foot__credit">© 2026 VOIDHACK. ALL RIGHTS RESERVED.</span>
-          <span className="foot__credit foot__credit--mark">VOID / HACK — 2026</span>
+          <span className="foot__credit">PRESENTED BY FISAT HORIZON CLUB</span>
+          <span className="foot__credit">© 2026 HACK2PITCH. ALL RIGHTS RESERVED.</span>
+          <span className="foot__credit foot__credit--mark">HACK2PITCH — 2026</span>
         </motion.div>
       </div>
     </footer>

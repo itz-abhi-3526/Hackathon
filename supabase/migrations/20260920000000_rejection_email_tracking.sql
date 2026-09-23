@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Rejection email tracking (additive)
+--   HACK2PITCH 2026 — Rejection email tracking (additive)
 --   Mirrors the verification-email tracking (20260919000000) for the
 --   admin → reject → rejection-email flow. The rejection email is now
 --   sent manually from the admin Registrations page (never automatic),

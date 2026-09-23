@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Shared errors
+   HACK2PITCH 2026 — Shared errors
    The registration flow talks to Supabase directly through the public
    publishable key (RLS: anonymous INSERT on teams/participants, SELECT
    on problem_statements). There are no Edge Functions and no service

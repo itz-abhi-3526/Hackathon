@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Database schema map (READ-ONLY)
-   The core registration architecture is:
+   HACK2PITCH 2026 — Database schema map (READ-ONLY)
+   The three-table architecture is the ONLY application model:
 
      problem_statements → teams → participants
 

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Cloudinary payment-screenshot upload
+   HACK2PITCH 2026 — Cloudinary payment-screenshot upload
    The existing Cloudinary preset is UNSIGNED, so the browser can
    upload the screenshot directly and receive a secure_url. Only that
    URL is later stored in Supabase (teams.payment_image_url) — the

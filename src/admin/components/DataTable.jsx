@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — DataTable
+   HACK2PITCH 2026 — DataTable
    A dense, sortable admin table shell used by every data page.
    Columns config: { key, label, sortable, render, className, align,
    width }. Handles loading / empty / error states itself.

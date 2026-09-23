@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Per-team-size registration fees (additive)
+--   HACK2PITCH 2026 — Per-team-size registration fees (additive)
 --
 --   Sits ON TOP of the live database. Adds three fee columns to
 --   registration_rounds so every round can price 2-, 3- and 4-member
@@ -487,7 +487,7 @@ revoke all on function public.register_team(jsonb) from public;
 grant execute on function public.register_team(jsonb) to anon, authenticated;
 
 comment on function public.register_team(jsonb) is
-  'VOIDHACK 2026 canonical registration submit. SECURITY DEFINER: validates the team + crew, resolves the ACTIVE round, enforces dates + team capacity with a row lock (round auto-closes at capacity; closed rounds stay closed until an admin explicitly reopens), computes the AUTHORITATIVE fee from the active round and the participant count (fee_2_members / fee_3_members / fee_4_members, legacy fallback to fee), stamps registration_round_id + registration_fee, upserts the team idempotent on registration_code, and rewrites participants — all in ONE transaction. Public round/fee/capacity are NEVER client-chosen; the client-supplied fee is ignored.';
+  'HACK2PITCH 2026 canonical registration submit. SECURITY DEFINER: validates the team + crew, resolves the ACTIVE round, enforces dates + team capacity with a row lock (round auto-closes at capacity; closed rounds stay closed until an admin explicitly reopens), computes the AUTHORITATIVE fee from the active round and the participant count (fee_2_members / fee_3_members / fee_4_members, legacy fallback to fee), stamps registration_round_id + registration_fee, upserts the team idempotent on registration_code, and rewrites participants — all in ONE transaction. Public round/fee/capacity are NEVER client-chosen; the client-supplied fee is ignored.';
 
 -- ── 7. Make the changed signatures discoverable by the deployed app ──
 notify pgrst, 'reload schema';

@@ -96,7 +96,7 @@ export default function Countdown() {
               <span className="countdown__window-value">{windowLabel(startDate, endDate)}</span>
             </div>
 
-            <div className="countdown__readout" role="timer" aria-label={`Time remaining until VOIDHACK 2026`}>
+            <div className="countdown__readout" role="timer" aria-label={`Time remaining until HACK2PITCH 2026`}>
               <span className="countdown__tminus" aria-hidden="true">T−1</span>
               {units.map((u, i) => (
                 <Fragment key={u.label}>
@@ -119,7 +119,7 @@ export default function Countdown() {
             <div className="countdown__meta">
               <span className="countdown__meta-item">
                 <em>NODE</em>
-                <b>VH-01 / BLR</b>
+                <b>H2P-01 / COK</b>
               </span>
               <span className="countdown__meta-item">
                 <em>SYNC</em>

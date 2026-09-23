@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — TeamDetailsDrawer
+   HACK2PITCH 2026 — TeamDetailsDrawer
    Right-side detail drawer for inspecting one registration: team info,
    challenge, payment proof (thumbnail → ProofViewer) and its full crew.
    Payment status is updated inline (the ONLY admin write); marking a

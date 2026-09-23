@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — send-registration-email (Supabase Edge Function)
+   HACK2PITCH 2026 — send-registration-email (Supabase Edge Function)
    Invoked by the admin UI after a payment is VERIFIED/REJECTED or to
    (re)send the verification / rejection email:
 
@@ -8,11 +8,11 @@
      { "teamId": "<uuid>", "action": "verify" | "reject" | "send_verification" | "send_rejection", "reason": "..." }
 
    The function authenticates the caller (must be an admin via
-   public.is_admin()), loads the team + its lead participant using
-   the CALLER's identity (RLS admin-only reads — no service-role key
-   in the browser, none needed here either), then hands a normalized
-   `registration` object to emailservice.js for the actual Nodemailer
-   send.
+   public.is_admin()), loads the team + its problem statement + ALL
+   participants (lead resolves the recipient) using the CALLER's
+   identity (RLS admin-only reads — no service-role key in the browser,
+   none needed here either), then hands a normalized `registration`
+   object to emailservice.js for the actual Nodemailer send.
 
    Actions
      verify / reject        — legacy send-only actions (payment status
@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
 
     const { data: team, error: teamError } = await supabase
       .from('teams')
-      .select('*')
+      .select('*, problem_statements(track,title,description,difficulty)')
       .eq('id', teamId)
       .maybeSingle();
 
@@ -167,22 +167,49 @@ Deno.serve(async (req) => {
       throw { status: 404, message: 'TEAM NOT FOUND' };
     }
 
-    /* Team lead is the single verification/rejection recipient. */
-    const { data: lead, error: leadError } = await supabase
+    /* Crew manifest + team size + lead name come from ALL participants
+       (RLS-gated reads under the caller's identity — never invented).
+       The row flagged `lead` is still the single verification/rejection
+       recipient, matching the previous behaviour when no lead exists
+       (email resolves to '' → LEAD_EMAIL_MISSING). */
+    const { data: participants, error: membersError } = await supabase
       .from('participants')
-      .select('email')
+      .select('full_name, email, role')
       .eq('team_id', teamId)
-      .eq('role', 'lead')
-      .maybeSingle();
+      .order('role', { ascending: true });
 
-    if (leadError) {
-      throw { status: 500, message: 'LEAD PARTICIPANT COULD NOT BE LOADED' };
+    if (membersError) {
+      throw { status: 500, message: 'PARTICIPANTS COULD NOT BE LOADED' };
     }
+
+    const crew = (participants ?? [])
+      .filter((p) => p && String(p.full_name ?? '').trim() !== '')
+      .map((p) => ({
+        name: String(p.full_name ?? '').trim(),
+        email: String(p.email ?? '').trim(),
+        role: String(p.role ?? 'member').trim(),
+      }));
+
+    const lead = crew.find((m) => m.role === 'lead');
+    const ps = team.problem_statements;
 
     const registration = {
       name: String(team.team_name ?? '').trim(),
       email: lead?.email ?? '',
       registrationCode: team.registration_code ?? '',
+      college: String(team.college ?? '').trim() || null,
+      teamSize: crew.length > 0 ? crew.length : null,
+      leadName: lead?.name ?? null,
+      crew,
+      challenge:
+        ps && String(ps.title ?? '').trim()
+          ? {
+              title: String(ps.title ?? '').trim(),
+              track: String(ps.track ?? '').trim() || null,
+              difficulty: String(ps.difficulty ?? '').trim() || null,
+              description: String(ps.description ?? '').trim() || null,
+            }
+          : null,
       paymentScreenshot: team.payment_image_url
         ? { url: team.payment_image_url }
         : null,

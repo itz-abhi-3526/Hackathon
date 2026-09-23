@@ -46,7 +46,7 @@ export default function Sponsors() {
     <section className="sponsors vh-section" ref={sectionRef} id="sponsors">
       {/* Background watermark — subtle, moving slowly. */}
       <motion.span className="sponsors__watermark" style={{ y: wmY }} aria-hidden="true">
-        VOIDHACK
+        HACK2PITCH
       </motion.span>
 
       {/* Red axis anchor. */}
@@ -88,9 +88,9 @@ export default function Sponsors() {
           >
             <span className="sponsors__head-meta-rule" />
             <span>THE ECOSYSTEM BEHIND THE EVENT</span>
-            <span>OCT 17—19 2026</span>
+            <span>OCT 10—11 2026</span>
             <span>{`${TIERS.length} TIERS / ${total} PARTNERS`}</span>
-            <span>VOIDHACK 2026</span>
+            <span>HACK2PITCH 2026</span>
           </motion.div>
         </header>
 

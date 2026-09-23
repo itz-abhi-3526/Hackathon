@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — ConfirmDialog
+   HACK2PITCH 2026 — ConfirmDialog
    Dense confirmation modal used for destructive admin actions
    (e.g. marking a payment rejected).
    ═══════════════════════════════════════════════════════════════ */

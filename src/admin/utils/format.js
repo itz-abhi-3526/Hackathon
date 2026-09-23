@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin formatting helpers
+   HACK2PITCH 2026 — Admin formatting helpers
    Pure, shared formatters used across the control center. Everything
    null-safe so raw DB rows can never crash a cell.
    ═══════════════════════════════════════════════════════════════ */

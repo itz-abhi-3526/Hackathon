@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Problem statements reads
+   HACK2PITCH 2026 — Problem statements reads
    problem_statements is the single source of truth for hackathon
    problems. Public RLS grants anonymous SELECT, so these run straight
    from the browser with the publishable key.

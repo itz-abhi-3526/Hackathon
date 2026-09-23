@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Teams
+   HACK2PITCH 2026 — Teams
    Full registry table with server-side search / filter / sort /
    pagination, an inspection drawer per team and Excel export of the
    whole set or just the filtered subset.

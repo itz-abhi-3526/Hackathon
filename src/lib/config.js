@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — App configuration
+   HACK2PITCH 2026 — App configuration
    All credentials come from environment variables (VITE_* are baked
    into the browser bundle by Vite — therefore only the PUBLIC/publish
    able Supabase key may ever live there). The Cloudinary API secret
@@ -38,7 +38,7 @@ export function assertSupabaseConfigured() {
       .filter(Boolean)
       .join(', ');
     throw new Error(
-      `VOIDHACK CONFIG ERROR — Missing Supabase environment variable${missing.includes(',') ? 's' : ''}: ${missing}. ` +
+      `HACK2PITCH CONFIG ERROR — Missing Supabase environment variable${missing.includes(',') ? 's' : ''}: ${missing}. ` +
         'Add them to your .env file (see .env.example) and restart the dev server.'
     );
   }
@@ -57,7 +57,7 @@ export function assertCloudinaryConfigured() {
       .filter(Boolean)
       .join(', ');
     throw new Error(
-      `VOIDHACK CONFIG ERROR — Missing Cloudinary environment variable${missing.includes(',') ? 's' : ''}: ${missing}. ` +
+      `HACK2PITCH CONFIG ERROR — Missing Cloudinary environment variable${missing.includes(',') ? 's' : ''}: ${missing}. ` +
         'Add them to your .env file (see .env.example) and restart the dev server.'
     );
   }

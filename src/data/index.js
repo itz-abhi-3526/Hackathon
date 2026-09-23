@@ -1,12 +1,12 @@
 export const HACKATHON = {
   id: "voidhack-2026",
-  name: "VOIDHACK",
-  tagline: "BUILD WITHOUT PERMISSION",
+  name: "HACK2PITCH",
+  tagline: "PITCH. BUILD. LAUNCH.",
   edition: "2026",
-  presenter: "NEXUS INSTITUTE OF TECHNOLOGY",
-  date: "2026-10-17T09:00:00",
-  endDate: "2026-10-19T09:00:00",
-  location: "NEXUS CAMPUS, BENGALURU",
+  presenter: "FISAT HORIZON CLUB",
+  date: "2026-10-10T09:00:00",
+  endDate: "2026-10-11T09:00:00",
+  location: "FISAT, ANGAMALY",
   minTeamSize: 2,
   maxTeamSize: 4,
 };
@@ -61,7 +61,7 @@ export const TIMELINE = [
   {
     id: 2,
     label: "TEAM LOCK",
-    date: "OCT 10",
+    date: "OCT 03",
     description: "Finalize your team composition",
     phase: "PHASE_02",
     status: "upcoming",
@@ -69,15 +69,15 @@ export const TIMELINE = [
   {
     id: 3,
     label: "HACK BEGINS",
-    date: "OCT 17",
-    description: "48 hours of intense building",
+    date: "OCT 10",
+    description: "24 hours of intense building",
     phase: "PHASE_03",
     status: "upcoming",
   },
   {
     id: 4,
     label: "MENTOR CHECK",
-    date: "OCT 18",
+    date: "OCT 11",
     description: "Mid-hack mentor review",
     phase: "PHASE_04",
     status: "upcoming",
@@ -85,7 +85,7 @@ export const TIMELINE = [
   {
     id: 5,
     label: "SUBMISSION",
-    date: "OCT 19",
+    date: "OCT 11",
     description: "Final submission deadline",
     phase: "PHASE_05",
     status: "upcoming",
@@ -93,7 +93,7 @@ export const TIMELINE = [
   {
     id: 6,
     label: "JUDGING",
-    date: "OCT 19",
+    date: "OCT 11",
     description: "Panel evaluation round",
     phase: "PHASE_06",
     status: "upcoming",
@@ -101,7 +101,7 @@ export const TIMELINE = [
   {
     id: 7,
     label: "WINNERS",
-    date: "OCT 19",
+    date: "OCT 11",
     description: "Awards ceremony",
     phase: "PHASE_07",
     status: "upcoming",
@@ -209,7 +209,7 @@ export const FAQ_DATA = [
   {
     id: 3,
     question: "WHAT SHOULD WE BUILD?",
-    answer: "Choose from one of our six curated problem statements spanning fintech, healthcare, climate tech, cybersecurity, education, and logistics. Each problem is designed to be solvable within 48 hours while still being ambitious enough to push creative boundaries.",
+    answer: "Choose from one of our six curated problem statements spanning fintech, healthcare, climate tech, cybersecurity, education, and logistics. Each problem is designed to be solvable within 24 hours while still being ambitious enough to push creative boundaries.",
   },
   {
     id: 4,
@@ -224,12 +224,12 @@ export const FAQ_DATA = [
   {
     id: 6,
     question: "WHAT IF WE DON'T HAVE A COMPLETE TEAM?",
-    answer: "Attend our pre-hackathon team formation session on October 12. It's designed specifically for solo participants looking for teammates and teams seeking specific skills. Our matching system pairs complementary skill sets.",
+    answer: "Attend our pre-hackathon team formation session held before the event. It's designed specifically for solo participants looking for teammates and teams seeking specific skills. Our matching system pairs complementary skill sets.",
   },
   {
     id: 7,
     question: "CAN WE START BUILDING BEFORE THE HACK?",
-    answer: "You may prepare research, wireframes, and planning documents. However, all code must be written during the 48-hour hack window. Existing projects, templates, or pre-built components are not permitted. Original work only.",
+    answer: "You may prepare research, wireframes, and planning documents. However, all code must be written during the 24-hour hack window. Existing projects, templates, or pre-built components are not permitted. Original work only.",
   },
   {
     id: 8,

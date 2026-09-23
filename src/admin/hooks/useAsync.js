@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — useAsync
+   HACK2PITCH 2026 — useAsync
    Tiny fetch wrapper used by every admin page: hands back
    { data, loading, error, run, reload } with an abort-safe flag so a
    fast page switch never writes stale state.

@@ -6,7 +6,7 @@ const stages = [
   { number: '01', title: 'ARRIVE', desc: 'Walk in. Plug in. Claim your space.' },
   { number: '02', title: 'MEET', desc: 'Find your people. Form your squad.' },
   { number: '03', title: 'CHOOSE', desc: 'Pick your problem. Own your track.' },
-  { number: '04', title: 'BUILD', desc: '48 hours. No breaks. Ship it.' },
+  { number: '04', title: 'BUILD', desc: '24 hours. No breaks. Ship it.' },
   { number: '05', title: 'BREAK', desc: 'Hit walls. Break through them.' },
   { number: '06', title: 'ITERATE', desc: 'Feedback. Refine. Push harder.' },
   { number: '07', title: 'SUBMIT', desc: 'Demo day. Show what you built.' },
@@ -49,7 +49,7 @@ export default function Experience() {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
             WHAT HAPPENS<br />
-            <span className="experience__heading-red">IN 48 HOURS</span>
+            <span className="experience__heading-red">IN 24 HOURS</span>
           </motion.h2>
         </div>
 

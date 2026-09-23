@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Payment proof (frontend only)
+   HACK2PITCH 2026 — Payment proof (frontend only)
    There is NO payments table and NO payment gateway. The screenshot
    uploads straight from the browser to Cloudinary (existing UNSIGNED
    preset — see cloudinaryService.js). The resulting secure_url lives on

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Attendance Dashboard
+   HACK2PITCH 2026 — Attendance Dashboard
    Live entry tracking for VERIFIED teams (additive attendance system):
    stat cards, realtime postgres changes feed, searchable / filterable /
    sortable records table, per-team view modal, and the two EXCEL

@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Verification email tracking (additive)
+--   HACK2PITCH 2026 — Verification email tracking (additive)
 --   Adds the columns needed to track the admin → verification-email
 --   flow on the teams row (the registration itself):
 --

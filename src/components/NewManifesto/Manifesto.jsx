@@ -62,7 +62,7 @@ export default function Manifesto() {
               animate={isInView ? { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)' } : {}}
               transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             >
-              48 HOURS.<br />
+              24 HOURS.<br />
               NO PERMISSION.<br />
               <span className="manifesto__heading-red">PURE BUILD.</span>
             </motion.h2>
@@ -74,10 +74,10 @@ export default function Manifesto() {
               transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
               <p>
-                VOIDHACK is not a workshop. It is not a seminar. It is a 48-hour
+                HACK2PITCH is not a workshop. It is not a seminar. It is a 24-hour
                 build sprint where the only thing that matters is what you ship.
                 No prior approval. No permission slip. Just your team, your idea,
-                and two days to make it real.
+                and one day to make it real.
               </p>
               <p>
                 We bring together the sharpest minds from across India — engineers,
@@ -97,7 +97,7 @@ export default function Manifesto() {
               transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="manifesto__stat">
-                <span className="manifesto__stat-number">48</span>
+                <span className="manifesto__stat-number">24</span>
                 <span className="manifesto__stat-unit">HRS</span>
                 <span className="manifesto__stat-desc">OF NON-STOP BUILDING</span>
               </div>

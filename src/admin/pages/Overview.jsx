@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Overview / Dashboard
+   HACK2PITCH 2026 — Overview / Dashboard
    Live operational stats: team/participant/problem totals, payment
    status distribution, per-problem team counts and recent activity.
    Everything is derived from real Supabase data.
@@ -136,7 +136,7 @@ export default function Overview({ onOpenTeam, refreshToken = 0 }) {
   return (
     <>
       <PageHeader
-        eyebrow="VOIDHACK 2026 / OPS"
+        eyebrow="HACK2PITCH 2026 / OPS"
         title="OPERATIONS OVERVIEW"
         meta="Live counts from the registration database — refreshed from Supabase."
         actions={<RefreshButton onClick={reload} busy={loading} />}

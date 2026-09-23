@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Attendance Check-In modal (SCANNER)
+   HACK2PITCH 2026 — Attendance Check-In modal (SCANNER)
    One team roster: name / registration code / college / team size,
    then per-participant status rows reflecting the SAVED database state
    (never reset on rescan). Bulk MARK ALL PRESENT / MARK ALL ABSENT,
@@ -45,7 +45,7 @@ export default function CheckInModal({ team, saving, onSave, onClose }) {
     <div className="cpa-modal cpa-modal--sm" role="dialog" aria-modal="true" aria-label="Team check-in">
       <div className="cpa-modal__card cpa-modal__card--checkin" onClick={(e) => e.stopPropagation()}>
         <div className="cpa-modal__head">
-          <span className="cpa-modal__eyebrow">VOIDHACK 2026 / ENTRY</span>
+          <span className="cpa-modal__eyebrow">HACK2PITCH 2026 / ENTRY</span>
           <button type="button" className="cpa-modal__close" onClick={onClose} aria-label="Close" disabled={saving}>×</button>
         </div>
 

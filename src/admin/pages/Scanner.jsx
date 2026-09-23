@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Attendance Scanner
+   HACK2PITCH 2026 — Attendance Scanner
    Camera QR capture of the event pass (additive attendance system).
    The pass encodes https://<site>/attendance/scan?t=<opaque token>
    (or a raw token); an admin RLS query resolves token → verified

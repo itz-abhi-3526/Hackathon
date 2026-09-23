@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin data service
+   HACK2PITCH 2026 — Admin data service
    Server-side (PostgREST) reads for the control center. Every query
    runs through the authenticated client (getAdminSupabase) so the RLS
    is_admin() gate applies at the database — the UI is never the only

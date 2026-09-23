@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Corrective migration: schema-qualify
+--   HACK2PITCH 2026 — Corrective migration: schema-qualify
 --   gen_random_bytes() in the attendance token function
 --   (ADDITIVE, IDEMPOTENT, SAFE TO RE-RUN)
 --

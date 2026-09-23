@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — QR PNG builder (Supabase Edge Function)
+   HACK2PITCH 2026 — QR PNG builder (Supabase Edge Function)
    Pure-Deno QR encoder + minimal PNG writer. Runs ONLY server-side.
 
    • qrcode-generator (pure JS, no canvas) produces the module matrix.

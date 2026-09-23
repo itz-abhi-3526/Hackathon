@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Payments
+   HACK2PITCH 2026 — Payments
    Payment-focused operational view: every team's payment status +
    proof, filterable by status, with inline SUBMITTED/VERIFIED/REJECTED
    verification (rejected requires confirmation). The public payment

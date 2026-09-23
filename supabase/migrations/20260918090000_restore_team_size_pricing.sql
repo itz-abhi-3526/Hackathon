@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — RESTORE TEAM-SIZE PRICING + FINAL SUBMIT (one shot)
+--   HACK2PITCH 2026 — RESTORE TEAM-SIZE PRICING + FINAL SUBMIT (one shot)
 --
 --   PROVEN live root cause (verified via the REST API):
 --     POST /rest/v1/rpc/register_team  →  HTTP 400
@@ -416,7 +416,7 @@ revoke all on function public.register_team(jsonb) from public;
 grant execute on function public.register_team(jsonb) to anon, authenticated;
 
 comment on function public.register_team(jsonb) is
-  'VOIDHACK 2026 canonical registration submit. SECURITY DEFINER: validates the team + crew, resolves the ACTIVE round, enforces dates + team capacity with a row lock (round auto-closes at capacity), computes the AUTHORITATIVE fee from the active round and the participant count (fee_2_members / fee_3_members / fee_4_members — the ONLY source of truth, rejected when NULL or <= 0), stamps registration_round_id + registration_fee, upserts the team idempotent on registration_code, and rewrites participants — all in ONE transaction. The client-supplied fee is ignored.';
+  'HACK2PITCH 2026 canonical registration submit. SECURITY DEFINER: validates the team + crew, resolves the ACTIVE round, enforces dates + team capacity with a row lock (round auto-closes at capacity), computes the AUTHORITATIVE fee from the active round and the participant count (fee_2_members / fee_3_members / fee_4_members — the ONLY source of truth, rejected when NULL or <= 0), stamps registration_round_id + registration_fee, upserts the team idempotent on registration_code, and rewrites participants — all in ONE transaction. The client-supplied fee is ignored.';
 
 -- ── 5. Make the schema changes discoverable by the deployed app ──
 notify pgrst, 'reload schema';

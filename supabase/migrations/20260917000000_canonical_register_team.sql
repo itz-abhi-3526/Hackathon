@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Canonical registration architecture
+--   HACK2PITCH 2026 — Canonical registration architecture
 --
 --   ONE public registration contract:
 --
@@ -347,7 +347,7 @@ revoke all on function public.register_team(jsonb) from public;
 grant execute on function public.register_team(jsonb) to anon, authenticated;
 
 comment on function public.register_team(jsonb) is
-  'VOIDHACK 2026 canonical registration submit. SECURITY DEFINER: validates the team + crew, resolves the ACTIVE round, enforces dates + team capacity with a row lock (round auto-closes at capacity; closed rounds stay closed until an admin explicitly reopens), stamps registration_round_id + registration_fee from the round, upserts the team idempotent on registration_code, and rewrites participants — all in ONE transaction. Public round/fee/capacity are NEVER client-chosen.';
+  'HACK2PITCH 2026 canonical registration submit. SECURITY DEFINER: validates the team + crew, resolves the ACTIVE round, enforces dates + team capacity with a row lock (round auto-closes at capacity; closed rounds stay closed until an admin explicitly reopens), stamps registration_round_id + registration_fee from the round, upserts the team idempotent on registration_code, and rewrites participants — all in ONE transaction. Public round/fee/capacity are NEVER client-chosen.';
 
 -- ── 3. One active round at a time (business rule, not UI-only) ────
 create or replace function public.ensure_single_active_round()

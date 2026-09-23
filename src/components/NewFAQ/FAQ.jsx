@@ -42,7 +42,7 @@ export default function FAQ() {
     <section className="faq vh-section" ref={sectionRef} id="faq" aria-labelledby="faq-heading">
       {/* Faint oversized mark — same language as sponsors/footer, medium scale. */}
       <motion.span className="faq__watermark" style={{ y: wmY }} aria-hidden="true">
-        VOIDHACK
+        HACK2PITCH
       </motion.span>
 
       {/* Left red axis — continues the sponsors spine down the page. */}

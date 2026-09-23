@@ -150,7 +150,7 @@ export default function Admin({ onExit }) {
       <div className="admin">
         <div className="admin__login">
           <button className="admin__back" onClick={onExit} type="button">&larr; BACK TO SITE</button>
-          <p className="admin__eyebrow">VOIDHACK 2026 / CONTROL SURFACE</p>
+          <p className="admin__eyebrow">HACK2PITCH 2026 / CONTROL SURFACE</p>
           <h1 className="admin__title">ADMIN ACCESS</h1>
           <form className="admin__form" onSubmit={signIn}>
             <label className="admin__label">EMAIL</label>
@@ -186,7 +186,7 @@ export default function Admin({ onExit }) {
     <div className="admin">
       <header className="admin__head">
         <div className="admin__head-left">
-          <span className="admin__head-flag">VOIDHACK 2026 / CONTROL</span>
+          <span className="admin__head-flag">HACK2PITCH 2026 / CONTROL</span>
           <span className="admin__head-user">{user.email}</span>
         </div>
         <div className="admin__head-actions">

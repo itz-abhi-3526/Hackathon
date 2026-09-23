@@ -54,8 +54,8 @@ export default function Navigation({ onRegister }) {
         <div className="nav__inner">
           {/* Brand */}
           <a href="#hero" className="nav__brand" onClick={(e) => handleNavClick(e, '#hero')}>
-            <span className="nav__brand-v">V</span>
-            <span className="nav__brand-h">H</span>
+            <span className="nav__brand-v">H</span>
+            <span className="nav__brand-h">2P</span>
             <span className="nav__brand-dot">.</span>
             <span className="nav__brand-year">26</span>
           </a>
@@ -164,8 +164,8 @@ export default function Navigation({ onRegister }) {
             </motion.a>
 
             <div className="nav__mobile-foot">
-              <span>VOIDHACK 2026</span>
-              <span>BENGALURU — INDIA</span>
+              <span>HACK2PITCH 2026</span>
+              <span>ANGAMALY — INDIA</span>
             </div>
           </motion.div>
         )}

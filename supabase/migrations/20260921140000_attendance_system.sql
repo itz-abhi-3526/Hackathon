@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Attendance system (ADDITIVE)
+--   HACK2PITCH 2026 — Attendance system (ADDITIVE)
 --   (additive on top of 20260912000000_atomic_submit_registration.sql
 --    + 20260913000000_admin_control_center.sql)
 --

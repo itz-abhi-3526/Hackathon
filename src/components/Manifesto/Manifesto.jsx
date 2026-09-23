@@ -8,7 +8,7 @@ const manifestoLines = [
   { text: 'FULLY FORMED.', highlight: true },
 ];
 
-const supportingText = "It begins as a rough conviction — an irrational belief that something broken can be rebuilt, that something missing can be created. VOIDHACK exists for the people who don't wait for permission to build the future. This is 48 hours of unfiltered creation, where the only barrier is your own ambition.";
+const supportingText = "It begins as a rough conviction — an irrational belief that something broken can be rebuilt, that something missing can be created. HACK2PITCH exists for the people who don't wait for permission to build the future. This is 48 hours of unfiltered creation, where the only barrier is your own ambition.";
 
 export default function Manifesto() {
   const sectionRef = useRef(null);

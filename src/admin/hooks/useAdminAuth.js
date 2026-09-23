@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin auth hook
+   HACK2PITCH 2026 — Admin auth hook
    Owns the Supabase session + admin allowlist check + login/logout.
    status: 'checking' | 'signed_out' | 'access_denied' | 'ready' | 'error'
    ═══════════════════════════════════════════════════════════════ */

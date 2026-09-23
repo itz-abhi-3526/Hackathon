@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Team attendance view (read-only)
+   HACK2PITCH 2026 — Team attendance view (read-only)
    One team's saved attendance roster + marked-at timestamps. Opened
    from the Attendance dashboard (row click / VIEW TEAM). The live
    check-in/check-in-editing used at entry lives in the SCANNER.
@@ -52,7 +52,7 @@ export default function TeamAttendanceModal({ teamId, onClose, onChanged }) {
     <div className="cpa-modal cpa-modal--sm" role="dialog" aria-modal="true" aria-label="Team attendance">
       <div className="cpa-modal__card cpa-modal__card--checkin" onClick={(e) => e.stopPropagation()}>
         <div className="cpa-modal__head">
-          <span className="cpa-modal__eyebrow">VOIDHACK 2026 / ATTENDANCE</span>
+          <span className="cpa-modal__eyebrow">HACK2PITCH 2026 / ATTENDANCE</span>
           <button type="button" className="cpa-modal__close" onClick={onClose} aria-label="Close">×</button>
         </div>
 

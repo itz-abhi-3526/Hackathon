@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Reports & Downloads
+   HACK2PITCH 2026 — Reports & Downloads
    Excel workbooks built from real Supabase rows. Pick Teams,
    Participants or a Complete Registration report, optionally narrow
    with filters, then export. Rows to be exported are counted first so

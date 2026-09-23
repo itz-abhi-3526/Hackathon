@@ -192,19 +192,19 @@ export default function Hero({ onRegister }) {
         {/* ── top marquee strip ── */}
         <header className="hero__top">
           <span className="hero__top-left">{HACKATHON.presenter} PRESENTS</span>
-          <span className="hero__top-right">THE 48-HOUR BUILD — {WHEN}</span>
+          <span className="hero__top-right">THE 24-HOUR BUILD — {WHEN}</span>
         </header>
 
-        {/* ── masthead — VOID / HACK / 2026 in one composition ── */}
+        {/* ── masthead — HACK2PITCH in one composition ── */}
         <div className="hero__words">
-          <h1 className="hero__masthead" aria-label="VOIDHACK 2026">
+          <h1 className="hero__masthead" aria-label="HACK2PITCH 2026">
             <motion.span
               className="hero__masthead-line hero__masthead-order"
               initial={reduced ? false : { clipPath: 'inset(-8% 0 100% 0)', y: '0.6em' }}
               animate={reduced ? undefined : { clipPath: 'inset(-8% 0 -2% 0)', y: 0 }}
               transition={{ duration: 0.95, delay: 0.15, ease: EASE }}
             >
-              VOID
+              HACK2
             </motion.span>
             <motion.span
               className="hero__masthead-line hero__masthead-mark"
@@ -212,7 +212,7 @@ export default function Hero({ onRegister }) {
               animate={reduced ? undefined : { clipPath: 'inset(-8% 0 -2% 0)', y: 0 }}
               transition={{ duration: 0.95, delay: 0.34, ease: EASE }}
             >
-              HACK
+              PITCH
             </motion.span>
           </h1>
 
@@ -243,7 +243,7 @@ export default function Hero({ onRegister }) {
         <span className="hero__coords" ref={coordsRef} aria-hidden="true">0000 / 0000</span>
 
         {/* ── MISSION CLOCK — a live system status readout, not a countdown widget ── */}
-        <div className="hero__clock" role="timer" aria-label="Time remaining until VOIDHACK 2026">
+        <div className="hero__clock" role="timer" aria-label="Time remaining until HACK2PITCH 2026">
           <span className="hero__clock-frame" aria-hidden="true" />
           <span className="hero__clock-grid" aria-hidden="true" />
           <span className="hero__clock-scan" aria-hidden="true" />
@@ -253,7 +253,7 @@ export default function Hero({ onRegister }) {
           <div className="hero__clock-head">
             <span className="hero__clock-id">SYS.CLK</span>
             <span className="hero__clock-status"><i aria-hidden="true" />SYSTEM ACTIVE</span>
-            <span className="hero__clock-node">NODE VH-01</span>
+            <span className="hero__clock-node">NODE H2P-01</span>
           </div>
 
           <div className="hero__clock-window">

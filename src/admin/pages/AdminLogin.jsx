@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin login
+   HACK2PITCH 2026 — Admin login
    Supabase-Auth password sign-in. Unauthenticated visitors to any
    #admin route land here. No admin link exists anywhere on the
    public site — the control center is reachable only via /admin.
@@ -21,7 +21,7 @@ export default function AdminLogin({ signIn, busy, error, onViewSite }) {
       <div className="cpa-login__card">
         <button type="button" className="cpa-login__back" onClick={onViewSite}>← BACK TO SITE</button>
         <div className="cpa-login__mark" aria-hidden="true">V/</div>
-        <p className="cpa-login__eyebrow">VOIDHACK 2026 / OPS PLATFORM</p>
+        <p className="cpa-login__eyebrow">HACK2PITCH 2026 / OPS PLATFORM</p>
         <h1 className="cpa-login__title">ADMIN ACCESS</h1>
         <p className="cpa-login__sub">Restricted. The server verifies your identity against the admin allowlist.</p>
 
@@ -57,7 +57,7 @@ export default function AdminLogin({ signIn, busy, error, onViewSite }) {
 
         <p className="cpa-login__note">SESSION PERSISTS — You will stay signed in across visits until you sign out.</p>
       </div>
-      <div className="cpa-login__foot">© 2026 VOIDHACK. AUTHORIZED PERSONNEL ONLY.</div>
+      <div className="cpa-login__foot">© 2026 HACK2PITCH. AUTHORIZED PERSONNEL ONLY.</div>
     </div>
   );
 }

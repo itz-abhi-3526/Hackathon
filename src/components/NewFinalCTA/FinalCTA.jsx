@@ -79,7 +79,7 @@ export default function FinalCTA({ onRegister, progress }) {
         <span className="finalcta__tick" aria-hidden="true" />
 
         <motion.div className="finalcta__field-inner" style={{ y: liftSoft, opacity: typeA }}>
-          <span className="finalcta__eyebrow">VOIDHACK 2026 — THE FINAL INVITATION</span>
+          <span className="finalcta__eyebrow">HACK2PITCH 2026 — THE FINAL INVITATION</span>
 
           <h2 className="finalcta__headline">
             <span className="finalcta__headline-line">YOU HAVE</span>
@@ -87,7 +87,7 @@ export default function FinalCTA({ onRegister, progress }) {
           </h2>
 
           <button className="finalcta__cta" onClick={onRegister} type="button">
-            <span className="finalcta__cta-text">REGISTER FOR VOIDHACK 2026</span>
+            <span className="finalcta__cta-text">REGISTER FOR HACK2PITCH 2026</span>
             <span className="finalcta__cta-arrow" aria-hidden="true">→</span>
           </button>
         </motion.div>
@@ -97,7 +97,7 @@ export default function FinalCTA({ onRegister, progress }) {
           <div className="finalcta__meta-row">
             <span className="finalcta__meta-item">{fee === null ? 'FROM \u20B9\u2014' : `FROM \u20B9${fee}`} / TEAM</span>
             <span className="finalcta__meta-item">02—04 / CREW</span>
-            <span className="finalcta__meta-item">17—19 / OCT 2026</span>
+            <span className="finalcta__meta-item">10—11 / OCT 2026</span>
           </div>
         </motion.div>
       </motion.div>
@@ -105,7 +105,7 @@ export default function FinalCTA({ onRegister, progress }) {
       {/* ── BLACK FIELD ── */}
       <div className="finalcta__dark">
         <motion.span className="finalcta__tagline" style={{ y: lift, opacity: typeB }}>
-          BUILD WITHOUT PERMISSION
+          PITCH. BUILD. LAUNCH.
         </motion.span>
 
         <motion.span className="finalcta__print" aria-hidden="true">+</motion.span>
@@ -120,11 +120,11 @@ export default function FinalCTA({ onRegister, progress }) {
         </motion.span>
 
         <motion.span className="finalcta__coord" style={{ opacity: typeB }}>
-          OCT 17—19 2026 — REGISTRATION OPEN
+          OCT 10—11 2026 — REGISTRATION OPEN
         </motion.span>
 
         <motion.span className="finalcta__presenter" style={{ opacity: typeB }}>
-          PRESENTED BY NEXUS INSTITUTE OF TECHNOLOGY
+          PRESENTED BY FISAT HORIZON CLUB
         </motion.span>
       </div>
 

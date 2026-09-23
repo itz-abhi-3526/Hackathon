@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — EmailStatusCell
+   HACK2PITCH 2026 — EmailStatusCell
    Reusable table cell for the Email column in Teams (Registrations)
    and Payments pages. Shows the current verification/rejection email
    tracking status, lead email address, and the appropriate Send /

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — SearchBar + FilterBar + Pagination + ExportButton
+   HACK2PITCH 2026 — SearchBar + FilterBar + Pagination + ExportButton
    Small, dense, keyboard-accessible admin controls.
    ═══════════════════════════════════════════════════════════════ */
 

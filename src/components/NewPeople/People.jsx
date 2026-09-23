@@ -129,7 +129,7 @@ export default function People() {
             transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
           >
             The panel, the mentors and the ecosystem standing behind
-            VOIDHACK. Tap a category — then swipe each roll.
+            HACK2PITCH. Tap a category — then swipe each roll.
           </motion.p>
         </header>
 

@@ -37,7 +37,7 @@ export default function Navbar({ onRegister }) {
         <div className="navbar-inner">
           <a href="#" className="navbar-logo" data-cursor="HOME">
             <span className="navbar-logo-mark">V</span>
-            <span className="navbar-logo-text">VOIDHACK</span>
+            <span className="navbar-logo-text">HACK2PITCH</span>
           </a>
 
           <div className="navbar-links">

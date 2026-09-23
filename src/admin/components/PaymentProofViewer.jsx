@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — PaymentProofViewer
+   HACK2PITCH 2026 — PaymentProofViewer
    Modal preview of a team's Cloudinary payment screenshot. The stored
    URL is an HTTPS Cloudinary secure_url (public by construction of the
    unsigned upload preset) — no Supabase storage is exposed. Esc /

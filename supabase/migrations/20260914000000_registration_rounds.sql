@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Dynamic registration rounds (additive)
+--   HACK2PITCH 2026 — Dynamic registration rounds (additive)
 --   (sits ON TOP of the live database — it does NOT redefine
 --    submit_registration, does NOT drop/recreate/rename ANY existing
 --    table — INCLUDING public.registration_rounds, which ALREADY

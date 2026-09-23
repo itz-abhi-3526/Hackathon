@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Participants
+   HACK2PITCH 2026 — Participants
    Every member across all teams, joined through the real
    participants.team_id → teams.id relationship. Search / filter /
    sort / paginate server-side; export to Excel. Clicking a row opens

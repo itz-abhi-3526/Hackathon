@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Round association fix (capacity/registered count)
+--   HACK2PITCH 2026 — Round association fix (capacity/registered count)
 --
 --   ROOT CAUSE
 --     Every round count — admin (ROUND_EMBED '*, teams(count)' →

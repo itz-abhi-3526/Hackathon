@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Atomic registration submission
+   HACK2PITCH 2026 — Atomic registration submission
    Additive on top of 20260910000000_setup_registration_flow.sql.
    Nothing is dropped, renamed or relaxed; RLS stays enabled for every
    table and NO blanket policy is added. This migration only adds ONE
@@ -181,4 +181,4 @@ revoke all on function public.submit_registration(jsonb) from public;
 grant execute on function public.submit_registration(jsonb) to anon, authenticated;
 
 comment on function public.submit_registration(jsonb) is
-  'Atomic VOIDHACK 2026 registration submit. SECURITY DEFINER: validates the team + crew, enforces exactly one lead, upserts the team and rewrites participants in one transaction, returning team_id + registration_code.';
+  'Atomic HACK2PITCH 2026 registration submit. SECURITY DEFINER: validates the team + crew, enforces exactly one lead, upserts the team and rewrites participants in one transaction, returning team_id + registration_code.';

@@ -142,7 +142,7 @@ function RegistrationGate({ round, onExit }) {
     <div className="reg">
       <div className="reg__header">
         <button type="button" className="reg__header-back" onClick={onExit}>&larr; BACK TO SITE</button>
-        <span className="reg__header-brand">VOIDHACK 2026</span>
+        <span className="reg__header-brand">HACK2PITCH 2026</span>
       </div>
       <div className="reg__fatal">
         <span className="reg__fatal-num">! !</span>
@@ -180,7 +180,7 @@ function BookingSummary({ store, onExit }) {
     <aside className="bk">
       <div className="bk__inner">
         <div className="bk__head">
-          <span className="bk__title">YOUR VOIDHACK ENTRY</span>
+          <span className="bk__title">YOUR HACK2PITCH ENTRY</span>
           <span className="bk__event">{EVENT.name} {EVENT.edition}</span>
         </div>
 
@@ -401,7 +401,7 @@ function MemberPass({ player, idx, store, isExpanded, onToggle }) {
     >
       <button className="mpass__bar" onClick={onToggle} type="button">
         <div className="mpass__bar-left">
-          <span className="mpass__event">VOIDHACK 2026</span>
+          <span className="mpass__event">HACK2PITCH 2026</span>
           <span className="mpass__num">{String(idx + 1).padStart(2, '0')}</span>
         </div>
         <div className="mpass__bar-right">
@@ -517,7 +517,7 @@ function MemberPass({ player, idx, store, isExpanded, onToggle }) {
                 </div>
                 <p className="mpass__role-note">
                   {isLead
-                    ? 'This participant is the team lead — the primary contact for VOIDHACK.'
+                    ? 'This participant is the team lead — the primary contact for HACK2PITCH.'
                     : 'Exactly one participant must be the lead.'}
                 </p>
               </div>
@@ -686,7 +686,7 @@ function StepPayment({ store, onUploadProof }) {
               <img
                 className="payqr__img"
                 src={GPAY_QR_SRC}
-                alt={`Google Pay QR code for the VOIDHACK ${EVENT.edition} registration fee`}
+                alt={`Google Pay QR code for the HACK2PITCH ${EVENT.edition} registration fee`}
                 onError={() => setQrFailed(true)}
               />
             )}
@@ -896,7 +896,7 @@ function StepReview({ store, goToStep }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SUCCESS — YOUR VOIDHACK 2026 ENTRY TICKET
+   SUCCESS — YOUR HACK2PITCH 2026 ENTRY TICKET
    A printed artifact: main pass + detachable stub.
    ═══════════════════════════════════════════════════════════════ */
 
@@ -915,7 +915,7 @@ function SuccessPass({ store, onExit }) {
       transition={{ duration: 0.6 }}
     >
       <div className="spass__bg">
-        <span className="spass__ghost" aria-hidden="true">VOIDHACK</span>
+        <span className="spass__ghost" aria-hidden="true">HACK2PITCH</span>
         <span className="spass__ghost-year" aria-hidden="true">2026</span>
         <span className="spass__corner spass__corner--tl" aria-hidden="true">+</span>
         <span className="spass__corner spass__corner--tr" aria-hidden="true">+</span>
@@ -949,7 +949,7 @@ function SuccessPass({ store, onExit }) {
           transition={{ duration: 0.6, delay: 0.5 }}
         >
           <span className="spass__rule-line" />
-          <span className="spass__rule-text">YOUR VOIDHACK 2026 PASS</span>
+          <span className="spass__rule-text">YOUR HACK2PITCH 2026 PASS</span>
           <span className="spass__rule-line" />
         </motion.div>
 
@@ -973,14 +973,14 @@ function SuccessPass({ store, onExit }) {
                     <span className="ticket__brand-motto">{EVENT.tagline}</span>
                   </div>
                   <div className="ticket__pass">
-                    <span className="ticket__pass-code">{EVENT.name.slice(0, 2)}-{String(EVENT.edition).slice(-2)} / ENTRY</span>
+                    <span className="ticket__pass-code">H2P-{String(EVENT.edition).slice(-2)} / ENTRY</span>
                     <span className="ticket__pass-tag">ENTRY PASS</span>
                   </div>
                 </header>
 
                 <div className="ticket__hero">
                   <span className="ticket__hero-label">TEAM</span>
-                  <h3 className="ticket__hero-name">{store.team.name || 'VOID CREW'}</h3>
+                  <h3 className="ticket__hero-name">{store.team.name || 'H2P CREW'}</h3>
                 </div>
 
                 <div className="ticket__facts">
@@ -1053,7 +1053,7 @@ function SuccessPass({ store, onExit }) {
                   <span className="ticket__stub-label">ENTRY</span>
                   <span className="ticket__stub-num">{entryNum}</span>
                 </div>
-                <span className="ticket__stub-code">{EVENT.name.slice(0, 2)}{String(EVENT.edition).slice(-2)}</span>
+                <span className="ticket__stub-code">H2P{String(EVENT.edition).slice(-2)}</span>
                 <span className="ticket__stub-rule" />
                 <div className="ticket__barcode">
                   <div
@@ -1113,7 +1113,7 @@ function SuccessPass({ store, onExit }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.9, ease: EASE }}
         >
-          <span className="spass__actions-note">VOIDHACK 2026 {'\u2014'} YOU&apos;RE IN</span>
+          <span className="spass__actions-note">HACK2PITCH 2026 {'\u2014'} YOU&apos;RE IN</span>
           <motion.button
             className="spass__cta"
             onClick={onExit}
@@ -1121,7 +1121,7 @@ function SuccessPass({ store, onExit }) {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            BACK TO VOIDHACK 2026
+            BACK TO HACK2PITCH
           </motion.button>
         </motion.div>
       </div>
@@ -1229,7 +1229,7 @@ export default function Registration({ onExit }) {
       <div className="reg">
         <div className="reg__header">
           <button className="reg__header-back" onClick={onExit}>&larr; BACK TO SITE</button>
-          <span className="reg__header-brand">VOIDHACK 2026</span>
+          <span className="reg__header-brand">HACK2PITCH 2026</span>
         </div>
         <div className="reg__fatal">
           <span className="reg__fatal-num">! !</span>
@@ -1257,11 +1257,11 @@ export default function Registration({ onExit }) {
       <div className="reg">
         <div className="reg__header">
           <button className="reg__header-back" onClick={onExit}>&larr; BACK TO SITE</button>
-          <span className="reg__header-brand">VOIDHACK 2026</span>
+          <span className="reg__header-brand">HACK2PITCH 2026</span>
         </div>
         <div className="reg__fatal">
           <span className="reg__nav-spinner reg__fatal-spinner" />
-          <h2 className="reg__fatal-title">LOADING VOIDHACK 2026</h2>
+          <h2 className="reg__fatal-title">LOADING HACK2PITCH</h2>
         </div>
       </div>
     );
@@ -1292,7 +1292,7 @@ export default function Registration({ onExit }) {
 
       <div className="reg__header">
         <button className="reg__header-back" onClick={onExit}>&larr; BACK TO SITE</button>
-        <span className="reg__header-brand">VOIDHACK 2026</span>
+        <span className="reg__header-brand">HACK2PITCH 2026</span>
       </div>
 
       <div className="reg__layout">
@@ -1370,7 +1370,7 @@ export default function Registration({ onExit }) {
                   {store.isSubmitting ? (
                     <span className="reg__nav-spinner">SUBMITTING ENTRY&hellip;</span>
                   ) : (
-                    <>CONFIRM &amp; ENTER VOIDHACK &rarr;</>
+                    <>CONFIRM &amp; ENTER HACK2PITCH &rarr;</>
                   )}
                 </button>
               </div>

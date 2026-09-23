@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — FAQ
+   HACK2PITCH 2026 — FAQ
    The calm between the Sponsors wall and the Registration CTA.
    It inherits the partners' red axis, speaks in editorial rows,
    and hands off the page by seeding the red field of the CTA.
@@ -24,7 +24,7 @@
   container-name: faq;
 }
 
-/* ── BACKGROUND MARK — quiet VOIDHACK, medium step of the crescendo ── */
+/* ── BACKGROUND MARK — quiet HACK2PITCH, medium step of the crescendo ── */
 .faq__watermark {
   position: absolute;
   right: -3vw;

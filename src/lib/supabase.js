@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Single Supabase clients
+   HACK2PITCH 2026 — Single Supabase clients
    The public publisher key only. Two clients:
 
      getSupabase()        — anonymous flow (registration): RLS grants

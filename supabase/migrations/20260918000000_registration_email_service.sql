@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Registration email service (additive)
+--   HACK2PITCH 2026 — Registration email service (additive)
 --   Adds the single column the admin → email flow needs:
 --
 --     teams.rejection_reason text (nullable)

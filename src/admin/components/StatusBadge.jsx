@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Status badge / payment status chip
+   HACK2PITCH 2026 — Status badge / payment status chip
    ═══════════════════════════════════════════════════════════════ */
 
 export default function StatusBadge({ status, size = 'md' }) {

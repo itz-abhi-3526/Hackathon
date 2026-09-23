@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Registration data model (idempotent, data only)
+--   HACK2PITCH 2026 — Registration data model (idempotent, data only)
 --
 --   problem_statements
 --        ↓
@@ -41,7 +41,7 @@ create table if not exists public.teams (
 
 -- teams.hackathon_id — idempotent backfill for databases created before
 -- this column existed. Every registration must belong to the single
--- active VOIDHACK edition so reads/writes never depend on a slug lookup.
+-- active HACK2PITCH edition so reads/writes never depend on a slug lookup.
 alter table if exists public.teams add column if not exists hackathon_id text;
 update public.teams set hackathon_id = 'voidhack-2026' where hackathon_id is null;
 alter table if exists public.teams alter column hackathon_id set default 'voidhack-2026';

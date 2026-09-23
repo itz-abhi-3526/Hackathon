@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin toasts
+   HACK2PITCH 2026 — Admin toasts
    Lightweight context-based notifications. No library — just a fixed
    stack + timers.
    ═══════════════════════════════════════════════════════════════ */

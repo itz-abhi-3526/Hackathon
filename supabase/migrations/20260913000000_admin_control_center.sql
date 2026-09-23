@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---   VOIDHACK 2026 — Admin control center authorization
+--   HACK2PITCH 2026 — Admin control center authorization
 --   (additive on top of 20260912000000_atomic_submit_registration.sql)
 --
 --   What this migration adds / guarantees:

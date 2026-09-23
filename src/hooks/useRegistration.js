@@ -1,5 +1,5 @@
-﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   VOIDHACK 2026 â€” Registration orchestration hook
+﻿﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   HACK2PITCH 2026 â€” Registration orchestration hook
    ONE reliable flow: the wizard is 100% client-side until the final
    submit, which calls the atomic register_team(payload jsonb) RPC. There are
    NO per-step database writes â€” no teams rows, no participant rows,

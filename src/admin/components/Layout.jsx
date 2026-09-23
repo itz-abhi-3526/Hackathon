@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Admin layout: sidebar + header + main
+   HACK2PITCH 2026 — Admin layout: sidebar + header + main
    Sidebar is collapsible on desktop and a drawer on mobile. This
    layout renders ONLY inside #admin — nothing here touches the
    public site.
@@ -43,7 +43,7 @@ export function AdminSidebar({ view, navigate, collapsed, onNavigate }) {
         <span className="cpa-side__mark" aria-hidden="true">V/</span>
         {!collapsed && (
           <span className="cpa-side__brandtext">
-            <strong>VOIDHACK</strong>
+            <strong>HACK2PITCH</strong>
             <em>CONTROL CENTER / 2026</em>
           </span>
         )}
@@ -70,7 +70,7 @@ export function AdminSidebar({ view, navigate, collapsed, onNavigate }) {
       <div className="cpa-side__foot">
         {!collapsed && (
           <span className="cpa-side__footnote">
-            VOIDHACK 2026
+HACK2PITCH 2026
             <br />
             OPS PLATFORM v1.0
           </span>

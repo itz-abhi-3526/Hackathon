@@ -11,7 +11,7 @@ const TIERS = [
     place: 'CHAMPION',
     amount: PRIZES.grand.amount,
     mark: 'TITLE',
-    note: 'THE VOIDHACK TITLE',
+    note: 'THE HACK2PITCH TITLE',
   },
   {
     rank: '02',
@@ -125,7 +125,7 @@ export default function Prizes() {
               </span>
               <span className="prizes__tier-place--1st">CHAMPION</span>
             </div>
-            <span className="prizes__tier-note--1st">FIRST PAST THE VOID</span>
+            <span className="prizes__tier-note--1st">FIRST PAST THE POST</span>
             <span className="prizes__tier-corner" aria-hidden="true">+</span>
           </motion.div>
         </div>

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — Registration Rounds
+   HACK2PITCH 2026 — Registration Rounds
    Full lifecycle of the dynamic registration phases: create, edit,
    activate / close / reopen and (draft-only, unused) delete. The one-
    active-round invariant is enforced in the DATABASE (trigger + RPC);

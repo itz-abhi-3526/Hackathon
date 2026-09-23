@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   VOIDHACK 2026 — StatCard + PageHeader
+   HACK2PITCH 2026 — StatCard + PageHeader
    ═══════════════════════════════════════════════════════════════ */
 
 export function StatCard({ label, value, hint, tone, sub }) {

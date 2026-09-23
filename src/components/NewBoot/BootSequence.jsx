@@ -166,7 +166,7 @@ export default function BootSequence({ onComplete }) {
           <div className="boot__head-meta">
             <span>BUILD 2026.09</span>
             <span>ENV {ENV}</span>
-            <span>NODE VH-01</span>
+            <span>NODE H2P-01</span>
           </div>
         </motion.header>
 
@@ -187,9 +187,9 @@ export default function BootSequence({ onComplete }) {
               <span className="boot__motto-big">A BIGGER TOMORROW</span>
             </div>
             <div className="boot__coords">
-              <span>NEXUS CAMPUS</span>
-              <span>BENGALURU</span>
-              <span>12.977°N / 77.571°E</span>
+              <span>FISAT</span>
+              <span>ANGAMALY</span>
+              <span>10.241°N / 76.416°E</span>
             </div>
           </motion.aside>
 
@@ -351,7 +351,7 @@ export default function BootSequence({ onComplete }) {
         >
           <span>{HACKATHON.name} {HACKATHON.edition}</span>
           <span>{HACKATHON.presenter}</span>
-          <span>BENGALURU, INDIA</span>
+          <span>ANGAMALY, INDIA</span>
         </motion.footer>
 
       </div>

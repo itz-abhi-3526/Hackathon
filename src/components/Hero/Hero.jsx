@@ -11,7 +11,7 @@ const GRID_LINES = Array.from({ length: 8 }, (_, i) => ({
   delay: i * 0.1,
 }));
 
-const VOID_LETTERS = ['V', 'O', 'I', 'D'];
+const VOID_LETTERS = ['H', '2', 'P', '.'];
 
 function AnimatedDigit({ value }) {
   return (
@@ -62,8 +62,8 @@ export default function Hero({ onRegister }) {
       <div className="hero-scanline" />
 
       <motion.div className="hero-ambient" style={{ opacity }}>
-        <span className="hero-ambient-tag">SYS.VOID.2026</span>
-        <span className="hero-ambient-tag">GRID.07.NEXUS</span>
+        <span className="hero-ambient-tag">SYS.H2P.2026</span>
+        <span className="hero-ambient-tag">GRID.07.FISAT</span>
       </motion.div>
 
       {/* TOP METADATA ROW */}
@@ -74,7 +74,7 @@ export default function Hero({ onRegister }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <span className="hero-date-range">17—19</span>
+          <span className="hero-date-range">10—11</span>
           <span className="hero-date-month">OCT</span>
         </motion.div>
         <motion.div
@@ -91,7 +91,7 @@ export default function Hero({ onRegister }) {
       {/* MAIN ASYMMETRIC COMPOSITION */}
       <motion.div className="hero-main" style={{ opacity, y }}>
         {/* vertical monolith */}
-        <div className="hero-monolith" aria-label="VOID">
+        <div className="hero-monolith" aria-label="H2P">
           {VOID_LETTERS.map((letter, i) => (
             <motion.span
               key={letter}
@@ -120,7 +120,7 @@ export default function Hero({ onRegister }) {
 
             <div className="hero-block-tags">
               <span className="hero-block-tag">// SIGNAL 07</span>
-              <span className="hero-block-tag">48H</span>
+              <span className="hero-block-tag">24H</span>
             </div>
 
             <span className="hero-block-word">HACK</span>
@@ -147,7 +147,7 @@ export default function Hero({ onRegister }) {
         <span className="hero-divider-line" />
         <span className="hero-divider-mark" />
         <span className="hero-divider-line hero-divider-line--thin" />
-        <span className="hero-divider-label">// ENTER THE VOID</span>
+        <span className="hero-divider-label">// ENTER H2P</span>
       </motion.div>
 
       {/* STATEMENT */}
