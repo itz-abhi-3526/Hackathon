@@ -54,10 +54,17 @@ function QualTag({ status }) {
   return <span className={`cpa-tag ${tone}`}>{String(status).toUpperCase()}</span>;
 }
 
+const VIEW_FILTERS = [
+  { key: 'all', label: 'ALL TEAMS' },
+  { key: 'finalists', label: 'FINALISTS' },
+  { key: 'winners', label: `WINNERS (TOP ${FINALIZE_TOP3})` },
+];
+
 export default function Leaderboard() {
   const { push } = useToast();
   const [busyKey, setBusyKey] = useState('');
   const [confirm, setConfirm] = useState(null);
+  const [view, setView] = useState('all');
 
   const { data, loading, error, reload } = useAsync(() => adminFetchJudgingLeaderboard(), []);
 
@@ -86,6 +93,17 @@ export default function Leaderboard() {
     );
     return list.map((row, i) => ({ ...row, rank: row.rank || i + 1 }));
   }, [data]);
+
+  /* View filter — qualification is non-destructive, so the board stays
+     full; this just narrows what is shown (e.g. WINNERS = the top 3). */
+  const filteredRows = useMemo(() => {
+    if (view === 'all') return rows;
+    return rows.filter((r) =>
+      view === 'winners'
+        ? r.finalStatus === 'winner'
+        : r.finalStatus === 'qualified' || r.finalStatus === 'winner'
+    );
+  }, [rows, view]);
 
   const runAction = async (key, fn, okMessage) => {
     setBusyKey(key);
@@ -215,7 +233,7 @@ export default function Leaderboard() {
     ? 'LOADING THE BOARD…'
     : !rows.length
     ? 'NO TEAMS ON THE BOARD — SCORE TEAMS IN JUDGING FIRST'
-    : `${rows.length} TEAMS · RANKED BY CUMULATIVE DESC · MAX ${CUMULATIVE_MAX}`;
+    : `${filteredRows.length} OF ${rows.length} TEAMS · RANKED BY CUMULATIVE DESC · MAX ${CUMULATIVE_MAX}`;
 
   return (
     <>
@@ -272,13 +290,34 @@ export default function Leaderboard() {
         <StatCard label="WINNERS" value={totals.winners} hint={`TOP ${FINALIZE_TOP3} · FINALISED`} tone={totals.winners ? 'ok' : ''} />
       </section>
 
+      <div className="cpa-lb-filters" role="tablist" aria-label="Filter leaderboard view">
+        {VIEW_FILTERS.map((f) => (
+          <button
+            key={f.key}
+            type="button"
+            role="tab"
+            aria-selected={view === f.key}
+            className={`cpa-btn ${view === f.key ? 'cpa-btn--solid' : 'cpa-btn--ghost'}`}
+            onClick={() => setView(f.key)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       <DataTable
         columns={COLUMNS}
-        rows={rows}
+        rows={filteredRows}
         loading={loading}
         error={error}
         onRefresh={reload}
-        emptyMessage="NO JUDGED TEAMS YET — SCORE TEAMS IN THE JUDGING PAGE FIRST"
+        emptyMessage={
+          view === 'winners'
+            ? `NO WINNERS YET — RUN "FINALIZE TOP ${FINALIZE_TOP3}" FROM THE LEADERBOARD FIRST`
+            : view === 'finalists'
+            ? 'NO FINALISTS YET — RUN "QUALIFY TOP 8 FOR FINAL" FIRST'
+            : 'NO JUDGED TEAMS YET — SCORE TEAMS IN THE JUDGING PAGE FIRST'
+        }
       />
 
       {confirm && (
