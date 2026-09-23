@@ -14,7 +14,7 @@ const EASE = [0.16, 1, 0.3, 1];
 
 /* Silent poll kept as a safety fallback when Realtime is disabled on
    the leaderboard table or during prolonged channel outages. */
-const REFRESH_MS = 15000;
+const REFRESH_MS = 5000;
 
 /* How long a score-change flash stays visible before it fades. */
 const HIGHLIGHT_MS = 2600;
