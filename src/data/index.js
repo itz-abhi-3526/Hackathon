@@ -175,7 +175,7 @@ export const FAQ_DATA = [
   {
     id: 1,
     question: "WHO CAN PARTICIPATE?",
-    answer: "HACK2PITCH is open to students, developers, designers, innovators and technology enthusiasts who meet the event's eligibility requirements.",
+    answer: "HACK2PITCH is open to students who meet the event's eligibility requirements.",
   },
   {
     id: 2,

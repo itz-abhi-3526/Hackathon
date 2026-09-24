@@ -182,6 +182,12 @@ const sendVerificationEmail = async (registration) => {
     : null;
   const dateVal = has(registration.date) ? String(registration.date) : null;
   const venue = has(registration.venue) ? String(registration.venue) : null;
+  const qrImageUrl = has(registration.qrImageUrl)
+    ? String(registration.qrImageUrl)
+    : null;
+  const scanUrl = has(registration.scanUrl)
+    ? String(registration.scanUrl)
+    : null;
   const crew = Array.isArray(registration.crew)
     ? registration.crew.filter((m) => m && has(m.name))
     : [];
@@ -230,7 +236,10 @@ const sendVerificationEmail = async (registration) => {
     'DATE              ' + eventDate,
     'VENUE             ' + eventVenue,
     '',
-    'NEXT STEP',
+    'ATTENDANCE',
+    'Scan this QR at the venue for attendance check-in.',
+    ...(scanUrl ? ['SCAN LINK  ' + scanUrl] : []),
+    '',
     'Your payment proof will be verified by our team. Your registration will be confirmed after verification.',
     'Please check your Spam/Junk folder if you do not see future confirmation emails in your inbox.',
     '',
@@ -293,6 +302,16 @@ const sendVerificationEmail = async (registration) => {
                   </table>`;
     })
     .join('');
+
+  /* ATTENDANCE — the real per-team QR PNG (server-generated in index.ts
+     from the team's existing attendance_token; scanUrl is the check-in
+     URL the venue scanner's extractToken() expects). The PNG is used
+     when available; otherwise the plain scan link is the fallback. */
+  const attendanceContent = qrImageUrl
+    ? `<img src="${esc(qrImageUrl)}" alt="HACK2PITCH 2026 attendance QR — present at venue entry for check-in" width="140" height="140" style="display:block;margin-left:auto;margin-right:auto;width:140px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />`
+    : scanUrl
+      ? `<a href="${esc(scanUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 20px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#FFFFFF;text-decoration:none;background-color:#101012;border:1px solid ${VH_RED};border-radius:2px;">OPEN&nbsp;ATTENDANCE&nbsp;LINK</a>`
+      : '';
 
   const html = `
 <!DOCTYPE html>
@@ -374,7 +393,23 @@ const sendVerificationEmail = async (registration) => {
               <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
             </tr>` : ''}
 
-            <!-- ── 4. EVENT DETAILS ──────────────────────────────────── -->
+            <!-- ── 4. ATTENDANCE (only when QR/scan data is present) ── -->
+            ${attendanceContent ? `
+            <tr>
+              <td align="center" class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 22px 28px;">
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">ATTENDANCE</div>
+                <div style="margin-top:16px;">
+                  ${attendanceContent}
+                </div>
+                <div style="margin-top:14px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:#9C9A92;word-break:break-word;overflow-wrap:break-word;">SCAN&nbsp;THIS&nbsp;QR&nbsp;AT&nbsp;THE&nbsp;VENUE&nbsp;FOR&nbsp;ATTENDANCE</div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
+            </tr>` : ''}
+
+            <!-- ── 5. EVENT DETAILS ──────────────────────────────────── -->
             <tr>
               <td class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 22px 28px;">
                 <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">EVENT&nbsp;DETAILS</div>
