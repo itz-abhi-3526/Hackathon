@@ -291,7 +291,7 @@ export default function Hero({ onRegister }) {
           </div>
 
           <div className="hero__clock-meta">
-            <span className="hero__clock-coord">12.977°N / 77.571°E</span>
+            <span className="hero__clock-coord">10.241°N / 76.416°E</span>
             <span className="hero__clock-nodestate">NODE STATUS <b>ACTIVE</b></span>
             <span className="hero__clock-registration">REGISTRATION <b>{regState}</b></span>
           </div>

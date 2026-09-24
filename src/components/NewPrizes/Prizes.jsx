@@ -8,21 +8,21 @@ const EASE = [0.16, 1, 0.3, 1];
 const TIERS = [
   {
     rank: '01',
-    place: 'CHAMPION',
+    place: 'FIRST PRIZE',
     amount: PRIZES.grand.amount,
-    mark: 'TITLE',
+    mark: '1ST',
     note: 'THE HACK2PITCH TITLE',
   },
   {
     rank: '02',
-    place: 'RUNNER UP',
+    place: 'SECOND PRIZE',
     amount: PRIZES.runner.amount,
     mark: '2ND',
     note: 'RESOLUTE FINISH',
   },
   {
     rank: '03',
-    place: 'THIRD PLACE',
+    place: 'THIRD PRIZE',
     amount: PRIZES.third.amount,
     mark: '3RD',
     note: 'BREAKTHROUGH',
@@ -68,7 +68,10 @@ export default function Prizes() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
           >
-            ONE STAGE. THREE STEPS. THE REWARD RESETS THE SCALE OF EVERY IDEA.
+            <strong className="prizes__pool">₹{PRIZES.pool} TOTAL PRIZE POOL</strong>
+            <span className="prizes__lede-sub">
+              ONE STAGE. THREE STEPS. THE REWARD RESETS THE SCALE OF EVERY IDEA.
+            </span>
           </motion.p>
         </header>
 
@@ -123,9 +126,9 @@ export default function Prizes() {
                 <span className="prizes__rupee">₹</span>
                 {TIERS[0].amount}
               </span>
-              <span className="prizes__tier-place--1st">CHAMPION</span>
+              <span className="prizes__tier-place--1st">FIRST PRIZE</span>
             </div>
-            <span className="prizes__tier-note--1st">FIRST PAST THE POST</span>
+            <span className="prizes__tier-note--1st">THE CHAMPIONSHIP</span>
             <span className="prizes__tier-corner" aria-hidden="true">+</span>
           </motion.div>
         </div>

@@ -12,7 +12,6 @@ import Experience from './components/NewExperience/Experience.jsx';
 import Countdown from './components/NewCountdown/Countdown.jsx';
 import TimelineSection from './components/NewTimeline/Timeline.jsx';
 import Prizes from './components/NewPrizes/Prizes.jsx';
-import People from './components/NewPeople/People.jsx';
 import FAQ from './components/NewFAQ/FAQ.jsx';
 import FinalSequence from './components/NewFinalCTA/FinalSequence.jsx';
 import Registration from './components/NewRegistration/Registration.jsx';
@@ -38,7 +37,7 @@ export default function App() {
   const [phase, setPhase] = useState(initialPhase);
   /* Skip the terminal boot when landing directly on the scoreboard so
      the live board appears instantly on projector/mobile screens. */
-  const [booted, setBooted] = useState(() => !isLeaderboardPath());
+  const [booted, setBooted] = useState(() => isLeaderboardPath());
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -122,7 +121,6 @@ export default function App() {
                 <Countdown />
                 <TimelineSection />
                 <Prizes />
-                <People />
                 <FAQ />
                 <FinalSequence onRegister={enterRegistration} />
               </main>

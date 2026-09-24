@@ -1,7 +1,7 @@
 export const HACKATHON = {
   id: "voidhack-2026",
   name: "HACK2PITCH",
-  tagline: "PITCH. BUILD. LAUNCH.",
+  tagline: "BUILD WITHOUT PERMISSION",
   edition: "2026",
   presenter: "FISAT HORIZON CLUB",
   date: "2026-10-10T09:00:00",
@@ -29,15 +29,6 @@ export const NAV_GROUPS = [
       { label: "PROBLEMS", href: "#problems" },
       { label: "TIMELINE", href: "#timeline" },
       { label: "PRIZES", href: "#prizes" },
-    ],
-  },
-  {
-    id: "people",
-    label: "PEOPLE",
-    links: [
-      { label: "JUDGES", href: "#judges" },
-      { label: "MENTORS", href: "#mentors" },
-      { label: "SPONSORS", href: "#sponsors" },
     ],
   },
   {
@@ -70,53 +61,41 @@ export const TIMELINE = [
     id: 3,
     label: "HACK BEGINS",
     date: "OCT 10",
-    description: "24 hours of intense building",
+    description: "24 hours of building",
     phase: "PHASE_03",
     status: "upcoming",
   },
   {
     id: 4,
-    label: "MENTOR CHECK",
+    label: "SUBMISSION",
     date: "OCT 11",
-    description: "Mid-hack mentor review",
+    description: "Final submission",
     phase: "PHASE_04",
     status: "upcoming",
   },
   {
     id: 5,
-    label: "SUBMISSION",
+    label: "JUDGING",
     date: "OCT 11",
-    description: "Final submission deadline",
+    description: "Panel evaluation",
     phase: "PHASE_05",
     status: "upcoming",
   },
   {
     id: 6,
-    label: "JUDGING",
-    date: "OCT 11",
-    description: "Panel evaluation round",
-    phase: "PHASE_06",
-    status: "upcoming",
-  },
-  {
-    id: 7,
     label: "WINNERS",
     date: "OCT 11",
     description: "Awards ceremony",
-    phase: "PHASE_07",
+    phase: "PHASE_06",
     status: "upcoming",
   },
 ];
 
 export const PRIZES = {
-  grand: { amount: "1,00,000", label: "GRAND PRIZE", sublabel: "CHAMPION" },
-  runner: { amount: "50,000", label: "RUNNER UP", sublabel: "SECOND PLACE" },
-  third: { amount: "25,000", label: "THIRD PLACE", sublabel: "THIRD PLACE" },
-  special: [
-    { amount: "15,000", label: "BEST UI/UX" },
-    { amount: "15,000", label: "MOST INNOVATIVE" },
-    { amount: "15,000", label: "BEST USE OF AI" },
-  ],
+  pool: "50,000",
+  grand: { amount: "25,000", label: "FIRST PRIZE", sublabel: "FIRST PRIZE" },
+  runner: { amount: "15,000", label: "SECOND PRIZE", sublabel: "SECOND PRIZE" },
+  third: { amount: "10,000", label: "THIRD PRIZE", sublabel: "THIRD PRIZE" },
 };
 
 export const JUDGES = [
@@ -214,12 +193,12 @@ export const FAQ_DATA = [
   {
     id: 4,
     question: "IS THERE A REGISTRATION FEE?",
-    answer: "Yes. The registration fee is per team (not per person) and depends on your crew size — a 2-member team pays less than a 4-member team. The exact amount for the current phase is shown on the registration page when you select your team size. The fee covers venue access, meals during the hackathon, swag kits, mentorship sessions, and infrastructure credits from our technology partners.",
+    answer: "Yes. The registration fee is per team (not per person) and depends on your crew size — a 2-member team pays less than a 4-member team. The exact amount for the current phase is shown on the registration page when you select your team size. The fee covers venue access and meals during the hackathon, plus a swag kit for every participant.",
   },
   {
     id: 5,
     question: "DO WE NEED TO BRING OUR OWN HARDWARE?",
-    answer: "Bring your own laptops and essential peripherals. The venue will provide power, high-speed internet, and workspace. Cloud infrastructure credits will be provided by our technology partners for any cloud-based solutions.",
+    answer: "Bring your own laptops and essential peripherals. The venue provides power, high-speed internet, and workspace for every team.",
   },
   {
     id: 6,
@@ -233,7 +212,32 @@ export const FAQ_DATA = [
   },
   {
     id: 8,
-    question: "WHAT'S THE JUDGING CRITERIA?",
-    answer: "Projects are evaluated on Innovation (25%), Technical Execution (25%), Impact & Feasibility (20%), Design & User Experience (15%), and Presentation (15%). Our panel of industry experts will assess each submission through both a demo and a technical deep-dive.",
+    question: "WHAT ARE THE JUDGING CRITERIA?",
+    answer: "Projects are evaluated on Innovation (25%), Technical Execution (25%), Impact & Feasibility (20%), Design & User Experience (15%), and Presentation (15%). Each submission is assessed through a live demo and a technical deep-dive.",
+  },
+  {
+    id: 9,
+    question: "CAN WE USE AI TOOLS?",
+    answer: "Yes — AI-assisted development is actively encouraged. Leverage any tool that makes your team faster: code assistants, design generators, research copilots. The one rule is ownership: your pitch and your build decisions must be yours. Be transparent about which tools you used and how, right in your submission notes for the judges.",
+  },
+  {
+    id: 10,
+    question: "WHAT TECH STACK CAN WE USE?",
+    answer: "Any stack you're comfortable with — there are no language or framework mandates. We judge what you ship, not the tools you chose.",
+  },
+  {
+    id: 11,
+    question: "WHAT DO WE HAVE TO SUBMIT?",
+    answer: "Three things: a working demo (live link), your complete code repository, and a 3-minute pitch at the end of the 24 hours. Submissions close sharp at 09:00 IST on 11 October. Make sure your demo link is public and your repo has a clean README explaining how to run it.",
+  },
+  {
+    id: 12,
+    question: "WHERE IS THE EVENT?",
+    answer: "FISAT Campus, Angamaly, Kerala. The venue provides power, high-speed internet, workspace, and meals for all participants. A full venue map and check-in details are shared with every confirmed team before the event weekend.",
+  },
+  {
+    id: 13,
+    question: "WHEN IS HACK2PITCH 2026?",
+    answer: "10–11 October 2026. Doors open and builds begin at 09:00 IST on the 10th, running 24 hours straight into the 11th. Mark your calendar — this is the build weekend.",
   },
 ];

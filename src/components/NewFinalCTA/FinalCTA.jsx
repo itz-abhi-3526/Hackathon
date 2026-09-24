@@ -105,7 +105,7 @@ export default function FinalCTA({ onRegister, progress }) {
       {/* ── BLACK FIELD ── */}
       <div className="finalcta__dark">
         <motion.span className="finalcta__tagline" style={{ y: lift, opacity: typeB }}>
-          PITCH. BUILD. LAUNCH.
+          BUILD WITHOUT PERMISSION
         </motion.span>
 
         <motion.span className="finalcta__print" aria-hidden="true">+</motion.span>

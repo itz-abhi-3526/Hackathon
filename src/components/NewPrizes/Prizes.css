@@ -82,6 +82,20 @@
   max-width: 52ch;
 }
 
+.prizes__pool {
+  display: block;
+  margin-bottom: var(--vh-space-4);
+  font-family: var(--vh-font-display);
+  font-size: clamp(2.4rem, 4.5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  color: var(--vh-red);
+}
+
+.prizes__lede-sub {
+  display: block;
+}
+
 /* ── PODIUM — three architectural steps sharing one stage.
    Grid columns widen toward the champion slab; vertical offsets
    step each tier down. No cards, no borders, no boxes. ── */

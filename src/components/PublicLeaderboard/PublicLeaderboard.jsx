@@ -268,7 +268,7 @@ export default function PublicLeaderboard({ homeUrl }) {
             transition={{ duration: 0.5, ease: EASE }}
           >
             <span className="vlb__overline-bar" aria-hidden="true" />
-            VOIDHACK 2026 — OFFICIAL SCOREBOARD
+            HACK2PITCH 2026 — OFFICIAL SCOREBOARD
           </motion.p>
           <motion.h1
             className="vlb__title"

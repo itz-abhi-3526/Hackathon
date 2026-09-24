@@ -16,15 +16,6 @@ const COLUMNS = [
   },
   {
     index: '02',
-    label: 'PEOPLE',
-    links: [
-      { label: 'JUDGES', href: '#judges' },
-      { label: 'MENTORS', href: '#mentors' },
-      { label: 'SPONSORS', href: '#sponsors' },
-    ],
-  },
-  {
-    index: '03',
     label: 'INFO',
     links: [
       { label: 'FAQ', href: '#faq' },
@@ -101,7 +92,7 @@ export default function Footer({ progress }) {
           <p className="foot__brand-name">
             HACK2PITCH <span className="foot__brand-year">2026</span>
           </p>
-          <p className="foot__brand-tag">PITCH. BUILD. LAUNCH.</p>
+          <p className="foot__brand-tag">BUILD WITHOUT PERMISSION</p>
         </motion.div>
 
         <nav className="foot__nav">

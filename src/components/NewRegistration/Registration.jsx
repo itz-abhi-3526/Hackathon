@@ -273,7 +273,7 @@ function StepEntry({ store, onRetry }) {
             className="step__input"
             value={store.team.name}
             onChange={(e) => store.updateTeam({ name: e.target.value })}
-            placeholder="e.g. Void Builders"
+            placeholder="e.g. CodeCrafters"
           />
         </div>
         <div className="step__field">

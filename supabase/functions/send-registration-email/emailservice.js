@@ -434,7 +434,7 @@ const sendVerificationEmail = async (registration) => {
                       HACK2PITCH&nbsp;2026
                     </td>
                     <td align="right" class="hide-m" style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:#8A887F;text-transform:uppercase;line-height:1.4;">
-                      ${HACK2PITCH_KICKER}
+                      ${VH_KICKER}
                     </td>
                   </tr>
                 </table>
@@ -459,7 +459,7 @@ const sendVerificationEmail = async (registration) => {
                     <!-- MAIN SECTION -->
                     <td class="ticket-main" valign="top" style="width:62%;background-color:${VH_WARM};border-top:4px solid ${VH_RED};padding:26px 26px 24px 26px;">
                       <div style="font-family:'Courier New',Courier,monospace;font-size:13px;letter-spacing:3px;font-weight:bold;color:${VH_BLACK};">HACK2PITCH&nbsp;2026</div>
-                      <div style="margin-top:2px;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">${HACK2PITCH_KICKER}</div>
+                      <div style="margin-top:2px;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">${VH_KICKER}</div>
                       <div style="margin-top:16px;border-top:1px dashed #C9C4BA;font-size:0;line-height:0;">&nbsp;</div>
 
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:16px;">

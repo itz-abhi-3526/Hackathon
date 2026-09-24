@@ -123,9 +123,9 @@ export default function Manifesto() {
               transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="manifesto__stat">
-                <span className="manifesto__stat-number">₹1L</span>
+                <span className="manifesto__stat-number">₹50K</span>
                 <span className="manifesto__stat-unit">PRIZE</span>
-                <span className="manifesto__stat-desc">GRAND PRIZE FOR THE WINNERS</span>
+                <span className="manifesto__stat-desc">TOTAL PRIZE POOL</span>
               </div>
             </motion.div>
 
