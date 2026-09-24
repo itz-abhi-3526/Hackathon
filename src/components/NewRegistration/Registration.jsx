@@ -272,7 +272,7 @@ function StepEntry({ store }) {
             className="step__input"
             value={store.team.college}
             onChange={(e) => store.updateTeam({ college: e.target.value })}
-            placeholder="e.g. National Institute of Technology"
+            placeholder="e.g. Federal Institute of Science and Technology"
           />
         </div>
       </div>
