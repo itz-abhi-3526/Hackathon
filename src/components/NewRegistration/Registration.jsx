@@ -4,6 +4,7 @@ import { HACKATHON } from '../../data/index.js';
 import { PARTICIPANT_ROLE } from '../../lib/schema.js';
 import { isParticipantComplete, getRegistrationFee, startingRegistrationFee } from '../../services/registrationService.js';
 import useRegistration from '../../hooks/useRegistration.js';
+import PresenterLogos from '../PresenterLogos/PresenterLogos.jsx';
 import {
   ACCEPTED_PROOF_TYPES,
   MAX_PROOF_BYTES,
@@ -20,7 +21,8 @@ const STEPS = [
 
 const FOOD_OPTIONS = ['VEG', 'NON-VEG'];
 
-const GPAY_QR_SRC = '/assets/payment/gpay-qr.png';
+const GPAY_QR_SRC =
+  'https://res.cloudinary.com/dudp2imxs/image/upload/v1790246570/WhatsApp_Image_2026-09-24_at_4.12.04_PM_l1ylvh.jpg';
 
 const EVENT = {
   name: HACKATHON.name,
@@ -67,9 +69,11 @@ const inrLabel = (fee) => {
 
 /* The fee is NEVER hardcoded on the form: it always comes from the
    active registration round, keyed by the SELECTED TEAM SIZE
-   (fee_2_members / fee_3_members / fee_4_members from the round).
-   Display only — register_team recomputes the authoritative fee
-   server-side and ignores whatever the browser sends. */
+   (fee_3_members / fee_4_members — 3- and 4-member teams only, legacy
+   `fee` fallback) via the single getRegistrationFee() lookup shared by
+   the size cards, the banner and the summary. Display only —
+   register_team recomputes the authoritative fee server-side and
+   ignores whatever the browser sends. */
 const activeFee = (store) =>
   getRegistrationFee(store?.round, store?.team?.size);
 
@@ -197,12 +201,6 @@ function BookingSummary({ store, onExit }) {
             <span className="bk__label">CREW</span>
             <span className="bk__value">{String(store.team.size).padStart(2, '0')}</span>
           </div>
-          <div className="bk__row">
-            <span className="bk__label">TRACK</span>
-            <span className="bk__value" data-empty={!store.problemStatement}>
-              {store.problemStatement ? `${store.problemStatement.number} / ${store.problemStatement.category}` : '\u2014'}
-            </span>
-          </div>
         </div>
 
         <div className="bk__divider" />
@@ -236,12 +234,6 @@ function MobileBar({ store }) {
         <span className="mbar__label">CREW</span>
         <span className="mbar__val">{String(store.team.size).padStart(2, '0')}</span>
       </div>
-      <div className="mbar__row">
-        <span className="mbar__label">TRACK</span>
-        <span className="mbar__val" data-empty={!store.problemStatement}>
-          {store.problemStatement ? `${store.problemStatement.number} / ${store.problemStatement.category}` : '\u2014'}
-        </span>
-      </div>
       <div className="mbar__total">
         <span className="mbar__label">TOTAL</span>
         <span className="mbar__price">
@@ -253,17 +245,15 @@ function MobileBar({ store }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   STEP 01 — TEAM DETAILS + TRACK
+   STEP 01 — TEAM DETAILS
    ═══════════════════════════════════════════════════════════════ */
 
-function StepEntry({ store, onRetry }) {
-  const loading = store.loading.boot || store.loading.problems;
-
+function StepEntry({ store }) {
   return (
     <div className="step">
       <div className="step__head">
         <h2 className="step__title">YOUR ENTRY</h2>
-        <p className="step__sub">Name your crew, add your college and pick the problem your team will attack.</p>
+        <p className="step__sub">Name your crew and add your college. The official challenges are revealed during the hack.</p>
       </div>
 
       <div className="step__fields">
@@ -286,49 +276,6 @@ function StepEntry({ store, onRetry }) {
           />
         </div>
       </div>
-
-      <div className="step__split-head">
-        <span className="step__label">PROBLEM STATEMENT / TRACK *</span>
-        {loading && <span className="step__split-hint">LOADING&hellip;</span>}
-      </div>
-
-      {loading ? (
-        <div className="trk-col">
-          <div className="trk trk--loading"><span>SIGNAL SEARCHING THE PROBLEM FIELD&hellip;</span></div>
-        </div>
-      ) : store.problems.length === 0 ? (
-        <div className="trk-col">
-          <div className="trk trk--loading">
-            <span>CHALLENGES UNAVAILABLE</span>
-            <button className="table__retry trk__retry" type="button" onClick={onRetry}>RETRY</button>
-          </div>
-        </div>
-      ) : (
-        <div className="trk-col">
-          {store.problems.map((prob) => {
-            const selected = store.problemStatement?.id === prob.id;
-            return (
-              <motion.button
-                key={prob.id}
-                type="button"
-                className={`trk ${selected ? 'trk--on' : ''}`}
-                onClick={() => store.setProblemStatement(prob)}
-                layout
-                whileHover={{ x: 4 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <span className="trk__num">{prob.number}</span>
-                <span className="trk__info">
-                  <span className="trk__cat">{prob.category}</span>
-                  <span className="trk__title">{prob.title}</span>
-                </span>
-                <span className="trk__diff">{prob.difficulty || 'REQUEST FOR PROPOSALS'}</span>
-                <span className="trk__check">{selected ? '\u2713' : '\u25CB'}</span>
-              </motion.button>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
@@ -343,12 +290,11 @@ function StepCrewSize({ store }) {
 
   const sizes = useMemo(() => {
     const labels = {
-      2: ['DUO', 'Two builders, one vision'],
       3: ['TRIO', 'Three minds, infinite angles'],
       4: ['SQUAD', 'Full force, no limits'],
     };
     const out = [];
-    for (let n = Math.max(2, min); n <= max; n++) {
+    for (let n = min; n <= max; n++) {
       const [label, desc] = labels[n] ?? [`TEAM ${n}`, 'Your crew, your rules'];
       out.push({ value: n, label, desc });
     }
@@ -365,7 +311,7 @@ function StepCrewSize({ store }) {
         {sizes.map((s) => (
           <motion.button
             key={s.value}
-            className={`sz ${store.team.size === s.value ? 'sz--on' : ''}`}
+            className={`sz ${store.teamSizeSelected && store.team.size === s.value ? 'sz--on' : ''}`}
             onClick={() => store.setTeamSize(s.value)}
             whileHover={{ y: -4 }}
             whileTap={{ scale: 0.97 }}
@@ -374,8 +320,8 @@ function StepCrewSize({ store }) {
             <span className="sz__label">{s.label}</span>
             <span className="sz__desc">{s.desc}</span>
             <span className="sz__fee">
-              {store?.round?.[`fee_${s.value}_members`] != null
-                ? inrLabel(store.round[`fee_${s.value}_members`])
+              {store?.round?.id
+                ? inrLabel(getRegistrationFee(store.round, s.value))
                 : '\u2014'}
             </span>
           </motion.button>
@@ -840,23 +786,6 @@ function StepReview({ store, goToStep }) {
 
         <div className="rev__section">
           <div className="rev__sec-head">
-            <span>CHALLENGE</span>
-            <button className="rev__edit" onClick={() => goToStep(0)} type="button">EDIT</button>
-          </div>
-          <div className="rev__sec-body">
-            {store.problemStatement ? (
-              <div className="rev__kv">
-                <span className="rev__k">{store.problemStatement.number} / {store.problemStatement.category}</span>
-                <span className="rev__v">{store.problemStatement.title}</span>
-              </div>
-            ) : (
-              <span className="rev__v" style={{ opacity: 0.4 }}>No selection</span>
-            )}
-          </div>
-        </div>
-
-        <div className="rev__section">
-          <div className="rev__sec-head">
             <span>PAYMENT</span>
             <button className="rev__edit" onClick={() => goToStep(3)} type="button">EDIT</button>
           </div>
@@ -989,10 +918,6 @@ function SuccessPass({ store, onExit }) {
                     <span className="ticket__fact-val">{entryNum}</span>
                   </div>
                   <div className="ticket__fact">
-                    <span className="ticket__fact-label">TRACK</span>
-                    <span className="ticket__fact-val">{store.problemStatement?.category || '\u2014'}</span>
-                  </div>
-                  <div className="ticket__fact">
                     <span className="ticket__fact-label">DATE</span>
                     <span className="ticket__fact-val ticket__fact-val--sm">{ticketDates}</span>
                   </div>
@@ -1038,7 +963,9 @@ function SuccessPass({ store, onExit }) {
                 )}
 
                 <footer className="ticket__micro">
-                  <span className="ticket__micro-item">PRESENTED BY {EVENT.presenter}</span>
+                  <span className="ticket__micro-item">
+                    <PresenterLogos className="ticket__micro-logos" />
+                  </span>
                   <span className="ticket__micro-item">{EVENT.name} {EVENT.edition} {'\u2014'} YOU&apos;RE IN</span>
                   <span className="ticket__micro-item">ISSUE NO. {store.registrationCode}</span>
                 </footer>
@@ -1104,7 +1031,7 @@ function SuccessPass({ store, onExit }) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 1.75 }}
         >
-          Your registration has been received. Our team will verify your payment proof before your entry is confirmed.
+          KINDLY CHECK YOUR SPAM / JUNK FOLDER TOO FOR THE CONFIRMATION EMAIL.
         </motion.p>
 
         <motion.div
@@ -1142,7 +1069,6 @@ export default function Registration({ onExit }) {
     continueFromStep,
     uploadProof,
     submitEntry,
-    retryProblems,
   } = useRegistration();
 
   const [direction, setDirection] = useState(1);
@@ -1187,16 +1113,10 @@ export default function Registration({ onExit }) {
 
   const navBusy = busy && !store.loading.uploading;
 
-  /* Fatal: config error / problems unavailable / network down. */
+  /* Fatal: config / service error / network down. */
   if (store.bootError) {
     const fatal = (() => {
       switch (store.bootErrorCode) {
-        case 'PROBLEMS_LOAD_FAILED':
-          return {
-            tag: 'ERR.LINK.CHALLENGES',
-            title: 'CHALLENGES UNAVAILABLE',
-            note: 'The problem statements could not be loaded from the database. Retry in a moment.',
-          };
         case 'NETWORK_ERROR':
           return {
             tag: 'ERR.LINK.DOWN',
@@ -1252,7 +1172,7 @@ export default function Registration({ onExit }) {
     );
   }
 
-  if (store.loading.boot && store.problems.length === 0) {
+  if (store.loading.boot) {
     return (
       <div className="reg">
         <div className="reg__header">
@@ -1323,7 +1243,7 @@ export default function Registration({ onExit }) {
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 className="reg__step-wrap"
               >
-                {store.currentStep === 0 && <StepEntry store={store} onRetry={retryProblems} />}
+                {store.currentStep === 0 && <StepEntry store={store} />}
                 {store.currentStep === 1 && <StepCrewSize store={store} />}
                 {store.currentStep === 2 && <StepBuildCrew store={store} />}
                 {store.currentStep === 3 && <StepPayment store={store} onUploadProof={uploadProof} />}

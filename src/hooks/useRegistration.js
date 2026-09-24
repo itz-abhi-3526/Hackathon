@@ -1,4 +1,4 @@
-﻿﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    HACK2PITCH 2026 â€” Registration orchestration hook
    ONE reliable flow: the wizard is 100% client-side until the final
    submit, which calls the atomic register_team(payload jsonb) RPC. There are
@@ -14,15 +14,15 @@
      â€¢ writes team + participants + payment_image_url together
 
    Completion badges and the CONTINUE gate stay purely client-side
-   (all fields valid + exactly one lead). The only server traffic
-   before submit is the public problem_statements read.
+   (team details + all fields valid + exactly one lead). The only
+   server call before submit is the active-round lookup; registrations
+   carry NO problem statement (challenges are revealed during the hack).
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 import { useCallback, useRef } from 'react';
 import useRegistrationStore from '../store/registrationStore.js';
 import { friendlyError } from '../lib/api.js';
 import { assertSupabaseConfigured } from '../lib/config.js';
-import { getProblemStatements, clearProblemCache } from '../services/problemService.js';
 import {
   submitRegistration as submitRegistrationRequest,
   generateRegistrationCode,
@@ -93,22 +93,6 @@ export default function useRegistration() {
       }
     }
 
-    /* 3. The problem arena â€” problem_statements is the source of truth
-          for selecting a challenge. */
-    let problems = [];
-    try {
-      problems = await getProblemStatements();
-      store.setProblems(problems);
-    } catch (err) {
-      /* NON-FATAL: the wizard must still open so the user can enter their
-         team/college details. Step 01 renders a RETRY control, the error
-         is logged and surfaced in the step UI â€” nothing is faked. */
-      console.error('[registration] problems lookup failed', err);
-      store.setStepError(
-        'CHALLENGES UNAVAILABLE â€” The problem field could not be loaded from the database. Retry to continue.'
-      );
-    }
-
     store.setLoading('boot', false);
   }, [store]);
 
@@ -176,7 +160,6 @@ export default function useRegistration() {
     try {
       const result = await submitRegistrationRequest({
         team: store.team,
-        problemStatement: store.problemStatement,
         players: store.players,
         payment: store.payment,
         registrationCode,
@@ -238,25 +221,6 @@ export default function useRegistration() {
     }
   }, [store]);
 
-  const retryProblems = useCallback(async () => {
-    store.clearBootError();
-    store.clearStepError();
-    store.setLoading('problems', true);
-    try {
-      const problems = await getProblemStatements();
-      store.setProblems(problems);
-      if (problems.length === 0) {
-        store.setStepError(
-          'CHALLENGES UNAVAILABLE â€” No problem statements were found in the database.'
-        );
-      }
-    } catch (err) {
-      console.error('[registration] problems retry failed', err);
-      store.setStepError(friendlyError(err));
-    }
-    store.setLoading('problems', false);
-  }, [store]);
-
   const retryBoot = useCallback(() => {
     bootStarted.current = false;
     store.clearBootError();
@@ -270,7 +234,6 @@ export default function useRegistration() {
   const startFresh = useCallback(async () => {
     store.resetRegistration();
     bootStarted.current = false;
-    clearProblemCache();
     store.clearStepError();
     store.setLoading('boot', true);
 
@@ -301,15 +264,7 @@ export default function useRegistration() {
       }
     }
 
-    try {
-      const problems = await getProblemStatements();
-      store.setProblems(problems ?? []);
-      store.setLoading('boot', false);
-    } catch (err) {
-      console.error('[registration] fresh problems load failed', err);
-      store.setStepError(friendlyError(err));
-      store.setLoading('boot', false);
-    }
+    store.setLoading('boot', false);
   }, [store]);
 
   return {
@@ -320,6 +275,5 @@ export default function useRegistration() {
     continueFromStep,
     uploadProof,
     submitEntry,
-    retryProblems,
   };
 }

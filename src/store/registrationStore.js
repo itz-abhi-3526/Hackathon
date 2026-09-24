@@ -62,7 +62,7 @@ const EMPTY_PROOF = {
   uploadedAt: null,
 };
 
-const EMPTY_TEAM = { name: '', college: '', size: 2 };
+const EMPTY_TEAM = { name: '', college: '', size: 3 };
 
 const EMPTY_TEAM_SAVED = { name: '', problemStatementId: null };
 
@@ -74,13 +74,13 @@ const useRegistrationStore = create((set, get) => ({
   currentStep: 0,
   completedSteps: [],
 
-  team: { ...EMPTY_TEAM },
+team: { ...EMPTY_TEAM },
   /* True from the first explicit Step 02 (TEAM SIZE) selection. The
      sidebar/mobile TOTAL only becomes a real amount after a size is
      chosen — until then Step 01 stays price-neutral and shows
-     "SELECT TEAM SIZE" even though the store's default size is 2. */
+     "SELECT TEAM SIZE" even though the store's default size is 3. */
   teamSizeSelected: false,
-  players: [createEmptyPlayer(1), createEmptyPlayer(2)],
+  players: [createEmptyPlayer(1), createEmptyPlayer(2), createEmptyPlayer(3)],
   problemStatement: null,
 
   /* The persistent teams row this registration maps to. teamId is kept
@@ -110,7 +110,9 @@ const useRegistrationStore = create((set, get) => ({
     persisted: false,
   },
 
-  /* Public problem arena, loaded at boot from problem_statements. */
+  /* Problem selection is no longer part of registration — the official
+     challenges are revealed during the hackathon, so problemStatement
+     stays null and the legacy selection handlers below are dormant. */
   problems: [],
 
   /* Current active registration round (from public_active_round).
@@ -261,7 +263,7 @@ const useRegistrationStore = create((set, get) => ({
   applyServerState: ({ team, participants, problems }) => {
     const state = get();
     const rows = Array.isArray(participants) ? participants : [];
-    const size = Math.max(Number(state.team.size) || 2, rows.length);
+    const size = Math.max(Number(state.team.size) || 3, rows.length);
     const players = rows.map((r, i) => ({
       id: i + 1,
       name: r.full_name ?? '',
@@ -443,9 +445,11 @@ const useRegistrationStore = create((set, get) => ({
     }
 
     const team = { ...EMPTY_TEAM, ...(session.team ?? {}) };
+    const rawSize = Number(team.size);
+    team.size = Number.isInteger(rawSize) && rawSize >= 3 && rawSize <= 4 ? rawSize : 3;
     let players = Array.isArray(session.players)
       ? session.players
-      : [createEmptyPlayer(1), createEmptyPlayer(2)];
+      : [createEmptyPlayer(1), createEmptyPlayer(2), createEmptyPlayer(3)];
     if (!players.some((p) => p.role === PARTICIPANT_ROLE.LEAD) && players.length) {
       players = players.map((p, i) => ({ ...p, role: i === 0 ? PARTICIPANT_ROLE.LEAD : p.role }));
     }
@@ -517,7 +521,7 @@ const useRegistrationStore = create((set, get) => ({
       completedSteps: [],
       team: { ...EMPTY_TEAM },
       teamSizeSelected: false,
-      players: [createEmptyPlayer(1), createEmptyPlayer(2)],
+      players: [createEmptyPlayer(1), createEmptyPlayer(2), createEmptyPlayer(3)],
       problemStatement: null,
       teamId: null,
       registrationCode: '',
@@ -554,19 +558,17 @@ const useRegistrationStore = create((set, get) => ({
       case 0:
         return (
           String(state.team.name ?? '').trim() !== '' &&
-          String(state.team.college ?? '').trim() !== '' &&
-          state.problemStatement !== null
+          String(state.team.college ?? '').trim() !== ''
         );
       case 1:
-        return state.team.size >= 2 && state.team.size <= 4;
+        return state.teamSizeSelected && state.team.size >= 3 && state.team.size <= 4;
       case 2:
-        /* Step 03 (crew passes) is gated ONLY on team + track + size +
-           every participant being complete + exactly one lead.
-           Payment is never consulted here — it only matters on the
-           final review/submit. */
+        /* Step 03 (crew passes) is gated ONLY on team + size + every
+           participant being complete + exactly one lead. Payment is
+           never consulted here — it only matters on the final
+           review/submit. */
         return validateParticipants({
           team: state.team,
-          problemStatement: state.problemStatement,
           players: state.players,
         }).length === 0;
       case 3:
@@ -574,7 +576,6 @@ const useRegistrationStore = create((set, get) => ({
       case 4:
         return validateEntry({
           team: state.team,
-          problemStatement: state.problemStatement,
           players: state.players,
           payment: state.payment,
         }).length === 0;

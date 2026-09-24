@@ -150,27 +150,6 @@ const VH_MUTED = '#77756F';
 const VH_GREEN = '#178A3F';
 const VH_DATELINE = '10–11 OCT 2026';
 const VH_VENUE = 'FISAT, Angamaly';
-const PRESENTER = 'FISAT HORIZON CLUB PRESENTS';
-
-/* Decorative barcode strip (pure HTML/CSS — thin vertical bars,
-   no external dependency). Used on the pass stub. */
-const BARCODE = (barColor = '#151517') => `
-  <!--[if mso]>
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;"><tr>
-  <![endif]-->
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;table-layout:fixed;">
-    <tr>
-      ${[4,2,6,1,3,7,2,5,1,6,3,2,7,1,4,2,6,3,1,5,4,2,6,1,3,7,2,5,6,1,3,4,2,7,1,5,2,6,3,1,4]
-        .map((w) =>
-          `<td style="height:36px;width:${w}px;background-color:${barColor};font-size:0;line-height:0;border-collapse:collapse;">&nbsp;</td>`
-        )
-        .join('')}
-    </tr>
-  </table>
-  <!--[if mso]>
-  </tr></table>
-  <![endif]-->
-`;
 
 /* Small editorial kicker line used under both mastheads. */
 const VH_KICKER = 'PITCH. BUILD. LAUNCH.';
@@ -189,7 +168,7 @@ const sendVerificationEmail = async (registration) => {
   }
 
   const code = String(registration.registrationCode || '—');
-  const subject = `HACK2PITCH 2026 · ENTRY CONFIRMED — ${registration.name}`;
+  const subject = `HACK2PITCH 2026 · REGISTRATION RECEIVED — ${registration.name}`;
 
   /* ── Optional presentation data (real registration rows only).
      The template renders a section ONLY when the registration object
@@ -198,42 +177,14 @@ const sendVerificationEmail = async (registration) => {
      invented here. ── */
   const has = (value) =>
     value !== undefined && value !== null && String(value).trim() !== '';
-  const email = has(registration.email) ? String(registration.email) : null;
-  const college = has(registration.college)
-    ? String(registration.college)
-    : null;
   const teamSize = has(registration.teamSize)
     ? String(registration.teamSize)
     : null;
-  const leadName = has(registration.leadName)
-    ? String(registration.leadName)
-    : null;
   const dateVal = has(registration.date) ? String(registration.date) : null;
   const venue = has(registration.venue) ? String(registration.venue) : null;
-  const qrImageUrl = has(registration.qrImageUrl)
-    ? String(registration.qrImageUrl)
-    : null;
-  const scanUrl = has(registration.scanUrl)
-    ? String(registration.scanUrl)
-    : null;
   const crew = Array.isArray(registration.crew)
     ? registration.crew.filter((m) => m && has(m.name))
     : [];
-  const challenge =
-    registration.challenge && has(registration.challenge.title)
-      ? {
-          title: String(registration.challenge.title),
-          track: has(registration.challenge.track)
-            ? String(registration.challenge.track)
-            : null,
-          difficulty: has(registration.challenge.difficulty)
-            ? String(registration.challenge.difficulty)
-            : null,
-          description: has(registration.challenge.description)
-            ? String(registration.challenge.description)
-            : null,
-        }
-      : null;
 
   const memberName = (m) => {
     if (!m) return null;
@@ -249,231 +200,99 @@ const sendVerificationEmail = async (registration) => {
      (date/venue are event-wide constants, not per-team data). */
   const eventDate = dateVal || VH_DATELINE;
   const eventVenue = venue || VH_VENUE;
-  const problemTitle = challenge ? challenge.title : null;
-  const problemDifficulty = challenge ? challenge.difficulty : null;
 
   const text = [
     'HACK2PITCH 2026',
-    'FISAT HORIZON CLUB PRESENTS',
-    'YOUR ENTRY IS CONFIRMED',
-    'Your team is officially registered for HACK2PITCH 2026. Your event pass is ready.',
+    VH_KICKER,
     '',
-    'YOUR EVENT PASS',
-    'TEAM             ' + registration.name,
-    'REGISTRATION ID  ' + code,
-    ...(problemTitle ? ['PROBLEM STATEMENT  ' + problemTitle] : []),
-    ...(problemDifficulty ? ['DIFFICULTY        ' + problemDifficulty] : []),
-    'DATE              ' + eventDate,
-    'VENUE             ' + eventVenue,
-    ...(scanUrl ? ['OPEN: ' + scanUrl] : []),
-    'Show this QR at entry. Each participant will be checked in individually.',
-    ...(college || teamSize || leadName
-      ? [
-          '',
-          'MORE DETAILS',
-          ...(college ? ['COLLEGE          ' + college] : []),
-          ...(teamSize ? ['TEAM SIZE        ' + teamSize + ' member(s)'] : []),
-          ...(leadName ? ['LEAD             ' + leadName] : []),
-        ]
-      : []),
-    ...(crew.length > 0
-      ? [
-          '',
-          'CREW MANIFEST',
-          ...crew
-            .map((member, index) => {
-              const n = memberName(member);
-              if (!n) return null;
-              const num = String(index + 1).padStart(2, '0');
-              const em = has(member.email) ? String(member.email) : null;
-              return em
-                ? num + '   ' + n + '\n        ' + em
-                : num + '   ' + n;
-            })
-            .filter(Boolean),
-        ]
-      : []),
-    ...(challenge
-      ? [
-          '',
-          'YOUR CHALLENGE',
-          challenge.title,
-          ...(challenge.track || challenge.difficulty
-            ? [[challenge.track, challenge.difficulty].filter(Boolean).join(' · ')]
-            : []),
-          ...(challenge.description ? [challenge.description] : []),
-        ]
-      : []),
+    'REGISTRATION RECEIVED',
+    'Your registration for HACK2PITCH 2026 has been received successfully.',
     '',
-    'EVENT INFORMATION',
+    'REGISTRATION DETAILS',
+    'TEAM NAME            ' + (registration.name || '—'),
+    'REGISTRATION ID      ' + code,
+    ...(teamSize ? ['TEAM SIZE            ' + teamSize + ' member(s)'] : []),
+    'PAYMENT STATUS       PAYMENT PROOF RECEIVED',
+    '',
+    'PARTICIPANTS',
+    ...crew.map((member, index) => {
+      const n = memberName(member);
+      if (!n) return null;
+      const isLead = has(member.role) && String(member.role) === 'lead';
+      const em = has(member.email) ? String(member.email) : null;
+      const num = String(index + 1).padStart(2, '0');
+      const head = isLead ? n + ' [LEAD]' : n;
+      return em ? num + '   ' + head + '\n        ' + em : num + '   ' + head;
+    }).filter(Boolean),
+    '',
+    'EVENT DETAILS',
     'HACK2PITCH 2026 — 24-HOUR HACKATHON',
     'DATE              ' + eventDate,
     'VENUE             ' + eventVenue,
     '',
+    'NEXT STEP',
+    'Your payment proof will be verified by our team. Your registration will be confirmed after verification.',
+    'Please check your Spam/Junk folder if you do not see future confirmation emails in your inbox.',
+    '',
     'WHATSAPP COMMUNITY',
-    'Join the official HACK2PITCH 2026 community to get important updates, reminders and announcements:',
+    'Join the official HACK2PITCH 2026 community to get important updates, reminders and announcements.',
     'https://chat.whatsapp.com/Ca6uEsJI88Y4Rf1Eq7EGNc',
     'All important event updates will be shared through the official group.',
-    '',
-    "WHAT'S NEXT",
-    '01 REGISTRATION — Completed',
-    '02 PREPARE — Form your strategy',
-    '03 HACK — 10 Oct 2026',
-    '04 SUBMIT — 11 Oct 2026',
-    '05 JUDGING — 11 Oct 2026',
-    '06 WINNERS — 11 Oct 2026',
-    '',
-    'Keep this email accessible on event day. Your QR pass will be used at entry, and each participant will be checked in individually.',
-    '',
-    'DIFFERENT MINDS. BOLDER SOLUTIONS.',
-    'SEE YOU AT HACK2PITCH 2026 — FISAT, ANGAMALY',
     '',
     'HACK2PITCH 2026',
     'FISAT HORIZON CLUB',
   ].join('\n');
 
-  /* YOUR REGISTRATION — label:value ledger rows; renders the fields
-     that exist on the real registration only. */
-  const regRows = [
-    college ? { label: 'COLLEGE', value: esc(college) } : null,
+  /* REGISTRATION DETAILS — label:value ledger rows; renders the fields
+     that exist on the real registration only. The verification email is
+     sent only after a payment is approved, so PAYMENT STATUS is the
+     fixed 'PAYMENT PROOF RECEIVED' outcome rather than per-row data. */
+  const detailRows = [
+    { label: 'TEAM NAME', value: esc(registration.name) || '&mdash;', mono: false },
+    { label: 'REGISTRATION ID', value: esc(code), mono: true },
     teamSize
-      ? { label: 'TEAM SIZE', value: `${esc(teamSize)} member(s)` }
+      ? { label: 'TEAM SIZE', value: `${esc(teamSize)} member(s)`, mono: false }
       : null,
-    leadName ? { label: 'LEAD', value: esc(leadName) } : null,
+    { label: 'PAYMENT STATUS', value: 'PAYMENT PROOF RECEIVED', mono: false },
   ]
     .filter(Boolean)
     .map(
       (f) => `
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="frow" style="border-collapse:collapse;border-top:1px dashed #C9C4BA;margin-top:12px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="drow" style="border-collapse:collapse;border-top:1px solid #242427;margin-top:14px;">
                     <tr>
-                      <td width="36%" class="flbl" align="left" style="vertical-align:top;padding:9px 12px 9px 0;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:2px;color:${VH_MUTED};text-transform:uppercase;">${f.label}</td>
-                      <td width="64%" class="fval" align="left" style="vertical-align:top;padding:9px 0;word-break:break-word;overflow-wrap:break-word;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;line-height:1.3;color:${VH_BLACK};${f.mono ? 'font-family:\'Courier New\',Courier,monospace;word-break:break-all;font-size:14px;letter-spacing:1px;' : ''}">${f.value}</td>
+                      <td width="42%" class="dlbl" align="left" style="vertical-align:top;padding:10px 12px 10px 0;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;color:#8A887F;text-transform:uppercase;">${f.label}</td>
+                      <td width="58%" class="dval" align="left" style="vertical-align:top;padding:10px 0;word-break:break-word;overflow-wrap:break-word;font-family:${f.mono ? "'Courier New',Courier,monospace" : 'Helvetica,Arial,sans-serif'};font-size:${f.mono ? '14px' : '15px'};font-weight:bold;line-height:1.35;color:#FFFFFF;${f.mono ? 'word-break:break-all;letter-spacing:1px;' : ''}">${f.value}</td>
                     </tr>
                   </table>`
     )
     .join('');
 
-  /* CREW MANIFEST — numbered rows for the participants on the team;
-     the lead carries a red LEAD tag; the email line wraps on mobile. */
-  const crewRowsHtml = crew
+  /* PARTICIPANTS — numbered rows; the lead carries a red LEAD tag.
+     Only the fields the registration object carries (name, email, role)
+     render — phone and food preference are not supplied by index.ts, so
+     they are omitted rather than shown as placeholders. */
+  const participantRows = crew
     .map((member, i) => {
       const n = memberName(member);
       if (!n) return '';
       const em = has(member.email) ? String(member.email) : null;
       const isLead = has(member.role) && String(member.role) === 'lead';
-      const roleCell = isLead
-        ? `<td width="56" valign="top" style="vertical-align:top;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:1px;font-weight:bold;color:${VH_RED};text-transform:uppercase;padding:8px 6px 8px 0;">LEAD</td>`
-        : `<td width="56" valign="top" style="vertical-align:top;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:1px;font-weight:bold;color:${VH_MUTED};text-transform:uppercase;padding:8px 6px 8px 0;">MEMBER</td>`;
+      const num = String(i + 1).padStart(2, '0');
       return `
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="crew-row" style="border-collapse:collapse;border-top:1px dashed #C9C4BA;margin-top:14px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="prow" style="border-collapse:collapse;border-top:1px solid #242427;margin-top:14px;">
                     <tr>
-                      ${roleCell}
-                      <td style="padding:8px 0;word-break:break-word;overflow-wrap:break-word;">
-                        <div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;color:${VH_BLACK};">${esc(n)}</div>
-                        ${em ? `<div style="margin-top:3px;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:1px;color:${VH_MUTED};word-break:break-all;">${esc(em)}</div>` : ''}
+                      <td width="42" valign="top" style="vertical-align:top;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:1px;font-weight:bold;color:${VH_RED};padding:10px 10px 10px 0;">${num}</td>
+                      <td style="vertical-align:top;padding:10px 0;word-break:break-word;overflow-wrap:break-word;">
+                        <div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;color:#FFFFFF;">
+                          ${esc(n)}
+                          ${isLead ? `<span style="display:inline-block;margin-left:8px;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;font-weight:bold;color:${VH_RED};text-transform:uppercase;border:1px solid ${VH_RED};padding:2px 6px;">LEAD</span>` : ''}
+                        </div>
+                        ${em ? `<div style="margin-top:4px;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:1px;color:#8A887F;word-break:break-all;">${esc(em)}</div>` : ''}
                       </td>
                     </tr>
                   </table>`;
     })
     .join('');
-
-  /* YOUR CHALLENGE — the real problem statement the team builds on
-     (rendered only when index.ts found a statement on the team). */
-  const challengeHtml = challenge ? `
-            <tr>
-              <td class="p30" style="background-color:${VH_PAPER};border:1px solid #E3DED2;padding:26px 30px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_BLACK};text-transform:uppercase;font-weight:bold;">YOUR&nbsp;CHALLENGE</div>
-                <div style="margin-top:8px;border-top:1px dashed #C9C4BA;font-size:0;line-height:0;">&nbsp;</div>
-                ${challenge.track || challenge.difficulty ? `
-                <div style="margin-top:16px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:2px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">${[challenge.track, challenge.difficulty].filter(Boolean).map(esc).join('&nbsp;&middot;&nbsp;')}</div>` : ''}
-                <div style="margin-top:6px;font-family:Helvetica,Arial,sans-serif;font-size:20px;line-height:1.2;font-weight:bold;color:${VH_BLACK};word-break:break-word;overflow-wrap:break-word;">${esc(challenge.title)}</div>
-                ${challenge.description ? `<div style="margin-top:10px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#4A4843;word-break:break-word;overflow-wrap:break-word;">${esc(challenge.description)}</div>` : ''}
-              </td>
-            </tr>` : '';
-
-  /* YOUR EVENT PASS — attendance QR (verification email ONLY). The QR
-     is a server-generated PNG (storage/rls-secured); the registration
-     code stays visible even if remote images are blocked. When the QR
-     PNG is unavailable the plain scan link is offered as a fallback.
-     Presentation-only change: the QR now renders inside the ticket stub.
-     Generation, payload and token are untouched. */
-  const passContent = qrImageUrl
-    ? `<img src="${esc(qrImageUrl)}" alt="HACK2PITCH 2026 attendance QR code — present it at venue entry to check in" width="180" height="180" style="display:block;margin-left:auto;margin-right:auto;width:180px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />`
-    : scanUrl
-      ? `<a href="${esc(scanUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 20px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:1.5px;font-weight:bold;color:${VH_BLACK};text-decoration:none;background-color:#FFFFFF;border-radius:2px;">OPEN&nbsp;SCAN&nbsp;LINK</a>`
-      : '';
-
-  /* Ticket info grid — boarding-pass label/value rows. Only fields that
-     exist on the real registration render (problem statement and
-     difficulty hide when the team has no statement); date/venue use the
-     dynamic values when present, else the event constants above. */
-  const ticketRows = [
-    { label: 'REGISTRATION ID', value: esc(code), mono: true },
-    problemTitle ? { label: 'PROBLEM STATEMENT', value: esc(problemTitle) } : null,
-    problemDifficulty ? { label: 'DIFFICULTY', value: esc(problemDifficulty) } : null,
-    { label: 'DATE', value: esc(eventDate) },
-    { label: 'VENUE', value: esc(eventVenue) },
-  ]
-    .filter(Boolean)
-    .map(
-      (f) => `
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="trow" style="border-collapse:collapse;border-top:1px dashed #C9C4BA;margin-top:10px;">
-                    <tr>
-                      <td width="42%" class="tlbl" align="left" style="vertical-align:top;padding:8px 10px 8px 0;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;color:${VH_MUTED};text-transform:uppercase;">${f.label}</td>
-                      <td width="58%" class="tval" align="left" style="vertical-align:top;padding:8px 0;word-break:break-word;overflow-wrap:break-word;font-family:${f.mono ? "'Courier New',Courier,monospace" : 'Helvetica,Arial,sans-serif'};font-size:${f.mono ? '13px' : '14px'};font-weight:bold;line-height:1.35;color:${VH_BLACK};${f.mono ? 'word-break:break-all;letter-spacing:1px;' : ''}">${f.value}</td>
-                    </tr>
-                  </table>`
-    )
-    .join('');
-
-  /* BookMyShow-style info strip — four compact blocks directly beneath
-     the pass (static event info + friendly confirmations only). */
-  const stripBlocks = [
-    { label: 'TEAM&nbsp;REGISTERED', value: 'You&rsquo;re all set.' },
-    { label: 'EVENT&nbsp;PASS', value: 'Ready to scan.' },
-    { label: esc(eventDate), value: esc(eventVenue) },
-    { label: '24&nbsp;HOURS', value: 'Build. Collaborate. Innovate.' },
-  ];
-  const stripRow = `
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
-                  <tr>
-                    ${stripBlocks
-                      .map(
-                        (b, i) => `
-                    <td class="bk-col ${i === 0 ? 'bk-first' : ''}" valign="top" align="left" style="vertical-align:top;width:25%;background-color:${VH_PAPER};${i === 0 ? '' : 'border-left:1px dashed #D8D3C8;'}padding:14px 16px;">
-                      <div style="font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;color:${VH_BLACK};text-transform:uppercase;font-weight:bold;word-break:break-word;overflow-wrap:break-word;">${b.label}</div>
-                      <div style="margin-top:5px;font-family:Arial,sans-serif;font-size:12px;line-height:1.45;color:#4A4843;word-break:break-word;overflow-wrap:break-word;">${b.value}</div>
-                    </td>`
-                      )
-                      .join('')}
-                  </tr>
-                </table>`;
-
-  /* What's Next — compact event journey. Informational only; no
-     workflow is created (labels + dates are fixed event copy). */
-  const timelineSteps = [
-    ['REGISTRATION', 'Completed', true],
-    ['PREPARE', 'Form your strategy', false],
-    ['HACK', '10 Oct 2026', false],
-    ['SUBMIT', '11 Oct 2026', false],
-    ['JUDGING', '11 Oct 2026', false],
-    ['WINNERS', '11 Oct 2026', false],
-  ];
-  const timelineHtml = `
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
-                  <tr>
-                    ${timelineSteps
-                      .map(
-                        (s, i) => `
-                    ${i > 0 ? `<td class="tl-arw" align="center" valign="middle" style="width:4%;font-family:'Courier New',Courier,monospace;font-size:12px;color:${VH_RED};">&rarr;</td>` : ''}
-                    <td class="tl-step" valign="top" style="width:13%;padding:6px 10px 6px 0;">
-                      <div style="font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;${s[2] ? `color:${VH_GREEN};` : `color:${VH_WARM};`}text-transform:uppercase;font-weight:bold;">${s[2] ? '&#10003;&nbsp;' : ''}${s[0]}</div>
-                      <div style="margin-top:4px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:bold;color:#FFFFFF;word-break:break-word;overflow-wrap:break-word;">${s[1]}</div>
-                    </td>`
-                      )
-                      .join('')}
-                  </tr>
-                </table>`;
 
   const html = `
 <!DOCTYPE html>
@@ -483,7 +302,7 @@ const sendVerificationEmail = async (registration) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="x-apple-disable-message-reformatting" />
-  <title>HACK2PITCH 2026 · Entry Confirmed</title>
+  <title>HACK2PITCH 2026 · Registration Received</title>
   <!--[if mso]>
   <style type="text/css">
     .shell { width: 640px !important; }
@@ -493,22 +312,10 @@ const sendVerificationEmail = async (registration) => {
     @media only screen and (max-width: 620px) {
       .shell { width: 100% !important; }
       .p30 { padding: 22px 20px !important; }
-      .hero-a, .hero-b { font-size: 30px !important; line-height: 1.1 !important; }
-      .ticket-main { display: block !important; width: 100% !important; }
-      .perf { display: none !important; }
-      .ticket-stub { display: block !important; width: 100% !important; border-left: none !important; border-top: 2px dashed #B8B2A4 !important; }
-      .frow { display: block !important; width: 100% !important; }
-      .flbl { display: block !important; width: 100% !important; padding: 0 !important; }
-      .fval { display: block !important; width: 100% !important; padding: 0 !important; margin-top: 6px; }
-      .trow { display: block !important; width: 100% !important; }
-      .tlbl { display: block !important; width: 100% !important; padding: 8px 0 2px 0 !important; }
-      .tval { display: block !important; width: 100% !important; padding: 2px 0 8px 0 !important; }
-      .bk-col { display: block !important; width: 100% !important; border-left: none !important; border-top: 1px dashed #D8D3C8 !important; }
-      .bk-first { border-top: none !important; }
-      .crew-row { display: block !important; width: 100% !important; }
-      .ev-col { display: block !important; width: 100% !important; border-left: none !important; padding: 0 !important; }
-      .tl-step { display: block !important; width: 100% !important; padding: 12px 0 !important; border-top: 1px dashed #2A2A2C !important; }
-      .tl-arw { display: none !important; }
+      .drow, .prow { display: block !important; width: 100% !important; }
+      .dlbl { display: block !important; width: 100% !important; padding: 0 !important; }
+      .dval { display: block !important; width: 100% !important; padding: 0 !important; margin-top: 6px; }
+      .ev2 { display: block !important; width: 100% !important; padding: 0 !important; border-left: none !important; }
       .btn { width: 100% !important; }
       .btn a { display: block !important; width: 100% !important; }
     }
@@ -516,162 +323,108 @@ const sendVerificationEmail = async (registration) => {
 </head>
 <body style="margin:0;padding:0;word-spacing:normal;background-color:${VH_BLACK};-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
   <center role="presentation" style="width:100%;">
-    <!-- OUTER SHELL — black ambient, warm event pass -->
+    <!-- OUTER SHELL — clean dark booking-confirmation -->
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:${VH_BLACK};border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
       <tr>
         <td align="center" style="padding:26px 12px;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" class="shell" align="center" style="width:100%;max-width:640px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
 
-            <!-- ── 1. HERO ─────────────────────────────────────────── -->
+            <!-- ── 1. HEADER ─────────────────────────────────────────── -->
             <tr>
-              <td style="background-color:${VH_BLACK};border-top:4px solid ${VH_RED};padding:26px 30px 34px 30px;">
+              <td style="background-color:${VH_BLACK};border-top:4px solid ${VH_RED};padding:30px 30px 24px 30px;">
                 <div style="font-family:'Courier New',Courier,monospace;font-size:14px;letter-spacing:5px;color:${VH_WARM};font-weight:bold;text-transform:uppercase;line-height:1.3;">
                   HACK2PITCH&nbsp;2026
                 </div>
-                <div style="margin-top:4px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">
-                  ${PRESENTER}
-                </div>
-                <div style="margin-top:26px;height:2px;width:44px;background-color:${VH_RED};font-size:0;line-height:0;">&nbsp;</div>
-                <div class="hero-a" style="margin-top:18px;font-family:Helvetica,Arial,sans-serif;font-size:38px;line-height:1.08;letter-spacing:-1.5px;font-weight:bold;color:${VH_WARM};">
-                  YOUR&nbsp;ENTRY&nbsp;IS
-                </div>
-                <div class="hero-b" style="font-family:Helvetica,Arial,sans-serif;font-size:38px;line-height:1.08;letter-spacing:-1.5px;font-weight:bold;color:${VH_RED};">
-                  CONFIRMED
-                </div>
-                <div style="margin-top:14px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#B4B2AA;word-break:break-word;overflow-wrap:break-word;">
-                  Your team is officially registered for HACK2PITCH&nbsp;2026. Your event pass is ready.
-                </div>
-                <div style="margin-top:18px;display:inline-block;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_WARM};font-weight:bold;text-transform:uppercase;border:1px solid #2A2A2C;padding:8px 13px;">
+                <div style="margin-top:5px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">
                   ${VH_KICKER}
                 </div>
+                <div style="margin-top:22px;height:3px;width:44px;background-color:${VH_RED};font-size:0;line-height:0;">&nbsp;</div>
+                <div style="margin-top:16px;font-family:Helvetica,Arial,sans-serif;font-size:24px;line-height:1.15;letter-spacing:-0.5px;font-weight:bold;color:${VH_WARM};">
+                  REGISTRATION&nbsp;RECEIVED
+                </div>
+                <div style="margin-top:10px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#9C9A92;word-break:break-word;overflow-wrap:break-word;">
+                  Your registration for HACK2PITCH&nbsp;2026 has been received successfully.
+                </div>
               </td>
             </tr>
 
-            <!-- ── 2. PHYSICAL TICKET / BOARDING PASS ──────────────── -->
+            <!-- ── 2. REGISTRATION DETAILS ───────────────────────────── -->
             <tr>
-              <td style="background-color:${VH_BLACK};padding:0;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
-                  <tr>
-                    <!-- MAIN SECTION -->
-                    <td class="ticket-main" valign="top" style="width:62%;background-color:${VH_WARM};border-top:4px solid ${VH_RED};padding:26px 26px 24px 26px;">
-                      <div style="font-family:'Courier New',Courier,monospace;font-size:13px;letter-spacing:3px;font-weight:bold;color:${VH_BLACK};">HACK2PITCH&nbsp;2026</div>
-                      <div style="margin-top:2px;font-family:'Courier New',Courier,monospace;font-size:8px;letter-spacing:2px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">${PRESENTER}</div>
-                      <div style="margin-top:14px;border-top:1px dashed #C9C4BA;font-size:0;line-height:0;">&nbsp;</div>
-                      <div style="margin-top:16px;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">ENTRY&nbsp;PASS&nbsp;&middot;&nbsp;CONFIRMED</div>
-                      <div style="margin-top:12px;font-family:'Courier New',Courier,monospace;font-size:8px;letter-spacing:2px;color:${VH_MUTED};text-transform:uppercase;">TEAM&nbsp;NAME</div>
-                      <div style="margin-top:2px;font-family:Helvetica,Arial,sans-serif;font-size:21px;line-height:1.15;font-weight:bold;color:${VH_BLACK};word-break:break-word;overflow-wrap:break-word;">${esc(registration.name) || '&mdash;'}</div>
-                      <div style="margin-top:14px;border-top:1px dashed #C9C4BA;font-size:0;line-height:0;">&nbsp;</div>
-                      ${ticketRows}
-                      ${email ? `
-                      <div style="margin-top:16px;border-top:1px dashed #C9C4BA;font-size:0;line-height:0;">&nbsp;</div>
-                      <div style="margin-top:12px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:1px;color:${VH_MUTED};text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">ISSUED&nbsp;TO&nbsp;${esc(email)}</div>` : ''}
-                    </td>
-
-                    <!-- PERFORATION / TEAR LINE + NOTCHES -->
-                    <td class="perf" valign="top" style="width:3%;background-color:${VH_WARM};border-top:4px solid ${VH_RED};">
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" height="100%" style="border-collapse:collapse;">
-                        <tr>
-                          <td align="center" style="font-size:0;line-height:0;height:0;">
-                            <div style="width:18px;height:18px;margin:-9px auto 0 auto;background-color:${VH_BLACK};border-radius:50%;">&nbsp;</div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td height="240" align="center" style="border-left:2px dashed #B8B2A4;">&nbsp;</td>
-                        </tr>
-                        <tr>
-                          <td align="center" style="font-size:0;line-height:0;height:0;">
-                            <div style="width:18px;height:18px;margin:0 auto -9px auto;background-color:${VH_BLACK};border-radius:50%;">&nbsp;</div>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-
-                    <!-- TICKET STUB -->
-                    <td class="ticket-stub" valign="middle" align="center" style="width:35%;background-color:${VH_WARM};border-top:4px solid ${VH_RED};border-left:2px dashed #B8B2A4;padding:22px 16px;">
-                      <div style="font-family:'Courier New',Courier,monospace;font-size:13px;letter-spacing:4px;color:${VH_BLACK};font-weight:bold;">HACK2PITCH</div>
-                      <div style="font-family:'Courier New',Courier,monospace;font-size:22px;letter-spacing:6px;color:${VH_BLACK};font-weight:bold;">2026</div>
-                      <div style="margin:10px auto;width:22px;height:2px;background-color:${VH_RED};font-size:0;line-height:0;">&nbsp;</div>
-                      <div style="font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">YOUR&nbsp;EVENT&nbsp;PASS</div>
-                      <div style="margin-top:14px;background-color:#FFFFFF;width:180px;max-width:100%;margin-left:auto;margin-right:auto;text-align:center;">
-                        ${passContent}
-                      </div>
-                      <div style="margin-top:10px;font-family:'Courier New',Courier,monospace;font-size:8px;letter-spacing:2px;color:${VH_MUTED};text-transform:uppercase;">SCAN&nbsp;AT&nbsp;VENUE</div>
-                      <div style="margin-top:3px;font-family:'Courier New',Courier,monospace;font-size:8px;letter-spacing:2px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">SCAN&nbsp;FOR&nbsp;ATTENDANCE</div>
-                      <div style="margin-top:14px;">${BARCODE()}</div>
-                      <div style="margin-top:6px;font-family:'Courier New',Courier,monospace;font-size:8px;letter-spacing:2px;color:${VH_MUTED};text-transform:uppercase;word-break:break-all;">${esc(code)}</div>
-                      <div style="margin-top:10px;font-family:'Courier New',Courier,monospace;font-size:8px;letter-spacing:2px;color:${VH_BLACK};text-transform:uppercase;font-weight:bold;">ADMIT&nbsp;ONE&nbsp;TEAM</div>
-                    </td>
-                  </tr>
-                </table>
+              <td class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 12px 28px;">
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">REGISTRATION&nbsp;DETAILS</div>
+                ${detailRows}
               </td>
             </tr>
 
-            <!-- ── 3. BOOKMYSHOW-STYLE INFO STRIP ─────────────────────────── -->
+            <!-- gap -->
             <tr>
-              <td style="background-color:${VH_PAPER};border-top:4px solid ${VH_RED};padding:0;">
-                ${stripRow}
-              </td>
+              <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
             </tr>
 
-            <!-- small black breathing gap under the ticket -->
-            <tr>
-              <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:14px;">&nbsp;</td>
-            </tr>
-
-            <!-- ── 4. YOUR REGISTRATION ────────────────────────────── -->
-            ${regRows ? `
-            <tr>
-              <td class="p30" style="background-color:${VH_PAPER};border:1px solid #E3DED2;padding:30px 30px 26px 30px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_BLACK};text-transform:uppercase;font-weight:bold;">YOUR&nbsp;REGISTRATION</div>
-                <div style="margin-top:4px;">${regRows}</div>
-              </td>
-            </tr>` : ''}
-
-            <!-- ── 5. EVENT INFORMATION ────────────────────────────── -->
-            <tr>
-              <td class="p30" style="background-color:${VH_PAPER};border:1px solid #E3DED2;padding:26px 30px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_BLACK};text-transform:uppercase;font-weight:bold;">EVENT&nbsp;INFORMATION</div>
-                <div style="margin-top:8px;border-top:1px dashed #C9C4BA;font-size:0;line-height:0;">&nbsp;</div>
-                <div style="margin-top:16px;font-family:Helvetica,Arial,sans-serif;font-size:19px;font-weight:bold;color:${VH_BLACK};line-height:1.2;">HACK2PITCH&nbsp;2026</div>
-                <div style="margin-top:4px;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">24-HOUR&nbsp;HACKATHON</div>
-                <div style="margin-top:16px;border-top:1px dashed #C9C4BA;font-size:0;line-height:0;">&nbsp;</div>
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:14px;">
-                  <tr>
-                    <td width="50%" class="ev-col" valign="top" style="vertical-align:top;padding:2px 12px 2px 0;">
-                      <div style="font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;color:${VH_MUTED};text-transform:uppercase;padding-bottom:5px;">DATE</div>
-                      <div style="font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:bold;color:${VH_BLACK};word-break:break-word;overflow-wrap:break-word;">${esc(eventDate)}</div>
-                    </td>
-                    <td width="50%" class="ev-col" valign="top" style="vertical-align:top;padding:2px 0 2px 12px;border-left:1px dashed #D8D3C8;">
-                      <div style="font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;color:${VH_MUTED};text-transform:uppercase;padding-bottom:5px;">VENUE</div>
-                      <div style="font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:bold;color:${VH_BLACK};word-break:break-word;overflow-wrap:break-word;">${esc(eventVenue)}</div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- ── 6. CREW MANIFEST (only when crew data is present) ── -->
+            <!-- ── 3. PARTICIPANTS (only when crew data is present) ──── -->
             ${crew.length > 0 ? `
             <tr>
-              <td class="p30" style="background-color:${VH_PAPER};border:1px solid #E3DED2;padding:20px 30px 26px 30px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_BLACK};text-transform:uppercase;font-weight:bold;">CREW&nbsp;MANIFEST</div>
-                ${crewRowsHtml}
+              <td class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 12px 28px;">
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">PARTICIPANTS</div>
+                ${participantRows}
               </td>
+            </tr>
+
+            <tr>
+              <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
             </tr>` : ''}
 
-            <!-- ── 7. YOUR CHALLENGE (only when a problem statement exists) ── -->
-            ${challengeHtml}
-
-            <!-- ── 8. WHATSAPP COMMUNITY CTA (success only) ────────── -->
+            <!-- ── 4. EVENT DETAILS ──────────────────────────────────── -->
             <tr>
-              <td style="background-color:${VH_BLACK};padding:36px 30px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">COMMUNITY&nbsp;ACCESS</div>
-                <div style="margin-top:10px;font-family:Helvetica,Arial,sans-serif;font-size:21px;line-height:1.3;font-weight:bold;color:${VH_WARM};">JOIN&nbsp;THE&nbsp;HACK2PITCH&nbsp;2026&nbsp;COMMUNITY</div>
-                <div style="margin-top:10px;width:44px;height:2px;background-color:${VH_RED};font-size:0;line-height:0;">&nbsp;</div>
-                <div style="margin-top:14px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#B4B2AA;">
-                  Get important updates, reminders and announcements.
+              <td class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 22px 28px;">
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">EVENT&nbsp;DETAILS</div>
+                <div style="margin-top:16px;font-family:Helvetica,Arial,sans-serif;font-size:18px;line-height:1.2;font-weight:bold;color:#FFFFFF;">HACK2PITCH&nbsp;2026</div>
+                <div style="margin-top:4px;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">24-HOUR&nbsp;HACKATHON</div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:18px;">
+                  <tr>
+                    <td width="50%" class="ev2" valign="top" style="vertical-align:top;padding:2px 12px 2px 0;">
+                      <div style="font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;color:#8A887F;text-transform:uppercase;padding-bottom:5px;">DATE</div>
+                      <div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;color:#FFFFFF;word-break:break-word;overflow-wrap:break-word;">${esc(eventDate)}</div>
+                    </td>
+                    <td width="50%" class="ev2" valign="top" style="vertical-align:top;padding:2px 0 2px 12px;border-left:1px solid #2A2A2C;">
+                      <div style="font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:2px;color:#8A887F;text-transform:uppercase;padding-bottom:5px;">VENUE</div>
+                      <div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;color:#FFFFFF;word-break:break-word;overflow-wrap:break-word;">${esc(eventVenue)}</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- gap -->
+            <tr>
+              <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
+            </tr>
+
+            <!-- ── 5. NEXT STEP ───────────────────────────────────────── -->
+            <tr>
+              <td class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 22px 28px;">
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">NEXT&nbsp;STEP</div>
+                <div style="margin-top:14px;font-family:Arial,sans-serif;font-size:14px;line-height:1.7;color:#D8D6CE;word-break:break-word;overflow-wrap:break-word;">
+                  Your payment proof will be verified by our team. Your registration will be confirmed after verification.
                 </div>
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:24px;">
+                <div style="margin-top:16px;background-color:#101012;border:1px solid #242427;padding:14px 16px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#9C9A92;word-break:break-word;overflow-wrap:break-word;">
+                  Please check your Spam/Junk folder if you do not see future confirmation emails in your inbox.
+                </div>
+              </td>
+            </tr>
+
+            <!-- gap -->
+            <tr>
+              <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
+            </tr>
+
+            <!-- ── 6. WHATSAPP COMMUNITY CTA (success only) ──────────── -->
+            <tr>
+              <td style="background-color:${VH_BLACK};padding:34px 30px;">
+                <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">COMMUNITY&nbsp;ACCESS</div>
+                <div style="margin-top:10px;font-family:Helvetica,Arial,sans-serif;font-size:19px;line-height:1.3;font-weight:bold;color:${VH_WARM};">JOIN&nbsp;THE&nbsp;HACK2PITCH&nbsp;2026&nbsp;COMMUNITY</div>
+                <div style="margin-top:12px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#9C9A92;">Get important updates, reminders and announcements.</div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:20px;">
                   <tr>
                     <td align="left" class="btn-wrap">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="btn" style="border-collapse:collapse;">
@@ -687,37 +440,15 @@ const sendVerificationEmail = async (registration) => {
                     </td>
                   </tr>
                 </table>
-                <div style="margin-top:14px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:1px;color:#8A887F;text-transform:uppercase;">
+                <div style="margin-top:14px;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:1px;color:#6F6D66;text-transform:uppercase;">
                   ALL IMPORTANT EVENT UPDATES ARE SHARED THROUGH THE OFFICIAL GROUP
                 </div>
               </td>
             </tr>
 
-            <!-- ── 9. WHAT'S NEXT? (event journey) ─────────────────── -->
+            <!-- ── 7. FOOTER ─────────────────────────────────────────── -->
             <tr>
-              <td style="background-color:${VH_CHARCOAL};border-top:2px solid #1C1C1E;padding:30px 30px 24px 30px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_WARM};text-transform:uppercase;font-weight:bold;">WHAT&rsquo;S&nbsp;NEXT?</div>
-                <div style="margin-top:8px;width:44px;height:2px;background-color:${VH_RED};font-size:0;line-height:0;">&nbsp;</div>
-                <div style="margin-top:18px;">${timelineHtml}</div>
-                <div style="margin-top:16px;border-top:1px dashed #2A2A2C;font-size:0;line-height:0;">&nbsp;</div>
-                <div style="margin-top:12px;font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:1px;color:#8A887F;text-transform:uppercase;">KEEP&nbsp;THIS&nbsp;EMAIL&nbsp;ACCESSIBLE&nbsp;ON&nbsp;EVENT&nbsp;DAY&nbsp;&mdash;&nbsp;EACH&nbsp;PARTICIPANT&nbsp;IS&nbsp;CHECKED&nbsp;IN&nbsp;INDIVIDUALLY.</div>
-              </td>
-            </tr>
-
-            <!-- ── 10. CLOSING ─────────────────────────────────────── -->
-            <tr>
-              <td style="background-color:${VH_BLACK};padding:42px 30px;">
-                <div style="font-family:Helvetica,Arial,sans-serif;font-size:26px;line-height:1.15;letter-spacing:-1px;font-weight:bold;color:${VH_WARM};">DIFFERENT&nbsp;MINDS.</div>
-                <div style="font-family:Helvetica,Arial,sans-serif;font-size:26px;line-height:1.15;letter-spacing:-1px;font-weight:bold;color:${VH_RED};">BOLDER&nbsp;SOLUTIONS.</div>
-                <div style="margin-top:20px;height:2px;width:44px;background-color:${VH_RED};font-size:0;line-height:0;">&nbsp;</div>
-                <div style="margin-top:16px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:2px;color:${VH_WARM};font-weight:bold;">SEE&nbsp;YOU&nbsp;AT&nbsp;HACK2PITCH&nbsp;2026</div>
-                <div style="margin-top:4px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:2px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">FISAT,&nbsp;ANGAMALY</div>
-              </td>
-            </tr>
-
-            <!-- ── 11. FOOTER ──────────────────────────────────────── -->
-            <tr>
-              <td align="center" style="background-color:${VH_BLACK};border-top:1px solid #1C1C1E;padding:24px 30px;">
+              <td align="center" style="background-color:${VH_BLACK};border-top:1px solid #1C1C1E;padding:26px 30px;">
                 <div style="font-family:'Courier New',Courier,monospace;font-size:13px;letter-spacing:5px;color:${VH_WARM};font-weight:bold;">HACK2PITCH&nbsp;2026</div>
                 <div style="margin-top:6px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">FISAT&nbsp;HORIZON&nbsp;CLUB</div>
               </td>

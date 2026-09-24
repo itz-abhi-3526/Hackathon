@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { LEADERBOARD_URL } from '../../lib/config.js';
+import PresenterLogos from '../PresenterLogos/PresenterLogos.jsx';
 import './Footer.css';
 
 const COLUMNS = [
@@ -9,7 +10,6 @@ const COLUMNS = [
     label: 'EVENT',
     links: [
       { label: 'ABOUT', href: '#about' },
-      { label: 'PROBLEMS', href: '#problems' },
       { label: 'TIMELINE', href: '#timeline' },
       { label: 'PRIZES', href: '#prizes' },
     ],
@@ -102,7 +102,9 @@ export default function Footer({ progress }) {
         </nav>
 
         <motion.div className="foot__credits" style={{ y: creditY, opacity: creditO }}>
-          <span className="foot__credit">PRESENTED BY FISAT HORIZON CLUB</span>
+          <span className="foot__credit">
+            <PresenterLogos className="foot__credit-logos" />
+          </span>
           <span className="foot__credit">© 2026 HACK2PITCH. ALL RIGHTS RESERVED.</span>
           <span className="foot__credit foot__credit--mark">HACK2PITCH — 2026</span>
         </motion.div>

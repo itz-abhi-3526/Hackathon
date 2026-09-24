@@ -7,13 +7,12 @@ export const HACKATHON = {
   date: "2026-10-10T09:00:00",
   endDate: "2026-10-11T09:00:00",
   location: "FISAT, ANGAMALY",
-  minTeamSize: 2,
+  minTeamSize: 3,
   maxTeamSize: 4,
 };
 
 export const NAV_LINKS = [
   { label: "ABOUT", href: "#about" },
-  { label: "PROBLEMS", href: "#problems" },
   { label: "TIMELINE", href: "#timeline" },
   { label: "PRIZES", href: "#prizes" },
   { label: "FAQ", href: "#faq" },
@@ -25,7 +24,6 @@ export const NAV_GROUPS = [
     label: "EVENT",
     links: [
       { label: "ABOUT", href: "#about" },
-      { label: "PROBLEMS", href: "#problems" },
       { label: "TIMELINE", href: "#timeline" },
       { label: "PRIZES", href: "#prizes" },
     ],
@@ -182,12 +180,12 @@ export const FAQ_DATA = [
   {
     id: 2,
     question: "HOW MANY PEOPLE CAN BE IN A TEAM?",
-    answer: "Each team must have 2–4 members.",
+    answer: "Each team must have 3–4 members.",
   },
   {
     id: 3,
     question: "WHAT SHOULD WE BUILD?",
-    answer: "Choose one of the official problem statements released for HACK2PITCH. Your solution should directly address the selected problem and demonstrate a functional prototype.",
+    answer: "The official challenge statements are revealed during the hackathon. Teams pick a challenge, build a working prototype, and pitch their solution to the judges.",
   },
   {
     id: 4,

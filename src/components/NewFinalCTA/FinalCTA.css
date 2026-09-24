@@ -293,13 +293,20 @@
   top: 9vh;
   bottom: 24%;
   right: calc(var(--vh-gutter) + 10px);
-  writing-mode: vertical-rl;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: horizontal-tb;
   font-family: var(--vh-font-mono);
   font-size: var(--vh-text-xs);
   letter-spacing: 0.3em;
   color: var(--vh-white-faint);
   pointer-events: none;
   will-change: opacity;
+}
+
+.finalcta__presenter .presenter-logos__logo {
+  height: 28px;
 }
 
 /* ── DARKENING SHADE ── */

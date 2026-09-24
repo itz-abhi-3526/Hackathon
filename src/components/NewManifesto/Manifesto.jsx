@@ -81,9 +81,8 @@ export default function Manifesto() {
               </p>
               <p>
                 We bring together the sharpest minds from across India — engineers,
-                designers, strategists — to tackle real problems in fintech, health,
-                climate, security, education, and logistics. The constraints are
-                brutal. The opportunities are enormous.
+                designers, strategists — to build real solutions to real-world
+                problems. The constraints are brutal. The opportunities are enormous.
               </p>
             </motion.div>
           </div>
@@ -110,9 +109,9 @@ export default function Manifesto() {
               transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="manifesto__stat">
-                <span className="manifesto__stat-number">6</span>
-                <span className="manifesto__stat-unit">TRACKS</span>
-                <span className="manifesto__stat-desc">REAL-WORLD PROBLEM STATEMENTS</span>
+                <span className="manifesto__stat-number">ALL</span>
+                <span className="manifesto__stat-unit">INDUSTRIES</span>
+                <span className="manifesto__stat-desc">REAL-WORLD PROBLEM SOLVING</span>
               </div>
             </motion.div>
 

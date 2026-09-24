@@ -603,6 +603,14 @@
   letter-spacing: 0.16em;
 }
 
+.boot__presenter {
+  align-self: center;
+}
+
+.boot__presenter .presenter-logos__logo {
+  height: 16px;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    STATE VARIATIONS
    ═══════════════════════════════════════════════════════════════ */

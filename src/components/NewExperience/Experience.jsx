@@ -5,7 +5,7 @@ import './Experience.css';
 const stages = [
   { number: '01', title: 'ARRIVE', desc: 'Walk in. Plug in. Claim your space.' },
   { number: '02', title: 'MEET', desc: 'Find your people. Form your squad.' },
-  { number: '03', title: 'CHOOSE', desc: 'Pick your problem. Own your track.' },
+  { number: '03', title: 'REVEAL', desc: 'Official challenges are revealed. Own your angle.' },
   { number: '04', title: 'BUILD', desc: '24 hours. No breaks. Ship it.' },
   { number: '05', title: 'BREAK', desc: 'Hit walls. Break through them.' },
   { number: '06', title: 'ITERATE', desc: 'Feedback. Refine. Push harder.' },

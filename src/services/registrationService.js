@@ -13,8 +13,12 @@
    every field inside the single transaction.
 
    Anonymous clients may only:
-     • SELECT problem_statements        (public problem arena)
      • execute register_team(payload)   (the single atomic submit)
+
+   problem_statements is PRIVATE until the hackathon — there are no
+   public reads (ps_public_select is revoked). Problem selection was
+   removed from registration: new teams register with a NULL
+   problem_statement_id, which register_team now accepts and stores.
 
    There are no anonymous INSERT/SELECT-write policies on teams or
    participants — those rows exist on the server only after a
@@ -50,19 +54,21 @@ export const isValidRole = (value) =>
 /**
  * The ONE authoritative frontend fee lookup.
  *
- * Fee exists ONLY when a team size has been selected:
+ * Fee exists ONLY when a round is present AND a team size is available:
  *
- *   teamSize 2 → round.fee_2_members
  *   teamSize 3 → round.fee_3_members
  *   teamSize 4 → round.fee_4_members
  *   otherwise  → null (no default fee, no fallback, never assume a size)
  *
- * The amount comes ONLY from the three per-size columns
- * (registration_rounds.fee_2/3/4_members — the single source of truth;
- * the legacy generic `fee` column was removed). The DATABASE
- * (register_team) recomputes the real fee from the active round +
- * participant count and ignores whatever the browser sends, so this
- * helper is never authoritative.
+ * The amount comes ONLY from the database (registration_rounds per-size
+ * columns — the single source of truth), never from a hardcoded value.
+ * This mirrors register_team's OWN resolution exactly: when a round does
+ * not expose per-size fees yet (a deployment serving a round that still
+ * carries only the legacy single `fee`), that legacy fee is used for
+ * EVERY size — exactly like the server's `coalesce(fee_N_members, fee, 0)`.
+ * The DATABASE (register_team) recomputes the real fee from the active
+ * round + participant count and ignores whatever the browser sends, so
+ * this helper is never authoritative.
  */
 const toFeeNumber = (value) => {
   const n = Number(value);
@@ -74,19 +80,19 @@ export function getRegistrationFee(round, teamSize) {
 
   if (!round || typeof round !== 'object' || !round.id) return null;
 
-  if (size === 2) return toFeeNumber(round.fee_2_members ?? round.fee_2Members);
-  if (size === 3) return toFeeNumber(round.fee_3_members ?? round.fee_3Members);
-  if (size === 4) return toFeeNumber(round.fee_4_members ?? round.fee_4Members);
+  if (size === 3) return toFeeNumber(round.fee_3_members ?? round.fee_3Members ?? round.fee);
+  if (size === 4) return toFeeNumber(round.fee_4_members ?? round.fee_4Members ?? round.fee);
   return null;
 }
 
 /** Lowest of the per-size prices — the "FROM ₹X" entry price for
  *  marketing surfaces that have no team-size selection. Derived only
- *  from registration_rounds.fee_2/3/4_members; null when no round or
- *  no prices are configured. */
+ *  from registration_rounds.fee_3/4_members (3- and 4-member teams
+ *  are the only sizes); null when no round or no prices are
+ *  configured. */
 export function startingRegistrationFee(round) {
   let min = null;
-  for (const size of [2, 3, 4]) {
+  for (const size of [3, 4]) {
     const f = getRegistrationFee(round, size);
     if (f !== null) min = min === null ? f : Math.min(min, f);
   }
@@ -147,17 +153,17 @@ export function isParticipantComplete(player) {
  * Client-side validation of the team + every participant.
  * This is the Step 03 gate: completion is decided purely from the
  * current in-memory participants (fields + exactly one lead), never
- * from whether a database row exists.
+ * from whether a database row exists. There is NO problem-statement
+ * requirement — challenges are revealed during the hackathon.
  */
-export function validateParticipants({ team, problemStatement, players }) {
+export function validateParticipants({ team, players }) {
   const problems = [];
 
   if (!team || !String(team.name ?? '').trim()) problems.push('TEAM NAME IS REQUIRED');
-  if (!problemStatement) problems.push('A PROBLEM STATEMENT MUST BE SELECTED');
 
   const size = Number(team?.size);
-  if (!Number.isInteger(size) || size < 2 || size > 4) {
-    problems.push('TEAM SIZE MUST BE BETWEEN 2 AND 4');
+  if (!Number.isInteger(size) || size < 3 || size > 4) {
+    problems.push('TEAM SIZE MUST BE BETWEEN 3 AND 4');
   }
 
   const list = Array.isArray(players) ? players : [];
@@ -177,8 +183,8 @@ export function validateParticipants({ team, problemStatement, players }) {
  * Full-entry validation (team + participants + payment proof).
  * Used only at the final review/submit, never to gate earlier steps.
  */
-export function validateEntry({ team, problemStatement, players, payment }) {
-  const problems = validateParticipants({ team, problemStatement, players });
+export function validateEntry({ team, players, payment }) {
+  const problems = validateParticipants({ team, players });
 
   const proof = payment?.uploadStatus === 'success' && Boolean(payment?.proofUrl);
   if (!proof) problems.push('PAYMENT SCREENSHOT MUST BE UPLOADED BEFORE SUBMITTING');
@@ -266,13 +272,24 @@ export async function getRegistrationStatus() {
   }
 }
 
-/* RPC responses arrive as a bare object or as a one-element array
-   depending on the request/Accept path. Empty → {} (registration
-   closed). */
+/* RPC responses arrive as a bare object, a one-element array, or a
+   JSON STRING (PostgREST serializes a jsonb scalar as text depending on
+   the Accept/response path — same divergence parseSubmitData already
+   normalizes). Any of those shapes may wrap the active-round payload;
+   an empty payload → {} (registration closed). */
 function unwrapRpcData(data) {
   if (!data) return {};
   const value = Array.isArray(data) ? data[0] : data;
-  return value && typeof value === 'object' ? value : {};
+  const parsed = typeof value === 'string' ? safeParseJson(value) : value;
+  return parsed && typeof parsed === 'object' ? parsed : {};
+}
+
+function safeParseJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
 /* PostgREST 404 / function-missing detection. The migration installs
@@ -301,13 +318,16 @@ function isRpcMissing(error) {
  * All values are normalized here (trimmed / null-coerced / role and
  * food preference constrained) before any server-side validation.
  */
-function buildSubmitPayload({ team, problemStatement, players, payment, registrationCode }) {
+function buildSubmitPayload({ team, players, payment, registrationCode }) {
   const list = Array.isArray(players) ? players : [];
   return {
     registration_code: String(registrationCode ?? '').trim() || null,
     team_name: String(team?.name ?? '').trim(),
     college: String(team?.college ?? '').trim(),
-    problem_statement_id: problemStatement?.id ?? null,
+    /* No problem/track is selected during registration — the official
+       challenges are revealed during the hackathon. Teams register with
+       a NULL problem_statement_id; register_team stores it as-is. */
+    problem_statement_id: null,
     payment_image_url: payment?.proofUrl ?? null,
     payment_status: TEAM_PAYMENT_STATUS.SUBMITTED,
     participants: list.map((p) => ({
@@ -360,13 +380,6 @@ function mapRegistrationFailure(error) {
       error
     );
   }
-  if (/INVALID PROBLEM STATEMENT|PROBLEM STATEMENT IS REQUIRED/i.test(message)) {
-    return new AppError(
-      'PLEASE SELECT A VALID PROBLEM STATEMENT — Refresh the list and try again.',
-      'INVALID_PROBLEM_STATEMENT',
-      error
-    );
-  }
   if (code === '23514' || code === '23503') {
     return new AppError(
       'PLEASE CHECK YOUR REGISTRATION DETAILS AND TRY AGAIN.',
@@ -415,20 +428,19 @@ function parseSubmitData(data) {
  */
 export async function submitRegistration({
   team,
-  problemStatement,
   players,
   payment,
   registrationCode,
 }) {
   assertSupabaseConfigured();
 
-  const problems = validateEntry({ team, problemStatement, players, payment });
+  const problems = validateEntry({ team, players, payment });
   if (problems.length) {
     throw new AppError(problems.join(' · '), 'INVALID_ENTRY');
   }
 
   const supabase = getSupabase();
-  const payload = buildSubmitPayload({ team, problemStatement, players, payment, registrationCode });
+  const payload = buildSubmitPayload({ team, players, payment, registrationCode });
 
   /* The deployed submit path is ONE function with ONE signature:
      register_team(payload jsonb) — and it is called with the single

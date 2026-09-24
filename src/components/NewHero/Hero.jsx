@@ -4,8 +4,8 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useCountdown } from '../../hooks/index.js';
 import { HACKATHON } from '../../data/index.js';
-import { fetchProblemAvailability } from '../../services/problemService.js';
 import { getActiveRegistrationRound, startingRegistrationFee } from '../../services/registrationService.js';
+import PresenterLogos from '../PresenterLogos/PresenterLogos.jsx';
 import './Hero.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -38,36 +38,25 @@ export default function Hero({ onRegister }) {
     return () => mq.removeEventListener('change', sync);
   }, []);
 
-  /* Registration availability is read from the real database (problem
-     statements exist = entry is open); never hardcoded. Propagates
-     into the hero readout. */
-  useEffect(() => {
-    let alive = true;
-    fetchProblemAvailability().then((available) => {
-      if (!alive) return;
-      setRegState(available ? 'OPEN' : 'CLOSED');
-    });
-    return () => { alive = false; };
-  }, []);
-
-  /* The registration fee is the ADMIN-CONFIGURED active round's fee,
-     keyed by team size — the entry ("FROM") price is the lowest of the
-     per-size fees. It comes ONLY from the database round payload; there
-     is no hardcoded fallback. The readout shows "FROM ₹—" until a real
-     active round resolves. */
+  /* Registration availability + fee are both read from the ACTIVE
+     registration round (public_active_round — the same RPC the
+     registration wizard uses). The round is the authoritative
+     open/closed signal: problem statements are private until the
+     hackathon, so availability is never derived from them. The fee is
+     the lowest per-size price of the open round. Never hardcoded. */
   useEffect(() => {
     let alive = true;
     (async () => {
-      let fee = null;
+      let round = null;
       try {
-        const round = await getActiveRegistrationRound();
-        if (round?.id && round.open === true) {
-          fee = startingRegistrationFee(round);
-        }
+        round = await getActiveRegistrationRound();
       } catch {
-        /* keep null — never invent a price */
+        round = null;
       }
-      if (alive) setHeroFee(fee);
+      if (!alive) return;
+      const open = Boolean(round?.id && round.open === true);
+      setRegState(open ? 'OPEN' : 'CLOSED');
+      setHeroFee(open ? startingRegistrationFee(round) : null);
     })();
     return () => { alive = false; };
   }, []);
@@ -191,7 +180,9 @@ export default function Hero({ onRegister }) {
       <div className="hero__stage">
         {/* ── top marquee strip ── */}
         <header className="hero__top">
-          <span className="hero__top-left">{HACKATHON.presenter} PRESENTS</span>
+          <span className="hero__top-left">
+            <PresenterLogos className="hero__presenter-logos" />
+          </span>
           <span className="hero__top-right">THE 24-HOUR BUILD — {WHEN}</span>
         </header>
 

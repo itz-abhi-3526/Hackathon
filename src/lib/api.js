@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════
    HACK2PITCH 2026 — Shared errors
    The registration flow talks to Supabase directly through the public
-   publishable key (RLS: anonymous INSERT on teams/participants, SELECT
-   on problem_statements). There are no Edge Functions and no service
-   secrets anywhere in the browser.
+   publishable key (RLS: the only anonymous surface is the register_team
+   RPC — problem_statements is private until the hackathon). There are
+   no Edge Functions and no service secrets anywhere in the browser.
    ═══════════════════════════════════════════════════════════════ */
 
 export class AppError extends Error {

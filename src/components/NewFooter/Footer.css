@@ -236,6 +236,10 @@
   color: var(--vh-white-dim);
 }
 
+.foot__credit .presenter-logos__logo {
+  height: 26px;
+}
+
 /* ── MOBILE ── */
 @media (max-width: 768px) {
   .foot__ghost {

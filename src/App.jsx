@@ -7,7 +7,6 @@ import Navigation from './components/NewNav/Navigation.jsx';
 import Cursor from './components/NewCursor/Cursor.jsx';
 import Hero from './components/NewHero/Hero.jsx';
 import Manifesto from './components/NewManifesto/Manifesto.jsx';
-import Problems from './components/NewProblems/Problems.jsx';
 import Experience from './components/NewExperience/Experience.jsx';
 import Countdown from './components/NewCountdown/Countdown.jsx';
 import TimelineSection from './components/NewTimeline/Timeline.jsx';
@@ -117,7 +116,6 @@ export default function App() {
                 <Hero onRegister={enterRegistration} />
                 <Manifesto />
                 <Prizes />
-                <Problems />
                 <Experience />
                 <TimelineSection />
                 <FAQ />

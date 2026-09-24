@@ -342,6 +342,14 @@
   color: var(--vh-red-light);
 }
 
+.hero__top-left .presenter-logos {
+  gap: 0.625rem;
+}
+
+.hero__top-left .presenter-logos__logo {
+  height: 38px;
+}
+
 /* ── MASTHEAD ── */
 .hero__words {
   position: absolute;
