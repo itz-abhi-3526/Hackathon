@@ -160,7 +160,7 @@ const BARCODE = (barColor = '#151517') => `
 `;
 
 /* Small editorial kicker line used under both mastheads. */
-const VH_KICKER = 'PITCH. BUILD. LAUNCH.';
+const VH_KICKER = 'BUILD WITHOUT PERMISSION';
 
 // ===============================
 // VERIFICATION EMAIL
