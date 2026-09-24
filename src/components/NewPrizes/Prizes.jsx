@@ -68,7 +68,6 @@ export default function Prizes() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
           >
-            <strong className="prizes__pool">₹{PRIZES.pool} TOTAL PRIZE POOL</strong>
             <span className="prizes__lede-sub">
               ONE STAGE. THREE STEPS. THE REWARD RESETS THE SCALE OF EVERY IDEA.
             </span>

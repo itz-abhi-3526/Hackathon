@@ -116,11 +116,10 @@ export default function App() {
               <main>
                 <Hero onRegister={enterRegistration} />
                 <Manifesto />
+                <Prizes />
                 <Problems />
                 <Experience />
-                <Countdown />
                 <TimelineSection />
-                <Prizes />
                 <FAQ />
                 <FinalSequence onRegister={enterRegistration} />
               </main>

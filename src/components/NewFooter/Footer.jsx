@@ -92,7 +92,7 @@ export default function Footer({ progress }) {
           <p className="foot__brand-name">
             HACK2PITCH <span className="foot__brand-year">2026</span>
           </p>
-          <p className="foot__brand-tag">BUILD WITHOUT PERMISSION</p>
+          <p className="foot__brand-tag">PITCH. BUILD. LAUNCH.</p>
         </motion.div>
 
         <nav className="foot__nav">

@@ -1,7 +1,7 @@
 export const HACKATHON = {
   id: "voidhack-2026",
   name: "HACK2PITCH",
-  tagline: "BUILD WITHOUT PERMISSION",
+  tagline: "PITCH. BUILD. LAUNCH.",
   edition: "2026",
   presenter: "FISAT HORIZON CLUB",
   date: "2026-10-10T09:00:00",
@@ -13,7 +13,6 @@ export const HACKATHON = {
 
 export const NAV_LINKS = [
   { label: "ABOUT", href: "#about" },
-  { label: "CHALLENGE", href: "#challenge" },
   { label: "PROBLEMS", href: "#problems" },
   { label: "TIMELINE", href: "#timeline" },
   { label: "PRIZES", href: "#prizes" },
