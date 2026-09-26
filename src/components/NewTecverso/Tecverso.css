@@ -185,6 +185,9 @@
 }
 
 .tecverso__cta {
+  /* The label's own size, so the arrow can price the track it must
+     rewind — it resolves in a different font-size context. */
+  --tecverso-cta-label-size: clamp(1.15rem, 1.9vw, 1.75rem);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -201,6 +204,7 @@
   background: rgba(232, 22, 5, 0.09);
   transform: scaleX(0);
   transform-origin: left center;
+  will-change: transform;
   transition: transform 0.55s var(--vh-ease-out);
 }
 
@@ -213,24 +217,41 @@
   background: var(--vh-red);
   transform: scaleX(0);
   transform-origin: left center;
+  will-change: transform;
   transition: transform 0.6s var(--vh-ease-out);
 }
 
+/* ── LABEL — tracking is spread by moving each glyph, never by
+    re-tracking the run. The box is reserved at its hovered width
+    (--tecverso-cta-track, fed in by the component) so hovering costs
+    zero layout: no reflow of the label, the arrow, the rule or the wash. ── */
 .tecverso__cta-text {
   position: relative;
   font-family: var(--vh-font-display);
-  font-size: clamp(1.15rem, 1.9vw, 1.75rem);
+  font-size: var(--tecverso-cta-label-size);
   line-height: 1;
   letter-spacing: 0.12em;
   color: var(--vh-white);
-  transition: letter-spacing 0.5s var(--vh-ease-out), color 0.4s var(--vh-ease-out);
+  padding-right: calc(var(--tecverso-cta-track, 0.64) * 1em);
+  transition: color 0.4s var(--vh-ease-out);
 }
 
+.tecverso__cta-char {
+  display: inline-block;
+  white-space: pre;
+  will-change: transform;
+  transition: transform 0.5s var(--vh-ease-out);
+}
+
+/* The arrow rides the far end of the label, so while the reserved track
+   is empty it sits one track-width early and is nudged home on hover. */
 .tecverso__cta-arrow {
   position: relative;
   font-size: clamp(0.9rem, 1.1vw, 1.1rem);
   line-height: 1;
   color: var(--vh-red);
+  transform: translateX(calc(var(--tecverso-cta-track, 0.64) * var(--tecverso-cta-label-size) * -1));
+  will-change: transform;
   transition: transform 0.5s var(--vh-ease-out);
 }
 
@@ -241,9 +262,9 @@
   transform: scaleX(1);
 }
 
-.tecverso__cta:hover .tecverso__cta-text,
-.tecverso__cta:focus-visible .tecverso__cta-text {
-  letter-spacing: 0.16em;
+.tecverso__cta:hover .tecverso__cta-char,
+.tecverso__cta:focus-visible .tecverso__cta-char {
+  transform: translateX(calc(var(--tecverso-cta-char) * var(--tecverso-cta-step, 0.04em)));
 }
 
 .tecverso__cta:hover .tecverso__cta-arrow,
@@ -303,6 +324,12 @@
     padding-right: 0.9em;
   }
 
+  /* space-between already pins the arrow to the end, so the reserved
+     track costs nothing here and needs no rewind. */
+  .tecverso__cta-arrow {
+    transform: none;
+  }
+
   .tecverso__cta-rule {
     right: 0.9em;
   }
@@ -340,6 +367,10 @@
     width: 100%;
     justify-content: space-between;
     padding-right: 0.9em;
+  }
+
+  .tecverso__cta-arrow {
+    transform: none;
   }
 
   .tecverso__cta-rule {

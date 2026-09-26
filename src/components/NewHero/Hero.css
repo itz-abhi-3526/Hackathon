@@ -342,12 +342,46 @@
   color: var(--vh-red-light);
 }
 
+/* ── PRESENTER IDENTITY — the official organizers ──
+   Measured plates: mark 1 is 354×167 of visible ink inside 500×500,
+   mark 2 is 256×131 inside 500×500, mark 3 is 639×542 inside 640×544.
+   Sized by box they read as one large badge and two specks with a
+   hand's width of dead air between them. So every mark is scaled to a
+   shared VISIBLE height (≈34px of ink, against ≈140px of HACK2 PITCH —
+   an identity line, not a competitor) and the empty plate is pulled
+   back with negative inline margins. Nothing is cropped, resampled
+   unevenly or letterboxed: only fully transparent padding collapses,
+   and object-fit: contain stays on as the guarantee.
+
+   The row is height-capped at the previous 38px, so the strip, its
+   hairline and the space to the masthead are all untouched — the marks
+   are centred inside the footprint the old 38px logo already used and
+   can never reach the HACK2 / PITCH lines. */
 .hero__top-left .presenter-logos {
-  gap: 0.625rem;
+  /* block-level so the oversized plates cannot inflate an inline line
+     box — the strip keeps its exact previous height and hairline */
+  display: flex;
+  width: fit-content;
+  height: 38px;
+  gap: clamp(0.75rem, 1.2vw, 1.15rem);
 }
 
-.hero__top-left .presenter-logos__logo {
-  height: 38px;
+.hero__top-left .presenter-logos__logo:nth-child(1) {
+  --mark: 102px; /* ≈34px of ink; 71px + 75px of plate trimmed */
+  height: var(--mark);
+  margin-left: calc(var(--mark) * -0.135);
+  margin-right: calc(var(--mark) * -0.142);
+}
+
+.hero__top-left .presenter-logos__logo:nth-child(2) {
+  --mark: 130px; /* ≈34px of ink; 124px + 120px of plate trimmed */
+  height: var(--mark);
+  margin-left: calc(var(--mark) * -0.235);
+  margin-right: calc(var(--mark) * -0.228);
+}
+
+.hero__top-left .presenter-logos__logo:nth-child(3) {
+  height: 34px; /* full-bleed emblem — no plate to trim */
 }
 
 /* ── MASTHEAD ── */
@@ -972,6 +1006,25 @@
     font-size: 0.56rem;
   }
 
+  /* organizer marks step down one notch for slate widths */
+  .hero__top-left .presenter-logos {
+    gap: clamp(0.7rem, 1.6vw, 1rem);
+  }
+
+  .hero__top-left .presenter-logos__logo:nth-child(1) {
+    --mark: 96px; /* ≈32px of ink */
+    height: var(--mark);
+  }
+
+  .hero__top-left .presenter-logos__logo:nth-child(2) {
+    --mark: 122px; /* ≈32px of ink */
+    height: var(--mark);
+  }
+
+  .hero__top-left .presenter-logos__logo:nth-child(3) {
+    height: 32px;
+  }
+
   .hero__words {
     top: clamp(17vh, 24vh, 28vh);
   }
@@ -1074,8 +1127,40 @@
     flex-direction: column;
   }
 
+  /* the top strip carries the organizers back onto mobile. Only the
+     identity group returns: the dateline side and the hairline stay
+     desktop devices, and the row is seated between the fixed navbar
+     (≈68px) and the cap line of HACK2 (≈98px at 320w) so nothing is
+     covered, clipped or pushed into horizontal overflow. */
   .hero__top {
+    top: clamp(4.375rem, 8.5vh, 5.1rem);
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .hero__top-right {
     display: none;
+  }
+
+  .hero__top-left .presenter-logos {
+    height: 26px;
+    gap: clamp(0.55rem, 2.2vw, 0.9rem);
+  }
+
+  /* ≈26px of ink per mark — all three stay on screen down to 320px
+     (≈150px of row inside a 288px measure) */
+  .hero__top-left .presenter-logos__logo:nth-child(1) {
+    --mark: 78px;
+    height: var(--mark);
+  }
+
+  .hero__top-left .presenter-logos__logo:nth-child(2) {
+    --mark: 99px;
+    height: var(--mark);
+  }
+
+  .hero__top-left .presenter-logos__logo:nth-child(3) {
+    height: 26px;
   }
 
   .hero__mark {
@@ -1263,6 +1348,22 @@
 @media (max-width: 400px) {
   .hero__masthead-line {
     font-size: clamp(3.2rem, 18.5vw, 4.5rem);
+  }
+
+  /* 320–400w: the marks give up a little ink so the row keeps its
+     clearance under the navbar and above HACK2 */
+  .hero__top-left .presenter-logos__logo:nth-child(1) {
+    --mark: 63px; /* ≈21px of ink */
+    height: var(--mark);
+  }
+
+  .hero__top-left .presenter-logos__logo:nth-child(2) {
+    --mark: 80px; /* ≈21px of ink */
+    height: var(--mark);
+  }
+
+  .hero__top-left .presenter-logos__logo:nth-child(3) {
+    height: 21px;
   }
 
   .hero__words {

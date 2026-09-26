@@ -6,12 +6,15 @@ const LOGOS = [
   'https://res.cloudinary.com/dudp2imxs/image/upload/v1790240216/image_ogarax.png',
 ];
 
-export default function PresenterLogos({ className = '', vertical = false }) {
+/* `logos` lets a single surface present a different set of organizer
+   marks. The default is the established set, so every other surface
+   (boot, ticket, footer, final CTA) is left exactly as it is. */
+export default function PresenterLogos({ className = '', vertical = false, logos = LOGOS }) {
   return (
     <span
       className={`presenter-logos${vertical ? ' presenter-logos--vertical' : ''}${className ? ` ${className}` : ''}`}
     >
-      {LOGOS.map((src) => (
+      {logos.map((src) => (
         <img key={src} className="presenter-logos__logo" src={src} alt="" aria-hidden="true" />
       ))}
     </span>

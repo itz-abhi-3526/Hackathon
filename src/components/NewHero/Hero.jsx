@@ -16,6 +16,19 @@ const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', '
 
 const EASE = [0.16, 1, 0.3, 1];
 
+/* ── THE ORGANIZERS ──
+   HACK2PITCH 2026 is officially presented by these three marks, shown
+   top-left of the hero in this order. They arrive on very different
+   canvases — two wordmarks floating inside square, mostly transparent
+   plates, one full-bleed emblem — so each is optically sized and its
+   empty plate collapsed in Hero.css. The marks themselves are used
+   exactly as supplied. */
+const ORGANIZER_LOGOS = [
+  'https://res.cloudinary.com/dudp2imxs/image/upload/v1790399292/WhatsApp_Image_2026-09-24_at_2.19.24_PM-removebg-preview_c4wijs.png',
+  'https://res.cloudinary.com/dudp2imxs/image/upload/v1790399290/Untitled_design-removebg-preview_i3itrh.png',
+  'https://res.cloudinary.com/dudp2imxs/image/upload/v1790399004/_image_kzpsyj.webp',
+];
+
 export default function Hero({ onRegister }) {
   const sectionRef = useRef(null);
   const progressRef = useRef(0);
@@ -181,7 +194,7 @@ export default function Hero({ onRegister }) {
         {/* ── top marquee strip ── */}
         <header className="hero__top">
           <span className="hero__top-left">
-            <PresenterLogos className="hero__presenter-logos" />
+            <PresenterLogos className="hero__presenter-logos" logos={ORGANIZER_LOGOS} />
           </span>
           <span className="hero__top-right">THE 24-HOUR BUILD — {WHEN}</span>
         </header>

@@ -15,6 +15,17 @@ const TECVERSO_URL = 'https://www.tecverso.in/';
 
 const PILLARS = ['Workshops', 'Skills', 'Industry perspectives'];
 
+const CTA_LABEL = 'EXPLORE WORKSHOPS';
+
+/* Hover tracking, per glyph, in em. The label opens up by sliding each
+   glyph along its own transform rather than by re-tracking the run, so the
+   spread never invalidates layout; the label reserves the hovered width
+   (--tecverso-cta-track) so the CTA, the rule and the wash keep their box
+   and hover costs nothing but compositing. */
+const CTA_STEP = 0.04;
+const CTA_GLYPHS = Array.from(CTA_LABEL);
+const CTA_TRACK = (CTA_GLYPHS.length - 1) * CTA_STEP;
+
 export default function Tecverso() {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
@@ -129,10 +140,27 @@ export default function Tecverso() {
                 target="_blank"
                 rel="noopener noreferrer"
                 data-cursor="OPEN"
+                aria-label={CTA_LABEL}
               >
                 <span className="tecverso__cta-wash" aria-hidden="true" />
                 <span className="tecverso__cta-rule" aria-hidden="true" />
-                <span className="tecverso__cta-text">EXPLORE WORKSHOPS</span>
+                <span
+                  className="tecverso__cta-text"
+                  style={{
+                    '--tecverso-cta-step': `${CTA_STEP}em`,
+                    '--tecverso-cta-track': CTA_TRACK,
+                  }}
+                >
+                  {CTA_GLYPHS.map((glyph, i) => (
+                    <span
+                      key={`${glyph}-${i}`}
+                      className="tecverso__cta-char"
+                      style={{ '--tecverso-cta-char': i }}
+                    >
+                      {glyph}
+                    </span>
+                  ))}
+                </span>
                 <span className="tecverso__cta-arrow" aria-hidden="true">
                   &#8599;
                 </span>
