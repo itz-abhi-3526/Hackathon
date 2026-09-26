@@ -108,6 +108,15 @@ async function attachAttendanceQr(supabase, team, registration) {
       : token;
 
     const png = await buildQrPng(scanUrl);
+
+    /* Hand the SAME bytes to the mail layer so the QR can be inlined as
+       a cid MIME part. The email used to reference the public storage
+       URL directly, and every major client (Gmail, Outlook, Apple Mail)
+       blocks externally hosted images by default — the recipient saw
+       only the alt text. Set BEFORE the upload so a storage failure
+       still leaves the email its inline QR. */
+    registration.qrImagePng = png;
+
     const path = `${team.id}.png`;
     const { error: upErr } = await supabase.storage
       .from('attendance-qr')

@@ -34,7 +34,14 @@
    links the group.
    ═══════════════════════════════════════════════════════════════ */
 
+import { Buffer } from 'node:buffer';
 import nodemailer from 'npm:nodemailer@6.9.16';
+
+/* Content-ID of the inline attendance QR. Used for BOTH the Nodemailer
+   attachment and the <img src="cid:…"> in the HTML, so the two can never
+   drift apart — a mismatch is exactly what makes an inline image render
+   as alt text. */
+const ATTENDANCE_QR_CID = 'attendance-qr';
 
 /* ── SMTP configuration ──────────────────────────────────────────
    Host/port/credentials come from the Edge Function secrets with
@@ -121,15 +128,17 @@ const sendEmail = async ({ to, subject, text, html, attachments }) => {
       html,
     };
 
-    /* No caller passes attachments today (the payment screenshot is
-       LINKED, not attached — see paymentScreenshotLink), but the
-       mapping is kept so an attachment can never silently break the
-       send if a future caller adds one. */
+    /* The verification email passes the attendance QR as an inline
+       attachment (the payment screenshot is LINKED, not attached — see
+       paymentScreenshotLink). `cid` MUST be carried through: without it
+       the part is emitted as a plain attachment and the matching
+       <img src="cid:…"> resolves to nothing. */
     if (attachments && attachments.length > 0) {
       mailOptions.attachments = attachments.map((attachment) => ({
         filename: attachment.filename,
         content: attachment.content,
         contentType: attachment.contentType,
+        cid: attachment.cid,
       }));
     }
 
@@ -209,6 +218,14 @@ const sendVerificationEmail = async (registration) => {
   const qrImageUrl = has(registration.qrImageUrl)
     ? String(registration.qrImageUrl)
     : null;
+  /* PNG bytes from the SAME buildQrPng() call index.ts already makes for
+     the storage upload (no second QR generator). Inlined as a cid part so
+     the recipient never has to fetch a remote image. */
+  const qrPng =
+    registration.qrImagePng instanceof Uint8Array &&
+    registration.qrImagePng.length > 0
+      ? Buffer.from(registration.qrImagePng)
+      : null;
   const scanUrl = has(registration.scanUrl)
     ? String(registration.scanUrl)
     : null;
@@ -329,13 +346,18 @@ const sendVerificationEmail = async (registration) => {
 
   /* ATTENDANCE — the real per-team QR PNG (server-generated in index.ts
      from the team's existing attendance_token; scanUrl is the check-in
-     URL the venue scanner's extractToken() expects). The PNG is used
-     when available; otherwise the plain scan link is the fallback. */
-  const attendanceContent = qrImageUrl
-    ? `<img src="${esc(qrImageUrl)}" alt="HACK2PITCH 2026 attendance QR — present at venue entry for check-in" width="140" height="140" style="display:block;margin-left:auto;margin-right:auto;width:140px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />`
-    : scanUrl
-      ? `<a href="${esc(scanUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 20px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#FFFFFF;text-decoration:none;background-color:#101012;border:1px solid ${VH_RED};border-radius:2px;">OPEN&nbsp;ATTENDANCE&nbsp;LINK</a>`
-      : '';
+     URL the venue scanner's extractToken() expects). The PNG is inlined
+     as a cid part; the public storage URL stays as a fallback, and the
+     plain scan link is the last resort. */
+  const attendanceImg = (src) =>
+    `<img src="${src}" alt="HACK2PITCH 2026 attendance QR — present at venue entry for check-in" width="140" height="140" style="display:block;margin-left:auto;margin-right:auto;width:140px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />`;
+  const attendanceContent = qrPng
+    ? attendanceImg(`cid:${ATTENDANCE_QR_CID}`)
+    : qrImageUrl
+      ? attendanceImg(esc(qrImageUrl))
+      : scanUrl
+        ? `<a href="${esc(scanUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 20px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:1.5px;font-weight:bold;color:#FFFFFF;text-decoration:none;background-color:#101012;border:1px solid ${VH_RED};border-radius:2px;">OPEN&nbsp;ATTENDANCE&nbsp;LINK</a>`
+        : '';
 
   const html = `
 <!DOCTYPE html>
@@ -531,6 +553,18 @@ const sendVerificationEmail = async (registration) => {
     subject,
     text,
     html,
+    /* inline (cid) attendance QR — omitted entirely when the bytes are
+       missing so the send falls back to the storage URL / scan link */
+    attachments: qrPng
+      ? [
+          {
+            filename: 'attendance-qr.png',
+            content: qrPng,
+            contentType: 'image/png',
+            cid: ATTENDANCE_QR_CID,
+          },
+        ]
+      : [],
   });
 
   return sent;

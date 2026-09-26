@@ -240,6 +240,14 @@
   height: 26px;
 }
 
+/* the credits row is the same organizer group as the hero, so it gets
+   the same breathing room instead of the shared 8px default — the group
+   is already inline-flex, so only the gap changes. 14px against 26px
+   marks matches the hero's ink-to-air proportion. */
+.foot__credit-logos {
+  gap: 14px;
+}
+
 /* ── MOBILE ── */
 @media (max-width: 768px) {
   .foot__ghost {
