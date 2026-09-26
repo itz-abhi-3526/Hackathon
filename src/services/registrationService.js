@@ -318,9 +318,9 @@ function isRpcMissing(error) {
  * All values are normalized here (trimmed / null-coerced / role and
  * food preference constrained) before any server-side validation.
  */
-function buildSubmitPayload({ team, players, payment, registrationCode }) {
+function buildSubmitPayload({ team, players, payment, registrationCode, referralCode, retryToken }) {
   const list = Array.isArray(players) ? players : [];
-  return {
+  const payload = {
     registration_code: String(registrationCode ?? '').trim() || null,
     team_name: String(team?.name ?? '').trim(),
     college: String(team?.college ?? '').trim(),
@@ -341,6 +341,29 @@ function buildSubmitPayload({ team, players, payment, registrationCode }) {
           : PARTICIPANT_ROLE.MEMBER,
     })),
   };
+
+  /* OPTIONAL referral code. Omitted entirely when empty so the payload
+     stays byte-identical to the pre-referral registration for the
+     no-code path (the backend treats a missing field exactly the same
+     as an empty one). The backend remains the sole authority — it
+     trims/uppercases again and rejects invalid codes inside
+     register_team. */
+  const referralCodeTrimmed = String(referralCode ?? '').trim();
+  if (referralCodeTrimmed) {
+    payload.referral_code = referralCodeTrimmed;
+  }
+
+  /* Retry ownership secret. Sent ONLY when this session already owns a
+     team (a lost-response retry or a resumed form): the database stores
+     just the SHA-256 hash of the token it issued, and a registration_code
+     without its matching token can no longer update that team. The token
+     is never generated here and never displayed, logged or put in a URL. */
+  const retryTokenTrimmed = String(retryToken ?? '').trim();
+  if (retryTokenTrimmed) {
+    payload.retry_token = retryTokenTrimmed;
+  }
+
+  return payload;
 }
 
 /* Round / duplicate / data failures → clean, user-facing messages.
@@ -380,6 +403,27 @@ function mapRegistrationFailure(error) {
       error
     );
   }
+  if (/INVALID REFERRAL CODE/i.test(message)) {
+    return new AppError(
+      "THAT REFERRAL CODE ISN'T VALID — Please check the code and try again.",
+      'INVALID_REFERRAL_CODE',
+      error
+    );
+  }
+  if (/REGISTRATION RETRY NOT AUTHORIZED/i.test(message)) {
+    return new AppError(
+      'REGISTRATION RETRY NOT AUTHORIZED — This saved registration can no longer be updated. Leave the registration page and start a new entry to register again.',
+      'RETRY_NOT_AUTHORIZED',
+      error
+    );
+  }
+  if (/REGISTRATION ALREADY VERIFIED/i.test(message)) {
+    return new AppError(
+      'THIS REGISTRATION IS ALREADY VERIFIED — The organisers have accepted this entry, so it can no longer be changed.',
+      'REGISTRATION_ALREADY_VERIFIED',
+      error
+    );
+  }
   if (code === '23514' || code === '23503') {
     return new AppError(
       'PLEASE CHECK YOUR REGISTRATION DETAILS AND TRY AGAIN.',
@@ -407,6 +451,9 @@ function parseSubmitData(data) {
     registrationRoundId: parsed.registration_round_id ?? parsed.registrationRoundId ?? null,
     registrationFee: parsed.registration_fee ?? parsed.registrationFee ?? null,
     roundTitle: parsed.round_title ?? parsed.roundTitle ?? '',
+    /* Issued once, on the response that created the team. Absent on a
+       retry: the owner already holds it from the original submit. */
+    retryToken: parsed.retry_token ?? parsed.retryToken ?? null,
   };
 }
 
@@ -417,9 +464,11 @@ function parseSubmitData(data) {
  * round from registration_rounds server-side, enforces team capacity
  * (auto-closing the round at 0 slots), stamps registration_round_id +
  * registration_fee (the database picks the round and the fee — never
- * the browser), and is idempotent — a retry with the same
- * registration_code updates the existing rows instead of duplicating
- * them. This is the ONLY write path, active round or not.
+ * the browser), and is idempotent — a retry that resends the same
+ * registration_code AND the retry token issued with that team updates the
+ * existing rows instead of duplicating them, while a registration_code
+ * on its own is refused by the database. This is the ONLY write path,
+ * active round or not.
  *
  * There is NO fallback to per-row inserts from the browser, so a
  * partial registration can never exist.
@@ -431,6 +480,8 @@ export async function submitRegistration({
   players,
   payment,
   registrationCode,
+  referralCode,
+  retryToken,
 }) {
   assertSupabaseConfigured();
 
@@ -440,7 +491,14 @@ export async function submitRegistration({
   }
 
   const supabase = getSupabase();
-  const payload = buildSubmitPayload({ team, players, payment, registrationCode });
+  const payload = buildSubmitPayload({
+    team,
+    players,
+    payment,
+    registrationCode,
+    referralCode,
+    retryToken,
+  });
 
   /* The deployed submit path is ONE function with ONE signature:
      register_team(payload jsonb) — and it is called with the single

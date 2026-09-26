@@ -87,6 +87,17 @@ team: { ...EMPTY_TEAM },
      once the user leaves Step 01 so no duplicate team is ever created. */
   teamId: null,
   registrationCode: '',
+  /* Server-issued ownership secret for THIS team: it is returned once by
+     register_team when the team is created and is the only thing that can
+     authorize a later retry of the same registration_code. Kept beside
+     the code in the existing session draft — never displayed, logged or
+     placed in a URL. Empty means "no team owned yet". */
+  retryToken: '',
+  /* OPTIONAL referral code captured during registration (normalized to
+     trim + uppercase). Sent only when non-empty; the backend is the sole
+     authority over whether the code is valid and active. Never gates any
+     step — submission proceeds exactly as before when empty. */
+  referralCode: '',
   /* Snapshot of the last successfully-saved team row (name + problem). */
   teamSaved: { ...EMPTY_TEAM_SAVED },
 
@@ -242,7 +253,7 @@ team: { ...EMPTY_TEAM },
   })),
 
   dropTeamId: () => {
-    set({ teamId: null, registrationCode: '' });
+    set({ teamId: null, registrationCode: '', retryToken: '' });
     const s = get();
     writeSession(serialize(s.currentStep, s, s.team, s.players, s.problemStatement, s.payment));
   },
@@ -254,6 +265,16 @@ team: { ...EMPTY_TEAM },
   reserveRegistrationCode: (code) => {
     if (!code) return;
     set({ registrationCode: code });
+    const s = get();
+    writeSession(serialize(s.currentStep, s, s.team, s.players, s.problemStatement, s.payment));
+  },
+
+  /* OPTIONAL referral code — normalized (trim → uppercase) on every
+     write so the stored value is always the exact code register_team
+     should see. Empty input stores ''. */
+  setReferralCode: (code) => {
+    const normalized = String(code ?? '').trim().toUpperCase();
+    set({ referralCode: normalized });
     const s = get();
     writeSession(serialize(s.currentStep, s, s.team, s.players, s.problemStatement, s.payment));
   },
@@ -405,15 +426,26 @@ team: { ...EMPTY_TEAM },
     loading: { ...state.loading, submitting: value },
   })),
 
-  finalizeSubmission: ({ registrationCode, paymentStatus, submittedAt, teamId, registrationFee }) => {
+  finalizeSubmission: ({ registrationCode, paymentStatus, submittedAt, teamId, registrationFee, retryToken }) => {
     const code = registrationCode || get().registrationCode || '';
+    /* The token is issued only by the response that CREATED the team, so
+       a retry response (which never re-issues it) keeps the one already
+       held in this session. */
+    const token = retryToken || get().retryToken || '';
     if (code) {
       /* mark the run as done so a refresh lands on the success state
          (form data is kept for the pass screen) */
-      writeSession({ ...readSession(), finished: true, step: 5 });
+      writeSession({
+        ...readSession(),
+        registrationCode: code,
+        retryToken: token,
+        finished: true,
+        step: 5,
+      });
     }
     set({
       registrationCode: code,
+      retryToken: token,
       paymentStatus: paymentStatus || 'submitted',
       submittedAt: submittedAt || new Date().toISOString(),
       registrationFee:
@@ -487,6 +519,8 @@ team: { ...EMPTY_TEAM },
       payment,
       teamId: session.teamId ?? null,
       registrationCode: session.registrationCode ?? '',
+      retryToken: typeof session.retryToken === 'string' ? session.retryToken : '',
+      referralCode: String(session.referralCode ?? '').trim().toUpperCase(),
       /* A stored session that reached Step 02+ has already had its team
          size fixed — treat that as "selected" so a refresh keeps showing
          the chosen amount instead of reverting to "SELECT TEAM SIZE". */
@@ -525,6 +559,8 @@ team: { ...EMPTY_TEAM },
       problemStatement: null,
       teamId: null,
       registrationCode: '',
+      retryToken: '',
+      referralCode: '',
       teamSaved: { ...EMPTY_TEAM_SAVED },
       round: null,
       payment: {
@@ -591,6 +627,8 @@ function serialize(step, state, team, players, problemStatement, payment) {
     step,
     teamId: state?.teamId ?? null,
     registrationCode: state?.registrationCode ?? '',
+    retryToken: state?.retryToken ?? '',
+    referralCode: String(state?.referralCode ?? '').trim().toUpperCase(),
     teamSizeSelected: Boolean(state?.teamSizeSelected),
     registrationFee:
       state?.registrationFee !== undefined && state?.registrationFee !== null

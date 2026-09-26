@@ -63,7 +63,6 @@ export default function Manifesto() {
               transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             >
               24 HOURS.<br />
-              NO PERMISSION.<br />
               <span className="manifesto__heading-red">PURE BUILD.</span>
             </motion.h2>
 

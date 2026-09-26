@@ -476,6 +476,37 @@ function MemberPass({ player, idx, store, isExpanded, onToggle }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   OPTIONAL REFERRAL CODE FIELD
+   Sits on the CREW PASSES step (after the member passes) so the code
+   travels through the same wizard state as everything else. Purely
+   optional — it never gates a step and never blocks CONTINUE. Values
+   are normalized (trim → uppercase) in the store and sent to the
+   existing register_team RPC; the backend validates validity/activity.
+   ═══════════════════════════════════════════════════════════════ */
+
+function ReferralField({ store }) {
+  return (
+    <div className="step__ref">
+      <div className="step__ref-head">
+        <label className="step__label" htmlFor="reg-referral-code">HAVE A REFERRAL CODE?</label>
+        <span className="step__ref-tag">OPTIONAL</span>
+      </div>
+      <input
+        id="reg-referral-code"
+        className="step__input step__input--ref"
+        value={store.referralCode}
+        onChange={(e) => store.setReferralCode(e.target.value)}
+        placeholder="H2P-XXXXXX"
+        autoCapitalize="characters"
+        autoComplete="off"
+        spellCheck="false"
+      />
+      <p className="step__ref-hint">Enter the referral code shared with you.</p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
    STEP 03 — CREW PASSES (participants)
    ═══════════════════════════════════════════════════════════════ */
 
@@ -535,6 +566,7 @@ function StepBuildCrew({ store }) {
           />
         ))}
       </div>
+      <ReferralField store={store} />
       {gateBlocked && <div className="step__gate">{gateMessage}</div>}
     </div>
   );
@@ -781,6 +813,19 @@ function StepReview({ store, goToStep }) {
                 {p.role === PARTICIPANT_ROLE.LEAD && <span className="rev__lead-tag">LEAD</span>}
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="rev__section">
+          <div className="rev__sec-head">
+            <span>REFERRAL</span>
+            <button className="rev__edit" onClick={() => goToStep(2)} type="button">EDIT</button>
+          </div>
+          <div className="rev__sec-body">
+            <div className="rev__kv">
+              <span className="rev__k">CODE</span>
+              <span className="rev__v">{store.referralCode || '\u2014'}</span>
+            </div>
           </div>
         </div>
 

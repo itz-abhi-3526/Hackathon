@@ -74,8 +74,12 @@ export default function Navigation({ onRegister }) {
             ))}
           </div>
 
-          {/* CTAs — leaderboard redirects to its own standalone site, register stays primary */}
+          {/* CTAs — referrals opens the hub (signup + leaderboard tabs),
+              leaderboard stays on the public board, register is primary */}
           <div className="nav__cta">
+            <a className="nav__referrals" href="/referrals">
+              REFERRALS
+            </a>
             <a className="nav__leaderboard" href={LEADERBOARD_URL}>
               LEADERBOARD
             </a>
@@ -153,6 +157,15 @@ export default function Navigation({ onRegister }) {
             >
               <span className="nav__mobile-register-line">{'/>'} REGISTER NOW</span>
             </motion.button>
+
+            <motion.a
+              className="nav__mobile-referrals"
+              href="/referrals"
+              variants={ITEM}
+              onClick={() => setMobileOpen(false)}
+            >
+              <span className="nav__mobile-referrals-line">{'◈'} REFERRALS</span>
+            </motion.a>
 
             <motion.a
               className="nav__mobile-leaderboard"

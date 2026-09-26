@@ -163,6 +163,14 @@ export default function useRegistration() {
         players: store.players,
         payment: store.payment,
         registrationCode,
+        /* OPTIONAL referral code (already normalized to trim + uppercase
+           by the store). register_team validates it — an invalid or
+           inactive code rejects the whole submission cleanly. */
+        referralCode: store.referralCode,
+        /* The server-issued retry token for an already-created team.
+           Empty on a first submit; required by the database to update
+           that team again. */
+        retryToken: store.retryToken,
       });
 
       store.finalizeSubmission(result);

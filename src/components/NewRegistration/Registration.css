@@ -749,6 +749,48 @@
   padding: var(--vh-space-4) var(--vh-space-5);
 }
 
+/* Optional referral-code field (Step 03 — CREW PASSES). Sits below the
+   member passes; never gates the step. Styled as a quiet bordered card
+   that matches the pass aesthetic without pretending to be required. */
+.step__ref {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--vh-black-soft);
+  padding: var(--vh-space-5);
+  margin-top: var(--vh-space-5);
+}
+
+.step__ref-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vh-space-3);
+}
+
+.step__ref-tag {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.22em;
+  color: var(--vh-white-faint);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 2px var(--vh-space-3);
+}
+
+.step__input--ref {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-family: var(--vh-font-mono);
+}
+
+.step__ref-hint {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-sm);
+  color: var(--vh-white-dim);
+  line-height: 1.6;
+}
+
 .mpass {
   background: var(--vh-black-soft);
   border: 1px solid rgba(255, 255, 255, 0.06);

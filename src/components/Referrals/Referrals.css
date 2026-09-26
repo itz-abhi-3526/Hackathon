@@ -1,0 +1,812 @@
+/* ============================================================================
+   HACK2PITCH 2026 — REFERRAL CAMPAIGN PAGE
+   Editorial poster system. Black / off-white / signature red.
+
+   Design intent: the typography IS the layout. Almost nothing here is a
+   card. Structure comes from thin rules, oversized type, deliberate
+   asymmetry and whitespace. The only surfaces in the whole page are the
+   referral code pass and the red action button.
+   ========================================================================== */
+
+.rfl {
+  --rfl-hair: rgba(242, 240, 237, 0.11);
+  --rfl-hair-soft: rgba(242, 240, 237, 0.06);
+  --rfl-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --rfl-max: 1320px;
+
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--vh-black);
+  color: var(--vh-white);
+  font-family: var(--vh-font-body);
+}
+
+.rfl__red { color: var(--vh-red); }
+
+/* ── Atmosphere ────────────────────────────────────────────────────────────
+   Purely decorative depth: one red light source, thin construction lines,
+   film grain. Sits behind everything and never competes with the type. */
+
+.rfl__atmos {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.rfl__atmos-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(90% 55% at 82% -8%, rgba(232, 22, 5, 0.22), transparent 60%),
+    radial-gradient(70% 45% at 8% 108%, rgba(232, 22, 5, 0.09), transparent 62%);
+}
+
+.rfl__atmos-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(242, 240, 237, 0.028) 0 1px,
+      transparent 1px 96px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      rgba(242, 240, 237, 0.022) 0 1px,
+      transparent 1px 96px
+    );
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%);
+}
+
+.rfl__atmos-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* One oversized brand word, cropped. */
+.rfl__atmos-mark {
+  position: absolute;
+  z-index: 0;
+  top: 46vh;
+  left: 50%;
+  transform: translateX(-52%);
+  font-family: var(--vh-font-display);
+  font-size: clamp(16rem, 42vw, 46rem);
+  line-height: 0.7;
+  letter-spacing: -0.02em;
+  color: rgba(242, 240, 237, 0.022);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* ── Top bar ───────────────────────────────────────────────────────────── */
+
+.rfl__bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(10, 10, 10, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--rfl-hair-soft);
+}
+
+.rfl__bar-inner {
+  max-width: var(--rfl-max);
+  margin: 0 auto;
+  padding: var(--vh-space-4) var(--vh-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vh-space-5);
+}
+
+.rfl__brand {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-xl);
+  letter-spacing: 0.06em;
+  color: var(--vh-white);
+  text-decoration: none;
+}
+.rfl__brand span { color: var(--vh-red); }
+.rfl__brand span:last-child { color: var(--vh-white-faint); margin-left: 0.15em; }
+.rfl__brand:hover { color: var(--vh-white); }
+
+.rfl__back {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.2em;
+  color: var(--vh-white-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.25s var(--rfl-ease);
+}
+.rfl__back:hover { color: var(--vh-red); }
+
+/* ── Page frame ────────────────────────────────────────────────────────── */
+
+.rfl__inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--rfl-max);
+  margin: 0 auto;
+  padding: 0 var(--vh-gutter) clamp(4rem, 9vh, 8rem);
+}
+
+/* ── Poster ────────────────────────────────────────────────────────────── */
+
+.rfl__hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  align-items: end;
+  gap: var(--vh-space-8);
+  padding: clamp(2.5rem, 7vh, 5.5rem) 0 clamp(2rem, 5vh, 3.5rem);
+  border-bottom: 1px solid var(--rfl-hair);
+  overflow: hidden;
+}
+
+.rfl__overline {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--vh-white-dim);
+}
+
+.rfl__title {
+  margin-top: var(--vh-space-5);
+  font-family: var(--vh-font-display);
+  font-weight: 400;
+  font-size: clamp(3.25rem, 8.2vw, 8.5rem);
+  line-height: 0.84;
+  letter-spacing: 0.004em;
+  color: var(--vh-white);
+}
+.rfl__title > span { display: block; }
+
+.rfl__hero-lede {
+  margin-top: var(--vh-space-6);
+  max-width: 46ch;
+  font-size: var(--vh-text-md);
+  line-height: 1.6;
+  color: var(--vh-white-dim);
+}
+
+/* Typography as the object. The negative right margin pushes the numeral
+   past the text column so the hero's overflow clips it — the crop is the
+   point, not an accident. */
+.rfl__poster {
+  display: flex;
+  flex-direction: column;
+        align-items: flex-end;
+        text-align: right;
+        /* the poster numeral must stay inside the hero's clip edge, so it sits
+           flush with its column instead of overhanging into the overflow clip.
+           the small inset keeps the 1.5px stroke from being shaved at the edge. */
+        margin-right: var(--vh-space-1);
+  padding-bottom: 0.4em;
+  user-select: none;
+}
+
+.rfl__poster-num {
+  font-family: var(--vh-font-display);
+  font-size: clamp(7rem, 17vw, 16rem);
+  line-height: 0.72;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(242, 240, 237, 0.34);
+}
+
+.rfl__poster-rule {
+  width: 46%;
+  height: 2px;
+  margin: var(--vh-space-4) 0 var(--vh-space-4) auto;
+  background: var(--vh-red);
+}
+
+.rfl__poster-word,
+.rfl__poster-year {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.34em;
+  color: var(--vh-white-dim);
+}
+.rfl__poster-year { color: var(--vh-white-faint); margin-top: var(--vh-space-2); }
+
+/* ── The rule, stated once ─────────────────────────────────────────────── */
+
+.rfl__truth {
+  padding: clamp(2.25rem, 6vh, 4.5rem) 0 clamp(2rem, 5vh, 3.5rem);
+  border-bottom: 1px solid var(--rfl-hair-soft);
+}
+
+.rfl__truth-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 clamp(0.75rem, 1.6vw, 1.75rem);
+  font-family: var(--vh-font-display);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 5.4vw, 4.75rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.rfl__truth-num {
+  color: var(--vh-red);
+  font-size: 1.28em;
+}
+.rfl__truth-word { color: var(--vh-white); }
+.rfl__truth-eq {
+  color: var(--vh-white-faint);
+  font-size: 0.6em;
+  transform: translateY(-0.18em);
+}
+
+.rfl__truth-note {
+  margin-top: var(--vh-space-5);
+  max-width: 54ch;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  line-height: 1.75;
+  color: var(--vh-white-dim);
+}
+.rfl__truth-note em { color: var(--vh-white); font-style: normal; }
+
+/* ── View switch: flat editorial nav, no container ─────────────────────── */
+
+.rfl__tabs {
+  display: flex;
+  gap: clamp(1.75rem, 5vw, 4rem);
+  border-bottom: 1px solid var(--rfl-hair);
+}
+
+.rfl__tab {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--vh-space-3);
+  margin: 0;
+  padding: var(--vh-space-5) 0;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--vh-white-faint);
+  cursor: pointer;
+  transition: color 0.3s var(--rfl-ease), border-color 0.3s var(--rfl-ease);
+}
+
+.rfl__tab-idx { color: var(--vh-white-faint); transition: color 0.3s var(--rfl-ease); }
+.rfl__tab-label { color: inherit; }
+
+.rfl__tab:hover { color: var(--vh-white-dim); }
+.rfl__tab:hover .rfl__tab-idx { color: var(--vh-white-dim); }
+
+.rfl__tab--active {
+  color: var(--vh-red);
+  border-bottom-color: var(--vh-red);
+}
+.rfl__tab--active .rfl__tab-idx { color: var(--vh-red); }
+
+.rfl__tab:focus-visible {
+  outline: 2px solid var(--vh-red);
+  outline-offset: 4px;
+}
+
+/* ── Panels ──────────────────────────────────────────────────────────────
+   Both panels stay mounted so the generated code and any typed input
+   survive a tab switch; the inactive one is only hidden.
+
+   The compound selector is deliberate: a bare `.rfl__panel--hidden` has the
+   same specificity as `.rfl__panel--split`'s `display: grid` and would lose
+   to it on source order, leaving both views on screen at once. */
+
+.rfl__panel.rfl__panel--hidden { display: none; }
+
+.rfl__panel--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  padding: clamp(2.25rem, 6vh, 4.5rem) 0 clamp(2.5rem, 7vh, 5rem);
+}
+
+.rfl__panel-main { min-width: 0; }
+
+@keyframes rflReveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Re-applied every time the panel becomes the visible view. */
+.rfl__panel--active { animation: rflReveal 0.6s var(--rfl-ease) both; }
+
+.rfl__panel--board { padding-bottom: clamp(2.5rem, 7vh, 5rem); }
+
+/* ── MY REFERRAL ───────────────────────────────────────────────────────── */
+
+.rfl__claim-title {
+  margin-top: var(--vh-space-4);
+  font-family: var(--vh-font-display);
+  font-weight: 400;
+  font-size: clamp(2.75rem, 6.4vw, 5.75rem);
+  line-height: 0.86;
+  letter-spacing: 0.004em;
+}
+.rfl__claim-title > span { display: block; }
+
+.rfl__claim-lede {
+  margin-top: var(--vh-space-5);
+  max-width: 44ch;
+  font-size: var(--vh-text-md);
+  line-height: 1.6;
+  color: var(--vh-white-dim);
+}
+
+.rfl__fields {
+  margin-top: clamp(2rem, 4.5vh, 3rem);
+  display: grid;
+  gap: clamp(1.5rem, 3vh, 2.25rem);
+  max-width: 620px;
+}
+
+.rfl__field { display: block; }
+
+.rfl__label {
+  display: block;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--vh-white-dim);
+}
+
+.rfl__input {
+  width: 100%;
+  margin-top: var(--vh-space-2);
+  padding: var(--vh-space-3) 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(242, 240, 237, 0.3);
+  border-radius: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-lg);
+  color: var(--vh-white);
+  transition: border-color 0.3s var(--rfl-ease);
+}
+.rfl__input::placeholder { color: var(--vh-white-faint); }
+.rfl__input:hover { border-bottom-color: rgba(242, 240, 237, 0.5); }
+.rfl__input:focus {
+  outline: none;
+  border-bottom-color: var(--vh-red);
+}
+.rfl__input:disabled { opacity: 0.5; }
+.rfl__input--invalid { border-bottom-color: var(--vh-red); }
+
+.rfl__field-error {
+  display: block;
+  margin-top: var(--vh-space-2);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.08em;
+  color: var(--vh-red-light);
+}
+
+.rfl__form-error {
+  margin-top: var(--vh-space-5);
+  max-width: 52ch;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  line-height: 1.6;
+  color: var(--vh-red-light);
+}
+
+.rfl__cta {
+  margin-top: clamp(2rem, 4.5vh, 3rem);
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vh-space-4);
+  padding: clamp(1.1rem, 2.2vh, 1.5rem) clamp(1.25rem, 2.5vw, 2rem);
+  background: var(--vh-red);
+  border: 0;
+  border-radius: 0;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-md);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vh-white);
+  cursor: pointer;
+  transition: background 0.3s var(--rfl-ease);
+}
+.rfl__cta:hover:not(:disabled) { background: var(--vh-red-light); }
+.rfl__cta:disabled { opacity: 0.65; cursor: progress; }
+.rfl__cta:focus-visible { outline: 2px solid var(--vh-white); outline-offset: 3px; }
+
+.rfl__cta-arrow {
+  font-size: 1.25em;
+  line-height: 1;
+  transition: transform 0.35s var(--rfl-ease);
+}
+.rfl__cta:hover:not(:disabled) .rfl__cta-arrow { transform: translateX(6px); }
+
+.rfl__fineprint {
+  margin-top: var(--vh-space-4);
+  max-width: 620px;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.16em;
+  color: var(--vh-white-faint);
+}
+
+/* ── The generated code, treated as a pass ─────────────────────────────── */
+
+.rfl__reveal-name {
+  margin-top: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.14em;
+  color: var(--vh-white-dim);
+}
+
+.rfl__pass {
+  position: relative;
+  margin-top: clamp(1.75rem, 4vh, 2.75rem);
+  max-width: 620px;
+  padding: clamp(1.25rem, 2.6vw, 2rem);
+  background: var(--vh-white);
+  color: var(--vh-black);
+}
+
+/* Ticket notches, punched on the tear line. */
+.rfl__pass::before,
+.rfl__pass::after {
+  content: '';
+  position: absolute;
+  left: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--vh-black);
+  transform: translateY(-50%);
+}
+.rfl__pass::before { top: 68%; }
+.rfl__pass::after { top: 68%; left: auto; right: -9px; }
+
+.rfl__pass-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vh-space-4);
+  padding-bottom: var(--vh-space-3);
+  border-bottom: 1px solid rgba(10, 10, 10, 0.18);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.24em;
+  color: rgba(10, 10, 10, 0.55);
+}
+
+.rfl__pass-code {
+  margin: clamp(1rem, 2.4vh, 1.6rem) 0;
+  font-family: var(--vh-font-mono);
+  font-size: clamp(1.9rem, 5.6vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: var(--vh-black);
+  word-break: break-all;
+}
+
+.rfl__pass-perf {
+  height: 0;
+  border-top: 1px dashed rgba(10, 10, 10, 0.32);
+}
+
+.rfl__pass-foot {
+  margin-top: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.24em;
+  color: rgba(10, 10, 10, 0.55);
+}
+
+.rfl__actions {
+  margin-top: clamp(1.5rem, 3.5vh, 2.25rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vh-space-3);
+  max-width: 620px;
+}
+
+.rfl__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  padding: var(--vh-space-4) var(--vh-space-6);
+  background: none;
+  border: 1px solid rgba(242, 240, 237, 0.28);
+  border-radius: 0;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--vh-white);
+  cursor: pointer;
+  transition: background 0.3s var(--rfl-ease), border-color 0.3s var(--rfl-ease);
+}
+.rfl__btn:hover { border-color: var(--vh-white); background: rgba(242, 240, 237, 0.06); }
+.rfl__btn:focus-visible { outline: 2px solid var(--vh-red); outline-offset: 3px; }
+
+.rfl__btn--primary {
+  background: var(--vh-red);
+  border-color: var(--vh-red);
+}
+.rfl__btn--primary:hover {
+  background: var(--vh-red-light);
+  border-color: var(--vh-red-light);
+}
+.rfl__btn--primary:hover .rfl__cta-arrow { transform: translateX(6px); }
+
+.rfl__reveal-cry {
+  margin-top: clamp(2rem, 5vh, 3.25rem);
+  font-family: var(--vh-font-display);
+  font-size: clamp(1.85rem, 4.6vw, 3.6rem);
+  line-height: 0.94;
+  letter-spacing: 0.008em;
+  color: var(--vh-white);
+}
+
+/* ── How it works: a vertical story, not three cards ───────────────────── */
+
+.rfl__story {
+  padding-left: clamp(1.75rem, 3vw, 3rem);
+  border-left: 1px solid var(--rfl-hair-soft);
+}
+
+.rfl__story-list {
+  position: relative;
+  margin-top: var(--vh-space-6);
+  list-style: none;
+}
+
+/* the thin line the markers sit on */
+.rfl__story-list::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--rfl-hair);
+}
+
+.rfl__story-item {
+  position: relative;
+  padding: 0 0 clamp(1.75rem, 4vh, 2.75rem) clamp(1.5rem, 2.4vw, 2.25rem);
+}
+.rfl__story-item:last-child { padding-bottom: 0; }
+
+/* red numbered marker */
+.rfl__story-idx {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 11px;
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.1em;
+  color: var(--vh-red);
+  background: var(--vh-black);
+  padding: 2px 0;
+}
+
+.rfl__story-title {
+  font-family: var(--vh-font-display);
+  font-weight: 400;
+  font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--vh-white);
+}
+
+.rfl__story-text {
+  margin-top: var(--vh-space-3);
+  max-width: 36ch;
+  font-size: var(--vh-text-base);
+  line-height: 1.65;
+  color: var(--vh-white-dim);
+}
+
+/* ── LEADERBOARD view ──────────────────────────────────────────────────── */
+
+.rfl__board-head {
+  padding: clamp(2.25rem, 6vh, 4.5rem) 0 clamp(1.75rem, 4vh, 3rem);
+}
+
+.rfl__board-title {
+  margin-top: var(--vh-space-4);
+  font-family: var(--vh-font-display);
+  font-weight: 400;
+  font-size: clamp(2.75rem, 7vw, 6.5rem);
+  line-height: 0.86;
+  letter-spacing: 0.004em;
+  color: var(--vh-white);
+}
+
+.rfl__board-lede {
+  margin-top: var(--vh-space-5);
+  max-width: 40ch;
+  font-size: var(--vh-text-md);
+  line-height: 1.6;
+  color: var(--vh-white-dim);
+}
+
+/* ── Close ─────────────────────────────────────────────────────────────── */
+
+.rfl__closing {
+  padding-top: clamp(2.5rem, 6vh, 4.5rem);
+  border-top: 2px solid var(--vh-red);
+}
+
+.rfl__closing-title {
+  font-family: var(--vh-font-display);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 5.6vw, 4.75rem);
+  line-height: 0.9;
+  letter-spacing: 0.006em;
+  color: var(--vh-white);
+}
+
+.rfl__closing-back {
+  display: inline-block;
+  margin-top: var(--vh-space-6);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--vh-white-dim);
+  text-decoration: none;
+  transition: color 0.25s var(--rfl-ease);
+}
+.rfl__closing-back:hover { color: var(--vh-red); }
+
+/* ── Laptop screens: the poster is beautiful but the panel must stay
+      reachable, so the hierarchy tightens by viewport height. ───────────── */
+
+@media (min-width: 1025px) and (max-height: 940px) {
+  .rfl__hero {
+    padding: clamp(2rem, 5vh, 3.25rem) 0 clamp(1.75rem, 4vh, 2.5rem);
+  }
+  .rfl__title { font-size: clamp(2.75rem, 6.2vw, 6rem); }
+  .rfl__poster-num { font-size: clamp(6rem, 13vw, 12rem); }
+  .rfl__truth { padding: clamp(1.75rem, 4.5vh, 3rem) 0 clamp(1.5rem, 3.5vh, 2.5rem); }
+  .rfl__truth-line { font-size: clamp(1.75rem, 4.2vw, 3.5rem); }
+  .rfl__tab { padding: var(--vh-space-4) 0; }
+  .rfl__panel--split { padding: clamp(1.75rem, 4.5vh, 3rem) 0 clamp(2rem, 5vh, 3.5rem); }
+  .rfl__claim-title { font-size: clamp(2.5rem, 5.2vw, 4.5rem); }
+}
+
+@media (min-width: 1025px) and (max-height: 820px) {
+  .rfl__title { font-size: clamp(2.25rem, 5.2vw, 5rem); }
+  .rfl__hero-lede { font-size: var(--vh-text-base); margin-top: var(--vh-space-4); }
+  .rfl__truth-line { font-size: clamp(1.5rem, 3.6vw, 3rem); }
+  .rfl__truth-note { font-size: var(--vh-text-xs); }
+  .rfl__claim-title { font-size: clamp(2.25rem, 4.6vw, 4rem); }
+  .rfl__fields { gap: clamp(1rem, 2.2vh, 1.5rem); }
+}
+
+/* ── Tablet ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .rfl__hero {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: var(--vh-space-7);
+  }
+  .rfl__poster {
+    align-items: flex-start;
+    text-align: left;
+    margin-right: 0;
+    padding-bottom: 0;
+  }
+  .rfl__poster-rule { margin-left: 0; }
+  .rfl__panel--split { grid-template-columns: minmax(0, 1fr); }
+  .rfl__story {
+    padding-left: 0;
+    padding-top: clamp(1.75rem, 4vh, 2.5rem);
+    border-left: 0;
+    border-top: 1px solid var(--rfl-hair-soft);
+  }
+  .rfl__story-text { max-width: 52ch; }
+}
+
+/* ── Mobile ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+  .rfl__bar-inner { padding-block: var(--vh-space-3); }
+  .rfl__title { font-size: clamp(2.6rem, 13vw, 4rem); }
+  .rfl__poster-num { font-size: clamp(5.5rem, 26vw, 9rem); }
+  .rfl__poster-word,
+  .rfl__poster-year { font-size: var(--vh-text-xs); }
+  .rfl__hero-lede { font-size: var(--vh-text-base); }
+  .rfl__truth-line {
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+    gap: 0 var(--vh-space-3);
+  }
+  .rfl__truth-num { font-size: 1.15em; }
+  .rfl__truth-note { font-size: var(--vh-text-xs); }
+
+  /* full-width tabs, still flat */
+  .rfl__tabs { gap: var(--vh-space-5); }
+  .rfl__tab {
+    flex: 1;
+    justify-content: center;
+    gap: var(--vh-space-2);
+    font-size: var(--vh-text-xs);
+    letter-spacing: 0.14em;
+  }
+
+  .rfl__claim-title { font-size: clamp(2.25rem, 12vw, 3.25rem); }
+  .rfl__claim-lede { font-size: var(--vh-text-base); }
+  .rfl__fields,
+  .rfl__cta,
+  .rfl__fineprint,
+  .rfl__actions,
+  .rfl__pass { max-width: none; }
+  .rfl__input { font-size: var(--vh-text-md); }
+  .rfl__cta { font-size: var(--vh-text-sm); padding-inline: var(--vh-space-4); }
+  .rfl__pass-code { font-size: clamp(1.6rem, 9vw, 2.5rem); }
+  .rfl__reveal-cry { font-size: clamp(1.6rem, 9vw, 2.5rem); }
+  .rfl__board-title { font-size: clamp(2.4rem, 12vw, 3.5rem); }
+  .rfl__board-lede { font-size: var(--vh-text-base); }
+  .rfl__closing-title { font-size: clamp(1.9rem, 9.5vw, 2.75rem); }
+}
+
+@media (max-width: 420px) {
+  .rfl__back { font-size: 0.625rem; letter-spacing: 0.1em; }
+  .rfl__tab { letter-spacing: 0.08em; }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .rfl__panel--active { animation: none; }
+  .rfl__cta-arrow,
+  .rfl__btn--primary .rfl__cta-arrow { transition: none; }
+  .rfl__cta:hover:not(:disabled) .rfl__cta-arrow,
+  .rfl__btn--primary:hover .rfl__cta-arrow { transform: none; }
+  .rfl__atmos,
+  .rfl__atmos-glow,
+  .rfl__atmos-grid,
+  .rfl__atmos-grain { animation: none; }
+}

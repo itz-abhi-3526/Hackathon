@@ -1,14 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
    HACK2PITCH 2026 — Email service (Supabase Edge Function)
-   Nodemailer-based. Runs ONLY server-side in the Deno Edge Runtime —
-   never in the browser (this SPA has no Node backend). SMTP secrets
-   live in the project's Edge Function secrets:
+   Resend-based. Runs ONLY server-side in the Deno Edge Runtime —
+   never in the browser (this SPA has no Node backend). The API key
+   lives in the project's Edge Function secrets:
 
-     supabase secrets set SMTP_USER=... SMTP_PASS=...
+     supabase secrets set RESEND_API_KEY=re_...
 
-   Delivery uses the project's Gmail SMTP account (smtp.gmail.com with
-   an App Password). Note: free-Gmail bulk sends sometimes land in spam;
-   a verified custom-domain provider (e.g. Resend) is the reliable fix.
+   Delivery uses the Resend HTTP API (https://api.resend.com/emails)
+   against the verified hack2pitch.in domain. The From address must be
+   on that verified domain or Resend rejects the send.
 
    Port of the original CommonJS emailservice.js with the three
    changes a Supabase Edge Function requires:
@@ -34,48 +34,18 @@
    links the group.
    ═══════════════════════════════════════════════════════════════ */
 
-import nodemailer from 'npm:nodemailer@6.9.16';
-
-const SMTP_HOST =
-  Deno.env.get('SMTP_HOST') ||
-  Deno.env.get('EMAIL_HOST') ||
-  'smtp.gmail.com';
-const SMTP_PORT =
-  Number(Deno.env.get('SMTP_PORT')) ||
-  Number(Deno.env.get('EMAIL_PORT')) ||
-  465;
-const SMTP_USER =
-  Deno.env.get('SMTP_USER') ||
-  Deno.env.get('EMAIL_USER');
-const SMTP_PASS =
-  Deno.env.get('SMTP_PASS') ||
-  Deno.env.get('EMAIL_PASS');
 const EMAIL_FROM =
-  Deno.env.get('EMAIL_FROM') || SMTP_USER;
+  Deno.env.get('EMAIL_FROM') || 'HACK2PITCH 2026 <noreply@hack2pitch.in>';
 
-/* Visible sender label — presentation only. The envelope/transport
-   still use the configured SMTP account (credentials untouched); this
-   sets the From display name so recipients see "HACK2PITCH 2026"
-   instead of a bare/legacy account address. If EMAIL_FROM already
-   carries a display-name+address form, it is preserved as-is. */
+/* Visible sender label — presentation only. The default already carries
+   the display-name+address form Resend expects; if EMAIL_FROM is set to a
+   bare address it is wrapped here so recipients still see
+   "HACK2PITCH 2026". If EMAIL_FROM already carries a
+   display-name+address form, it is preserved as-is. */
 const EMAIL_SENDER_NAME = 'HACK2PITCH 2026';
 const EMAIL_FROM_DISPLAY = /[<>]/.test(String(EMAIL_FROM || ''))
   ? EMAIL_FROM
   : `"${EMAIL_SENDER_NAME}" <${EMAIL_FROM}>`;
-
-/* Create Nodemailer transporter */
-const transporter =
-  SMTP_USER && SMTP_PASS
-    ? nodemailer.createTransport({
-        host: SMTP_HOST,
-        port: SMTP_PORT,
-        secure: SMTP_PORT === 465,
-        auth: {
-          user: SMTP_USER,
-          pass: SMTP_PASS,
-        },
-      })
-    : null;
 
 /* Escape admin-supplied text before embedding it in HTML mail. */
 const esc = (value) =>
@@ -89,31 +59,58 @@ const esc = (value) =>
     }
   });
 
-/* Generic email sender */
+/* Generic email sender — Resend HTTP API */
 const sendEmail = async ({ to, subject, text, html, attachments }) => {
-  if (!transporter) {
-    console.error(
-      '[EmailService] SMTP_USER or SMTP_PASS is not configured.'
-    );
+  const apiKey = Deno.env.get('RESEND_API_KEY');
+
+  if (!apiKey) {
+    console.error('[EmailService] RESEND_API_KEY is not configured.');
     return false;
   }
 
   try {
-    const mailOptions = { from: EMAIL_FROM_DISPLAY, to, subject, text, html };
+    const payload = {
+      from: EMAIL_FROM_DISPLAY,
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      text,
+      html,
+    };
 
-    if (attachments && attachments.length > 0) {
-      mailOptions.attachments = attachments.map((attachment) => ({
-        filename: attachment.filename,
-        content: attachment.content,
-        contentType: attachment.contentType,
-      }));
+    /* No caller passes attachments today (the payment screenshot is
+       LINKED, not attached — see paymentScreenshotLink), so no Resend
+       attachment mapping is introduced here. */
+    void attachments;
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      let detail = '';
+      try {
+        detail = await response.text();
+      } catch {
+        detail = '<unreadable response body>';
+      }
+      console.error(
+        '[EmailService] Resend email send failed:',
+        response.status,
+        detail
+      );
+      return false;
     }
 
-    const info = await transporter.sendMail(mailOptions);
+    const data = await response.json();
 
-    console.log('[EmailService] Email sent:', info.messageId);
+    console.log('[EmailService] Email sent:', data.id);
 
-    return Boolean(info.messageId);
+    return Boolean(data.id);
   } catch (error) {
     console.error('[EmailService] Email send failed:', error);
     return false;
