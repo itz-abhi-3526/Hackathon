@@ -1,14 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
    HACK2PITCH 2026 — Email service (Supabase Edge Function)
-   Resend-based. Runs ONLY server-side in the Deno Edge Runtime —
-   never in the browser (this SPA has no Node backend). The API key
-   lives in the project's Edge Function secrets:
+   Nodemailer-based. Runs ONLY server-side in the Deno Edge Runtime —
+   never in the browser (this SPA has no Node backend). SMTP secrets
+   live in the project's Edge Function secrets:
 
-     supabase secrets set RESEND_API_KEY=re_...
+     supabase secrets set SMTP_USER=... SMTP_PASS=...
 
-   Delivery uses the Resend HTTP API (https://api.resend.com/emails)
-   against the verified hack2pitch.in domain. The From address must be
-   on that verified domain or Resend rejects the send.
+   Delivery uses the project's Gmail SMTP account (smtp.gmail.com with
+   an App Password). Note: free-Gmail bulk sends sometimes land in spam;
+   a verified custom-domain provider (e.g. Resend) is the reliable fix.
 
    Port of the original CommonJS emailservice.js with the three
    changes a Supabase Edge Function requires:
@@ -34,18 +34,60 @@
    links the group.
    ═══════════════════════════════════════════════════════════════ */
 
-const EMAIL_FROM =
-  Deno.env.get('EMAIL_FROM') || 'HACK2PITCH 2026 <noreply@hack2pitch.in>';
+import nodemailer from 'npm:nodemailer@6.9.16';
 
-/* Visible sender label — presentation only. The default already carries
-   the display-name+address form Resend expects; if EMAIL_FROM is set to a
-   bare address it is wrapped here so recipients still see
-   "HACK2PITCH 2026". If EMAIL_FROM already carries a
-   display-name+address form, it is preserved as-is. */
+/* ── SMTP configuration ──────────────────────────────────────────
+   Host/port/credentials come from the Edge Function secrets with
+   Gmail defaults, so the same code works against any provider by
+   setting SMTP_HOST / SMTP_PORT without a code change. EMAIL_USER /
+   EMAIL_PASS are accepted as legacy aliases. */
+const SMTP_HOST =
+  Deno.env.get('SMTP_HOST') ||
+  Deno.env.get('EMAIL_HOST') ||
+  'smtp.gmail.com';
+const SMTP_PORT =
+  Number(Deno.env.get('SMTP_PORT')) ||
+  Number(Deno.env.get('EMAIL_PORT')) ||
+  465;
+const SMTP_USER =
+  Deno.env.get('SMTP_USER') ||
+  Deno.env.get('EMAIL_USER');
+const SMTP_PASS =
+  Deno.env.get('SMTP_PASS') ||
+  Deno.env.get('EMAIL_PASS');
+const EMAIL_FROM =
+  Deno.env.get('EMAIL_FROM') || SMTP_USER;
+
+/* Visible sender label — presentation only. The envelope/transport
+   still use the configured SMTP account (credentials untouched); this
+   sets the From display name so recipients see "HACK2PITCH 2026"
+   instead of a bare or legacy account address. If EMAIL_FROM already
+   carries a display-name+address form, it is preserved as-is. */
 const EMAIL_SENDER_NAME = 'HACK2PITCH 2026';
 const EMAIL_FROM_DISPLAY = /[<>]/.test(String(EMAIL_FROM || ''))
   ? EMAIL_FROM
   : `"${EMAIL_SENDER_NAME}" <${EMAIL_FROM}>`;
+
+/* Create Nodemailer transporter. A null transporter (missing secrets)
+   is handled in sendEmail so a misconfigured function reports a
+   failed send instead of throwing at import time. The timeouts make a
+   hung SMTP handshake fail fast so the admin send flow reports
+   FAILED rather than hanging. */
+const transporter =
+  SMTP_USER && SMTP_PASS
+    ? nodemailer.createTransport({
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465,
+        auth: {
+          user: SMTP_USER,
+          pass: SMTP_PASS,
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+      })
+    : null;
 
 /* Escape admin-supplied text before embedding it in HTML mail. */
 const esc = (value) =>
@@ -59,17 +101,19 @@ const esc = (value) =>
     }
   });
 
-/* Generic email sender — Resend HTTP API */
+/* Generic Nodemailer sender. Never throws — every caller treats the
+   boolean as "delivered or not", so a mail outage can never block
+   payment verification. */
 const sendEmail = async ({ to, subject, text, html, attachments }) => {
-  const apiKey = Deno.env.get('RESEND_API_KEY');
-
-  if (!apiKey) {
-    console.error('[EmailService] RESEND_API_KEY is not configured.');
+  if (!transporter) {
+    console.error(
+      '[EmailService] SMTP_USER or SMTP_PASS is not configured.'
+    );
     return false;
   }
 
   try {
-    const payload = {
+    const mailOptions = {
       from: EMAIL_FROM_DISPLAY,
       to: Array.isArray(to) ? to : [to],
       subject,
@@ -78,39 +122,22 @@ const sendEmail = async ({ to, subject, text, html, attachments }) => {
     };
 
     /* No caller passes attachments today (the payment screenshot is
-       LINKED, not attached — see paymentScreenshotLink), so no Resend
-       attachment mapping is introduced here. */
-    void attachments;
-
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      let detail = '';
-      try {
-        detail = await response.text();
-      } catch {
-        detail = '<unreadable response body>';
-      }
-      console.error(
-        '[EmailService] Resend email send failed:',
-        response.status,
-        detail
-      );
-      return false;
+       LINKED, not attached — see paymentScreenshotLink), but the
+       mapping is kept so an attachment can never silently break the
+       send if a future caller adds one. */
+    if (attachments && attachments.length > 0) {
+      mailOptions.attachments = attachments.map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+        contentType: attachment.contentType,
+      }));
     }
 
-    const data = await response.json();
+    const info = await transporter.sendMail(mailOptions);
 
-    console.log('[EmailService] Email sent:', data.id);
+    console.log('[EmailService] Email sent:', info.messageId);
 
-    return Boolean(data.id);
+    return Boolean(info.messageId);
   } catch (error) {
     console.error('[EmailService] Email send failed:', error);
     return false;
@@ -714,10 +741,6 @@ const sendRejectionEmail = async (registration) => {
                   If you&rsquo;d like to resolve this and complete your registration, please get in touch with us as soon as possible.
                   We hope to get this sorted out with you soon so you can join us at HACK2PITCH 2026.
                 </div>
-              </td>
-            </tr>
-
-            <!-- FOOTER -->
               </td>
             </tr>
 
