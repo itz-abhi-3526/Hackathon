@@ -10,6 +10,7 @@ import Manifesto from './components/NewManifesto/Manifesto.jsx';
 import Experience from './components/NewExperience/Experience.jsx';
 import Countdown from './components/NewCountdown/Countdown.jsx';
 import TimelineSection from './components/NewTimeline/Timeline.jsx';
+import Tecverso from './components/NewTecverso/Tecverso.jsx';
 import Prizes from './components/NewPrizes/Prizes.jsx';
 import FAQ from './components/NewFAQ/FAQ.jsx';
 import FinalSequence from './components/NewFinalCTA/FinalSequence.jsx';
@@ -152,6 +153,7 @@ export default function App() {
                 <Prizes />
                 <Experience />
                 <TimelineSection />
+                <Tecverso />
                 <FAQ />
                 <FinalSequence onRegister={enterRegistration} />
               </main>

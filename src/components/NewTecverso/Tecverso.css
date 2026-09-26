@@ -1,0 +1,379 @@
+/* ═══════════════════════════════════════════════════════════════
+   HACK2PITCH 2026 — TECVERSO'26 GATEWAY
+   A doorway, not an advert. The timeline's red axis drops into this
+   section and terminates on a marker; an oversized year is whispered
+   behind the wordmark; the threshold is a single outlined threshold
+   line. No cards, no panels, no gradients — type, rules, negative
+   space. Every selector is scoped to .tecverso.
+   ═══════════════════════════════════════════════════════════════ */
+
+.tecverso {
+  position: relative;
+  background: var(--vh-black);
+  padding: clamp(5rem, 12vh, 11rem) 0 clamp(5rem, 12vh, 10rem);
+  overflow: hidden;
+}
+
+.tecverso__inner {
+  position: relative;
+  z-index: 1;
+  container-type: inline-size;
+  container-name: tecverso;
+}
+
+/* ── RED THREAD — the timeline axis, continued and ended ── */
+.tecverso__thread {
+  position: absolute;
+  top: 0;
+  left: var(--vh-gutter);
+  width: clamp(2px, 0.15vw, 3px);
+  height: clamp(2.5rem, 7vh, 6rem);
+  background: var(--vh-red);
+  opacity: 0.32;
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+.tecverso__thread-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 7px;
+  height: 7px;
+  background: var(--vh-red);
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+  box-shadow: 0 0 10px rgba(232, 22, 5, 0.5);
+}
+
+/* ── GHOST YEAR — oversized, outlined, barely there ── */
+.tecverso__ghost {
+  position: absolute;
+  top: 4%;
+  right: -2vw;
+  z-index: 0;
+  font-family: var(--vh-font-display);
+  font-size: clamp(9rem, 24vw, 24rem);
+  line-height: 0.8;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(242, 240, 237, 0.055);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── LAYOUT — asymmetric. The wordmark carries the weight; the copy
+    column is narrower, sits low, and holds the threshold. ── */
+.tecverso__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  column-gap: clamp(2.5rem, 6vw, 6rem);
+  align-items: end;
+  padding-top: clamp(2rem, 5vh, 3.5rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── EYEBROW ── */
+.tecverso__overline {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red);
+  margin-bottom: var(--vh-space-5);
+}
+
+.tecverso__overline-bar {
+  display: block;
+  width: 30px;
+  height: 2px;
+  background: var(--vh-red);
+}
+
+.tecverso__overline-index {
+  margin-left: auto;
+  color: var(--vh-white-faint);
+  letter-spacing: 0.22em;
+}
+
+/* ── WORDMARK — the visual anchor. Oversized, one line, masked so it
+    rises into place rather than simply fading. ── */
+.tecverso__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.06em;
+  margin: 0;
+  font-family: var(--vh-font-display);
+  font-size: clamp(3rem, 10.5vw, 9rem);
+  line-height: 0.86;
+  letter-spacing: 0.01em;
+  color: var(--vh-white);
+}
+
+.tecverso__heading-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.04em;
+}
+
+.tecverso__heading-line,
+.tecverso__heading-year {
+  display: block;
+  will-change: transform;
+}
+
+.tecverso__heading-year {
+  color: var(--vh-red);
+}
+
+/* ── SUPPORT LINE ── */
+.tecverso__tagline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.65em;
+  margin-top: var(--vh-space-5);
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-lg);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--vh-white);
+}
+
+.tecverso__tagline-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65em;
+}
+
+.tecverso__tagline-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--vh-red);
+  border-radius: 50%;
+}
+
+/* ── COPY COLUMN ── */
+.tecverso__aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vh-space-6);
+  padding-bottom: clamp(0.5rem, 2vh, 1.5rem);
+}
+
+.tecverso__desc {
+  max-width: 38ch;
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-base);
+  line-height: 1.7;
+  color: var(--vh-white-dim);
+}
+
+/* ── THRESHOLD — the CTA. Outlined by a single hairline that red
+    itself fills on hover; the wash wipes in behind the label. ── */
+.tecverso__action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vh-space-3);
+}
+
+.tecverso__cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  min-height: 48px;
+  padding: 0.7em 1.1em 0.75em 0;
+  isolation: isolate;
+}
+
+.tecverso__cta-wash {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(232, 22, 5, 0.09);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.55s var(--vh-ease-out);
+}
+
+.tecverso__cta-rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.55em;
+  height: 2px;
+  background: var(--vh-red);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.6s var(--vh-ease-out);
+}
+
+.tecverso__cta-text {
+  position: relative;
+  font-family: var(--vh-font-display);
+  font-size: clamp(1.15rem, 1.9vw, 1.75rem);
+  line-height: 1;
+  letter-spacing: 0.12em;
+  color: var(--vh-white);
+  transition: letter-spacing 0.5s var(--vh-ease-out), color 0.4s var(--vh-ease-out);
+}
+
+.tecverso__cta-arrow {
+  position: relative;
+  font-size: clamp(0.9rem, 1.1vw, 1.1rem);
+  line-height: 1;
+  color: var(--vh-red);
+  transition: transform 0.5s var(--vh-ease-out);
+}
+
+.tecverso__cta:hover .tecverso__cta-wash,
+.tecverso__cta:focus-visible .tecverso__cta-wash,
+.tecverso__cta:hover .tecverso__cta-rule,
+.tecverso__cta:focus-visible .tecverso__cta-rule {
+  transform: scaleX(1);
+}
+
+.tecverso__cta:hover .tecverso__cta-text,
+.tecverso__cta:focus-visible .tecverso__cta-text {
+  letter-spacing: 0.16em;
+}
+
+.tecverso__cta:hover .tecverso__cta-arrow,
+.tecverso__cta:focus-visible .tecverso__cta-arrow {
+  transform: translate(0.3rem, -0.3rem);
+}
+
+.tecverso__cta-host {
+  font-family: var(--vh-font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.26em;
+  color: var(--vh-white-faint);
+}
+
+/* ── FOOT RULE — drawn across as the section lands ── */
+.tecverso__foot {
+  display: block;
+  height: 1px;
+  margin-top: clamp(2.5rem, 6vh, 4.5rem);
+  background: linear-gradient(
+    90deg,
+    rgba(232, 22, 5, 0.75),
+    rgba(232, 22, 5, 0.18) 42%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  transform-origin: left center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NARROW — stack, keeping the editorial hierarchy intact. The
+   threshold stays full-width enough to tap comfortably.
+   ═══════════════════════════════════════════════════════════════ */
+
+@container tecverso (max-width: 900px) {
+  .tecverso__layout {
+    grid-template-columns: 1fr;
+    row-gap: clamp(2rem, 6vh, 3.5rem);
+    align-items: start;
+  }
+
+  .tecverso__heading {
+    font-size: clamp(3rem, 15vw, 6rem);
+  }
+
+  .tecverso__aside {
+    padding-bottom: 0;
+    gap: var(--vh-space-5);
+  }
+
+  .tecverso__desc {
+    max-width: 46ch;
+  }
+
+  .tecverso__cta {
+    width: 100%;
+    justify-content: space-between;
+    padding-right: 0.9em;
+  }
+
+  .tecverso__cta-rule {
+    right: 0.9em;
+  }
+
+  .tecverso__ghost {
+    right: -10vw;
+    top: 2%;
+    font-size: clamp(8rem, 44vw, 14rem);
+    -webkit-text-stroke: 1px rgba(242, 240, 237, 0.045);
+  }
+}
+
+/* Fallback for browsers without container-query support. */
+@media (max-width: 960px) {
+  .tecverso__layout {
+    grid-template-columns: 1fr;
+    row-gap: clamp(2rem, 6vh, 3.5rem);
+    align-items: start;
+  }
+
+  .tecverso__heading {
+    font-size: clamp(3rem, 15vw, 6rem);
+  }
+
+  .tecverso__aside {
+    padding-bottom: 0;
+    gap: var(--vh-space-5);
+  }
+
+  .tecverso__desc {
+    max-width: 46ch;
+  }
+
+  .tecverso__cta {
+    width: 100%;
+    justify-content: space-between;
+    padding-right: 0.9em;
+  }
+
+  .tecverso__cta-rule {
+    right: 0.9em;
+  }
+
+  .tecverso__ghost {
+    right: -10vw;
+    top: 2%;
+    font-size: clamp(8rem, 44vw, 14rem);
+    -webkit-text-stroke: 1px rgba(242, 240, 237, 0.045);
+  }
+}
+
+@media (max-width: 480px) {
+  .tecverso {
+    padding-top: clamp(3.5rem, 9vh, 5rem);
+  }
+
+  .tecverso__heading {
+    font-size: clamp(2.5rem, 14.5vw, 4rem);
+  }
+
+  .tecverso__overline {
+    flex-wrap: wrap;
+    row-gap: var(--vh-space-2);
+  }
+
+  .tecverso__overline-index {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .tecverso__tagline {
+    font-size: var(--vh-text-md);
+  }
+}

@@ -236,8 +236,8 @@ export default function PublicLeaderboard({ homeUrl }) {
       <header className="vlb__bar">
         <div className="vlb__bar-inner">
           <a href={homeUrl} className="vlb__brand">
-            <span className="vlb__brand-v">V</span>
-            <span className="vlb__brand-h">H</span>
+            <span className="vlb__brand-v">H</span>
+            <span className="vlb__brand-h">2P</span>
             <span className="vlb__brand-dot">.</span>
             <span className="vlb__brand-year">26</span>
           </a>
