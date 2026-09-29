@@ -43,6 +43,56 @@ import nodemailer from 'npm:nodemailer@6.9.16';
    as alt text. */
 const ATTENDANCE_QR_CID = 'attendance-qr';
 
+/* 8-byte PNG file signature (RFC 2083). */
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+/**
+ * Normalize the attendance-QR bytes into a real Node `Buffer` for the
+ * Nodemailer attachment, or return null when they are not a usable PNG.
+ * NEVER throws.
+ *
+ * WHY THIS EXISTS: the previous code gated the inline QR on
+ * `registration.qrImagePng instanceof Uint8Array`. `instanceof` compares
+ * prototypes, and the PNG is created in qr.js while this check runs in
+ * this module — a prototype mismatch anywhere on that path (Deno runtime
+ * vs. the npm: module graph) makes the test return false. It then failed
+ * SILENTLY and took the external-storage-URL branch, which Gmail/Outlook
+ * block by default, so the recipient saw only the <img> alt text. The
+ * duck-typed checks below are realm-independent, and the PNG signature
+ * check means only genuine image bytes can ever become an inline part.
+ */
+const toPngBuffer = (value) => {
+  try {
+    if (!value) return null;
+
+    /* ArrayBuffer.isView / isArrayBuffer read an internal slot instead of
+       a prototype, so they hold across realms. */
+    let bytes;
+    if (ArrayBuffer.isView(value)) {
+      /* honour byteOffset/byteLength: a Buffer slice must not drag the
+         whole backing ArrayBuffer in with it */
+      bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+    } else if (value instanceof ArrayBuffer) {
+      bytes = new Uint8Array(value);
+    } else if (Array.isArray(value)) {
+      bytes = Uint8Array.from(value);
+    } else {
+      return null;
+    }
+
+    if (bytes.byteLength < PNG_SIGNATURE.length) return null;
+    for (let i = 0; i < PNG_SIGNATURE.length; i += 1) {
+      if (bytes[i] !== PNG_SIGNATURE[i]) return null;
+    }
+
+    /* Buffer.from(typedArray) COPIES, so Nodemailer gets a plain Node
+       Buffer it fully owns, whatever produced the original bytes. */
+    return Buffer.from(bytes);
+  } catch {
+    return null;
+  }
+};
+
 /* ── SMTP configuration ──────────────────────────────────────────
    Host/port/credentials come from the Edge Function secrets with
    Gmail defaults, so the same code works against any provider by
@@ -130,16 +180,28 @@ const sendEmail = async ({ to, subject, text, html, attachments }) => {
 
     /* The verification email passes the attendance QR as an inline
        attachment (the payment screenshot is LINKED, not attached — see
-       paymentScreenshotLink). `cid` MUST be carried through: without it
-       the part is emitted as a plain attachment and the matching
-       <img src="cid:…"> resolves to nothing. */
+       paymentScreenshotLink). Every field that makes inline rendering
+       work MUST be carried through: `cid` ties the part to the matching
+       <img src="cid:…">, `contentType` tells the client it really is a
+       PNG, and `contentDisposition: 'inline'` keeps it inside the body
+       instead of an attachment chip. Dropping any of them is exactly
+       what makes Gmail fall back to the alt text. */
     if (attachments && attachments.length > 0) {
       mailOptions.attachments = attachments.map((attachment) => ({
         filename: attachment.filename,
-        content: attachment.content,
+        /* Normalized at this final boundary: whatever realm produced the
+           bytes, Nodemailer receives a genuine, non-empty Buffer. */
+        content: toPngBuffer(attachment.content) ?? attachment.content,
         contentType: attachment.contentType,
         cid: attachment.cid,
+        contentDisposition: attachment.contentDisposition ?? 'inline',
       }));
+      console.log(
+        '[EmailService] inline attachments:',
+        mailOptions.attachments.length,
+        '| cid:', mailOptions.attachments[0]?.cid ?? 'none',
+        '| bytes:', mailOptions.attachments[0]?.content?.length ?? 0
+      );
     }
 
     const info = await transporter.sendMail(mailOptions);
@@ -201,7 +263,7 @@ const sendVerificationEmail = async (registration) => {
   }
 
   const code = String(registration.registrationCode || '—');
-  const subject = `HACK2PITCH 2026 · REGISTRATION RECEIVED — ${registration.name}`;
+  const subject = `HACK2PITCH 2026 · BOOKING CONFIRMED — ${registration.name}`;
 
   /* ── Optional presentation data (real registration rows only).
      The template renders a section ONLY when the registration object
@@ -220,15 +282,24 @@ const sendVerificationEmail = async (registration) => {
     : null;
   /* PNG bytes from the SAME buildQrPng() call index.ts already makes for
      the storage upload (no second QR generator). Inlined as a cid part so
-     the recipient never has to fetch a remote image. */
-  const qrPng =
-    registration.qrImagePng instanceof Uint8Array &&
-    registration.qrImagePng.length > 0
-      ? Buffer.from(registration.qrImagePng)
-      : null;
+     the recipient never has to fetch a remote image. toPngBuffer()
+     validates the signature and copies the bytes into a real Buffer, so
+     this can never silently regress to the blocked external-image path. */
+  const qrPng = toPngBuffer(registration.qrImagePng);
   const scanUrl = has(registration.scanUrl)
     ? String(registration.scanUrl)
     : null;
+  /* Diagnostics only — byte length, presence flags and the CID. Never the
+     token, the scan URL, the storage object path or participant data. */
+  console.log(
+    '[EmailService] attendance QR:',
+    'qrImagePng present:', Boolean(registration.qrImagePng),
+    '| bytes:', registration.qrImagePng?.byteLength ?? registration.qrImagePng?.length ?? 0,
+    '| inline Buffer ready:', Boolean(qrPng),
+    '| storage fallback URL set:', Boolean(qrImageUrl),
+    '| scan link set:', Boolean(scanUrl),
+    '| cid:', ATTENDANCE_QR_CID
+  );
   const crew = Array.isArray(registration.crew)
     ? registration.crew.filter((m) => m && has(m.name))
     : [];
@@ -252,14 +323,15 @@ const sendVerificationEmail = async (registration) => {
     'HACK2PITCH 2026',
     VH_KICKER,
     '',
-    'REGISTRATION RECEIVED',
-    'Your registration for HACK2PITCH 2026 has been received successfully.',
+    'BOOKING CONFIRMED',
+    'Your registration for HACK2PITCH 2026 has been successfully verified.',
+    'Your spot is confirmed — we will see you at ' + eventVenue + '.',
     '',
-    'REGISTRATION DETAILS',
+    'BOOKING DETAILS',
     'TEAM NAME            ' + (registration.name || '—'),
     'REGISTRATION ID      ' + code,
     ...(teamSize ? ['TEAM SIZE            ' + teamSize + ' member(s)'] : []),
-    'PAYMENT STATUS       PAYMENT PROOF RECEIVED',
+    'PAYMENT STATUS       VERIFIED',
     '',
     'PARTICIPANTS',
     ...crew.map((member, index) => {
@@ -272,38 +344,41 @@ const sendVerificationEmail = async (registration) => {
       return em ? num + '   ' + head + '\n        ' + em : num + '   ' + head;
     }).filter(Boolean),
     '',
-    'EVENT DETAILS',
+    'SHOW DETAILS',
     'HACK2PITCH 2026 — 24-HOUR HACKATHON',
     'DATE              ' + eventDate,
     'VENUE             ' + eventVenue,
     '',
-    'ATTENDANCE',
-    'Scan this QR at the venue for attendance check-in.',
+    'YOUR ENTRY PASS',
+    'Your attendance pass is ready.',
+    'Present this QR code at the venue entrance for check-in.',
+    'SCAN AT VENUE ENTRY — keep this QR ready on your phone when you arrive.',
     ...(scanUrl ? ['SCAN LINK  ' + scanUrl] : []),
     '',
-    'Your payment proof will be verified by our team. Your registration will be confirmed after verification.',
-    'Please check your Spam/Junk folder if you do not see future confirmation emails in your inbox.',
+    "YOU'RE IN",
+    'Your registration has been verified and your place at HACK2PITCH 2026 is confirmed.',
+    VH_KICKER,
     '',
-    'WHATSAPP COMMUNITY',
-    'Join the official HACK2PITCH 2026 community to get important updates, reminders and announcements.',
+    'STAY CONNECTED',
+    'Join the official HACK2PITCH 2026 community for important event updates, announcements and reminders.',
     'https://chat.whatsapp.com/Ca6uEsJI88Y4Rf1Eq7EGNc',
     'All important event updates will be shared through the official group.',
     '',
     'HACK2PITCH 2026',
-    'FISAT HORIZON CLUB',
+    VH_KICKER,
   ].join('\n');
 
-  /* REGISTRATION DETAILS — label:value ledger rows; renders the fields
+  /* BOOKING DETAILS — label:value ledger rows; renders the fields
      that exist on the real registration only. The verification email is
      sent only after a payment is approved, so PAYMENT STATUS is the
-     fixed 'PAYMENT PROOF RECEIVED' outcome rather than per-row data. */
+     fixed 'VERIFIED' outcome rather than per-row data. */
   const detailRows = [
     { label: 'TEAM NAME', value: esc(registration.name) || '&mdash;', mono: false },
     { label: 'REGISTRATION ID', value: esc(code), mono: true },
     teamSize
       ? { label: 'TEAM SIZE', value: `${esc(teamSize)} member(s)`, mono: false }
       : null,
-    { label: 'PAYMENT STATUS', value: 'PAYMENT PROOF RECEIVED', mono: false },
+    { label: 'PAYMENT STATUS', value: 'VERIFIED', mono: false },
   ]
     .filter(Boolean)
     .map(
@@ -367,7 +442,7 @@ const sendVerificationEmail = async (registration) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="x-apple-disable-message-reformatting" />
-  <title>HACK2PITCH 2026 · Registration Received</title>
+  <title>HACK2PITCH 2026 · Booking Confirmed</title>
   <!--[if mso]>
   <style type="text/css">
     .shell { width: 640px !important; }
@@ -405,18 +480,18 @@ const sendVerificationEmail = async (registration) => {
                 </div>
                 <div style="margin-top:22px;height:3px;width:44px;background-color:${VH_RED};font-size:0;line-height:0;">&nbsp;</div>
                 <div style="margin-top:16px;font-family:Helvetica,Arial,sans-serif;font-size:24px;line-height:1.15;letter-spacing:-0.5px;font-weight:bold;color:${VH_WARM};">
-                  REGISTRATION&nbsp;RECEIVED
+                  BOOKING&nbsp;CONFIRMED
                 </div>
                 <div style="margin-top:10px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#9C9A92;word-break:break-word;overflow-wrap:break-word;">
-                  Your registration for HACK2PITCH&nbsp;2026 has been received successfully.
+                  Your registration for HACK2PITCH&nbsp;2026 has been successfully verified. Your spot is confirmed&nbsp;&mdash; we&rsquo;ll see you at ${esc(eventVenue)}.
                 </div>
               </td>
             </tr>
 
-            <!-- ── 2. REGISTRATION DETAILS ───────────────────────────── -->
+            <!-- ── 2. BOOKING DETAILS ──────────────────────────────── -->
             <tr>
               <td class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 12px 28px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">REGISTRATION&nbsp;DETAILS</div>
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">BOOKING&nbsp;DETAILS</div>
                 ${detailRows}
               </td>
             </tr>
@@ -439,15 +514,17 @@ const sendVerificationEmail = async (registration) => {
               <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
             </tr>` : ''}
 
-            <!-- ── 4. ATTENDANCE (only when QR/scan data is present) ── -->
+            <!-- ── 4. YOUR ENTRY PASS (only when QR/scan data is present) ─ -->
             ${attendanceContent ? `
             <tr>
               <td align="center" class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 22px 28px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">ATTENDANCE</div>
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">YOUR&nbsp;ENTRY&nbsp;PASS</div>
+                <div style="margin-top:10px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#D8D6CE;word-break:break-word;overflow-wrap:break-word;">Your attendance pass is ready. Present this QR code at the venue entrance for check-in.</div>
                 <div style="margin-top:16px;">
                   ${attendanceContent}
                 </div>
-                <div style="margin-top:14px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:#9C9A92;word-break:break-word;overflow-wrap:break-word;">SCAN&nbsp;THIS&nbsp;QR&nbsp;AT&nbsp;THE&nbsp;VENUE&nbsp;FOR&nbsp;ATTENDANCE</div>
+                <div style="margin-top:16px;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:3px;color:${VH_WARM};text-transform:uppercase;font-weight:bold;">SCAN&nbsp;AT&nbsp;VENUE&nbsp;ENTRY</div>
+                <div style="margin-top:8px;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;color:#9C9A92;word-break:break-word;overflow-wrap:break-word;">Keep this QR ready on your phone when you arrive at ${esc(eventVenue)}.</div>
               </td>
             </tr>
 
@@ -455,10 +532,10 @@ const sendVerificationEmail = async (registration) => {
               <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
             </tr>` : ''}
 
-            <!-- ── 5. EVENT DETAILS ──────────────────────────────────── -->
+            <!-- ── 5. SHOW DETAILS ───────────────────────────────────── -->
             <tr>
               <td class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 22px 28px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">EVENT&nbsp;DETAILS</div>
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">SHOW&nbsp;DETAILS</div>
                 <div style="margin-top:16px;font-family:Helvetica,Arial,sans-serif;font-size:18px;line-height:1.2;font-weight:bold;color:#FFFFFF;">HACK2PITCH&nbsp;2026</div>
                 <div style="margin-top:4px;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">24-HOUR&nbsp;HACKATHON</div>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:18px;">
@@ -481,15 +558,15 @@ const sendVerificationEmail = async (registration) => {
               <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
             </tr>
 
-            <!-- ── 5. NEXT STEP ───────────────────────────────────────── -->
+            <!-- ── 6. YOU'RE IN ────────────────────────────────────────── -->
             <tr>
-              <td class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 22px 28px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">NEXT&nbsp;STEP</div>
+              <td align="center" class="p30" style="background-color:${VH_CHARCOAL};border:1px solid #1F1F21;border-left:3px solid ${VH_RED};padding:24px 28px 22px 28px;">
+                <div style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">YOU&rsquo;RE&nbsp;IN</div>
                 <div style="margin-top:14px;font-family:Arial,sans-serif;font-size:14px;line-height:1.7;color:#D8D6CE;word-break:break-word;overflow-wrap:break-word;">
-                  Your payment proof will be verified by our team. Your registration will be confirmed after verification.
+                  Your registration has been verified and your place at HACK2PITCH&nbsp;2026 is confirmed.
                 </div>
-                <div style="margin-top:16px;background-color:#101012;border:1px solid #242427;padding:14px 16px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#9C9A92;word-break:break-word;overflow-wrap:break-word;">
-                  Please check your Spam/Junk folder if you do not see future confirmation emails in your inbox.
+                <div style="margin-top:16px;display:inline-block;background-color:#101012;border:1px solid #242427;padding:11px 18px;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:4px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">
+                  ${VH_KICKER}
                 </div>
               </td>
             </tr>
@@ -499,12 +576,12 @@ const sendVerificationEmail = async (registration) => {
               <td style="background-color:${VH_BLACK};font-size:0;line-height:0;height:12px;">&nbsp;</td>
             </tr>
 
-            <!-- ── 6. WHATSAPP COMMUNITY CTA (success only) ──────────── -->
+            <!-- ── 7. STAY CONNECTED (community CTA) ────────────────── -->
             <tr>
               <td style="background-color:${VH_BLACK};padding:34px 30px;">
-                <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">COMMUNITY&nbsp;ACCESS</div>
+                <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">STAY&nbsp;CONNECTED</div>
                 <div style="margin-top:10px;font-family:Helvetica,Arial,sans-serif;font-size:19px;line-height:1.3;font-weight:bold;color:${VH_WARM};">JOIN&nbsp;THE&nbsp;HACK2PITCH&nbsp;2026&nbsp;COMMUNITY</div>
-                <div style="margin-top:12px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#9C9A92;">Get important updates, reminders and announcements.</div>
+                <div style="margin-top:12px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#9C9A92;">Join the official HACK2PITCH 2026 community for important event updates, announcements and reminders.</div>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:20px;">
                   <tr>
                     <td align="left" class="btn-wrap">
@@ -527,11 +604,11 @@ const sendVerificationEmail = async (registration) => {
               </td>
             </tr>
 
-            <!-- ── 7. FOOTER ─────────────────────────────────────────── -->
+            <!-- ── 8. FOOTER ─────────────────────────────────────────── -->
             <tr>
               <td align="center" style="background-color:${VH_BLACK};border-top:1px solid #1C1C1E;padding:26px 30px;">
                 <div style="font-family:'Courier New',Courier,monospace;font-size:13px;letter-spacing:5px;color:${VH_WARM};font-weight:bold;">HACK2PITCH&nbsp;2026</div>
-                <div style="margin-top:6px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">FISAT&nbsp;HORIZON&nbsp;CLUB</div>
+                <div style="margin-top:6px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;color:${VH_RED};text-transform:uppercase;font-weight:bold;">${VH_KICKER}</div>
               </td>
             </tr>
 

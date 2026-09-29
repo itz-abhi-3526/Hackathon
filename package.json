@@ -35,5 +35,18 @@
     "oxlint": "^1.79.0",
     "playwright-core": "^1.63.0",
     "vite": "^8.2.2"
-  }
+  },
+  "description": "A cinematic single-page hackathon website with a full registration system, an email notification pipeline, and a private admin control center — all running on **React + Vite** with **Supabase** (Postgres, Auth, RLS) as the backend. No custom server.",
+  "main": "vite.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itz-abhi-3526/Hackathon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/itz-abhi-3526/Hackathon/issues"
+  },
+  "homepage": "https://github.com/itz-abhi-3526/Hackathon#readme"
 }

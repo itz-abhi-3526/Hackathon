@@ -5,7 +5,7 @@
 
      POST /functions/v1/send-registration-email
      Authorization: Bearer <admin session JWT>
-     { "teamId": "<uuid>", "action": "verify" | "reject" | "send_verification" | "send_rejection", "reason": "..." }
+     { "teamId": "<uuid>", "action": "verify" | "reject" | "send_verification" | "send_rejection" | "send_whatsapp", "reason": "..." }
 
    The function authenticates the caller (must be an admin via
    public.is_admin()), loads the team + its problem statement + ALL
@@ -30,6 +30,17 @@
                               write fails the response reports
                               `emailSent: true, statusUpdated: false` so
                               the UI never blindly retries (no dupes).
+     send_whatsapp          — the WhatsApp delivery channel for the
+                              approved `hack2pitch_registration_confirmed`
+                              template. Same gates (verified payment, lead
+                              phone from the participants row), same
+                              attachAttendanceQr() so the SAME QR bytes
+                              are reused, but an entirely separate code
+                              path with its own `whatsapp_*` tracking
+                              columns. Email and WhatsApp are never
+                              coupled: neither failure can affect the
+                              other, and neither can affect the
+                              registration or the payment state.
 
    All handled business outcomes return HTTP 200 with a structured body
    for reliable parsing on the browser side; 401/403 stay as HTTP errors.
@@ -40,6 +51,7 @@ import {
   sendVerificationEmail,
   sendRejectionEmail,
 } from './emailservice.js';
+import { sendWhatsappConfirmation } from './whatsappservice.js';
 import { buildQrPng } from './qr.js';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -117,6 +129,17 @@ async function attachAttendanceQr(supabase, team, registration) {
        still leaves the email its inline QR. */
     registration.qrImagePng = png;
 
+    /* Safe diagnostics only — byte length and shape, never the token,
+       the scan URL or any participant data. */
+    console.log(
+      '[send-registration-email] attendance QR built | bytes:',
+      png?.byteLength ?? png?.length ?? 0,
+      '| isByteView:',
+      ArrayBuffer.isView(png),
+      '| passed to mail layer:',
+      Boolean(registration.qrImagePng)
+    );
+
     const path = `${team.id}.png`;
     const { error: upErr } = await supabase.storage
       .from('attendance-qr')
@@ -158,8 +181,8 @@ Deno.serve(async (req) => {
     const action = body?.action ?? null;
 
     if (!teamId) return json({ error: 'teamId IS REQUIRED' }, 400);
-    if (action !== 'verify' && action !== 'reject' && action !== 'send_verification' && action !== 'send_rejection') {
-      return json({ error: 'action MUST BE "verify", "reject", "send_verification" OR "send_rejection"' }, 400);
+    if (action !== 'verify' && action !== 'reject' && action !== 'send_verification' && action !== 'send_rejection' && action !== 'send_whatsapp') {
+      return json({ error: 'action MUST BE "verify", "reject", "send_verification", "send_rejection" OR "send_whatsapp"' }, 400);
     }
 
     const token = bearerToken(req);
@@ -180,10 +203,13 @@ Deno.serve(async (req) => {
        (RLS-gated reads under the caller's identity — never invented).
        The row flagged `lead` is still the single verification/rejection
        recipient, matching the previous behaviour when no lead exists
-       (email resolves to '' → LEAD_EMAIL_MISSING). */
+       (email resolves to '' → LEAD_EMAIL_MISSING). `phone` is read here
+       for the WhatsApp channel ONLY — it is the authoritative lead
+       number, resolved server-side so the browser can never choose the
+       recipient. */
     const { data: participants, error: membersError } = await supabase
       .from('participants')
-      .select('full_name, email, role')
+      .select('full_name, email, role, phone')
       .eq('team_id', teamId)
       .order('role', { ascending: true });
 
@@ -197,6 +223,7 @@ Deno.serve(async (req) => {
         name: String(p.full_name ?? '').trim(),
         email: String(p.email ?? '').trim(),
         role: String(p.role ?? 'member').trim(),
+        phone: String(p.phone ?? '').trim(),
       }));
 
     const lead = crew.find((m) => m.role === 'lead');
@@ -209,6 +236,9 @@ Deno.serve(async (req) => {
       college: String(team.college ?? '').trim() || null,
       teamSize: crew.length > 0 ? crew.length : null,
       leadName: lead?.name ?? null,
+      /* Team lead's own number from the participants row — the sole
+         WhatsApp recipient. Never accepted from the request body. */
+      leadPhone: lead?.phone ?? '',
       crew,
       challenge:
         ps && String(ps.title ?? '').trim()
@@ -254,6 +284,16 @@ Deno.serve(async (req) => {
               lastSentTo: 'rejection_email_last_sent_to',
             },
       });
+    }
+
+    /* ── send_whatsapp: the WhatsApp delivery channel.
+       Fully independent of the email channel — its own action, its own
+       tracking columns, its own failure codes. It NEVER runs as part of
+       an email send and an email failure can never block it (and vice
+       versa). The same attachAttendanceQr() below produces the same
+       PNG bytes the email inlines. ── */
+    if (action === 'send_whatsapp') {
+      return await handleTrackedWhatsapp(supabase, team, registration);
     }
 
     const sent =
@@ -349,6 +389,97 @@ async function handleTrackedEmail(supabase, team, registration, spec) {
     emailSent: true,
     statusUpdated: true,
     sentTo: updated?.[c.lastSentTo] ?? email,
+    sentAt: updated?.[c.sentAt] ?? now,
+    sendCount: updated?.[c.sendCount] ?? sendCount,
+    teamId: team.id,
+  });
+}
+
+/* ── send_whatsapp implementation ──────────────────────────────────
+   Deliberately a sibling of handleTrackedEmail, not a branch inside it:
+   the two channels share only the auth gate, the team read and
+   attachAttendanceQr() (the one existing QR generator). Nothing here
+   can change the email code path, and the payment/registration state is
+   never written by this function. Tracking columns are written ONLY
+   after Meta accepts the message. */
+async function handleTrackedWhatsapp(supabase, team, registration) {
+  if ((team.payment_status ?? '') !== 'verified') {
+    return json({ ok: false, code: 'PAYMENT_NOT_VERIFIED', teamId: team.id });
+  }
+
+  /* Gate on the lead's number BEFORE any QR work, so an unresolvable
+     recipient costs nothing. The full E.164 normalization (and the
+     fail-loudly rules) live in whatsappservice.js. */
+  if (!String(registration.leadPhone ?? '').trim()) {
+    return json({ ok: false, code: 'LEAD_PHONE_MISSING', teamId: team.id });
+  }
+
+  /* The SAME attachAttendanceQr() the email path uses: one buildQrPng()
+     call, one scanUrl, one byte view handed to both channels. */
+  registration = await attachAttendanceQr(supabase, team, registration);
+
+  const result = await sendWhatsappConfirmation(registration);
+
+  const c = {
+    status: 'whatsapp_status',
+    sentAt: 'whatsapp_sent_at',
+    lastError: 'whatsapp_last_error',
+    sendCount: 'whatsapp_send_count',
+    lastSentTo: 'whatsapp_last_sent_to',
+  };
+
+  if (!result.ok) {
+    /* Meta failure — record the CODE only (never a Meta error body: it
+       can echo the recipient number). The admin sees FAILED with a
+       retry; nothing is ever re-sent automatically. */
+    const { error: updateErr } = await supabase
+      .from('teams')
+      .update({ [c.status]: 'failed', [c.lastError]: result.code })
+      .eq('id', team.id);
+    if (updateErr) {
+      console.error('[send-registration-email] whatsapp status write failed', updateErr);
+    }
+
+    return json({ ok: false, code: result.code, teamId: team.id });
+  }
+
+  /* Success — write tracking only now, so the UI can show SENT. */
+  const sendCount = Number(team[c.sendCount] ?? 0) + 1;
+  const now = new Date().toISOString();
+  const sentTo = result.to ?? '';
+
+  const { data: updated, error: updateErr } = await supabase
+    .from('teams')
+    .update({
+      [c.status]: 'sent',
+      [c.sentAt]: now,
+      [c.lastError]: null,
+      [c.sendCount]: sendCount,
+      [c.lastSentTo]: sentTo,
+    })
+    .eq('id', team.id)
+    .select(`${c.status}, ${c.sentAt}, ${c.sendCount}, ${c.lastSentTo}`)
+    .maybeSingle();
+
+  if (updateErr) {
+    /* Delivered but not recorded — the UI must NOT report a hard
+       failure, or an admin retry would send a duplicate. */
+    console.error('[send-registration-email] WHATSAPP SENT BUT STATUS UPDATE FAILED', updateErr);
+    return json({
+      ok: true,
+      whatsappSent: true,
+      statusUpdated: false,
+      sentTo,
+      sentAt: now,
+      teamId: team.id,
+    });
+  }
+
+  return json({
+    ok: true,
+    whatsappSent: true,
+    statusUpdated: true,
+    sentTo: updated?.[c.lastSentTo] ?? sentTo,
     sentAt: updated?.[c.sentAt] ?? now,
     sendCount: updated?.[c.sendCount] ?? sendCount,
     teamId: team.id,

@@ -7,8 +7,8 @@
    provided for every useful key.
    ═══════════════════════════════════════════════════════════════ */
 
-import { useCallback, useEffect, useState } from 'react';
-import { adminFetchTeamDetail, adminSetPaymentStatus, adminSendVerificationEmail, adminSendRejectionEmail } from '../services/adminData.js';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { adminFetchTeamDetail, adminSetPaymentStatus, adminSendVerificationEmail, adminSendRejectionEmail, adminSendWhatsappConfirmation } from '../services/adminData.js';
 import { TEAM_PAYMENT_STATUS } from '../../lib/schema.js';
 import { codeFor, dateLabel, feeLabel, foodLabel, problemLabel, roleLabel, roundLabel } from '../utils/format.js';
 import StatusBadge from './StatusBadge.jsx';
@@ -23,6 +23,23 @@ const EMAIL_MESSAGES = {
   LEAD_EMAIL_MISSING: 'Team leader email is missing.',
   INVALID_LEAD_EMAIL: 'The registered leader email is invalid.',
   EMAIL_SEND_FAILED: 'Failed to send email. Please try again.',
+};
+
+/* Backend codes for the WhatsApp confirmation channel → human text.
+   The function stores ONLY these codes (never a Meta error body, which
+   can echo the recipient number), so the same map renders the live
+   LAST ERROR field and a fresh failure toast. The Meta access token
+   never leaves the server and no raw API response is ever shown. */
+const WHATSAPP_MESSAGES = {
+  PAYMENT_NOT_VERIFIED: 'Payment must be verified before sending the WhatsApp confirmation.',
+  LEAD_PHONE_MISSING: 'The team leader has no phone number on file.',
+  LEAD_PHONE_INVALID: 'The team leader phone number is not a valid WhatsApp number.',
+  TEMPLATE_PARAMETER_MISSING: 'Registration data is incomplete — the lead name, team name and registration ID are all required.',
+  QR_IMAGE_MISSING: 'The attendance QR could not be built. Check the team record and try again.',
+  WHATSAPP_MEDIA_UPLOAD_FAILED: 'WhatsApp could not accept the attendance QR image. Please try again.',
+  WHATSAPP_SEND_FAILED: 'WhatsApp rejected the message. Please try again.',
+  WHATSAPP_ACCESS_TOKEN_MISSING: 'WhatsApp is not configured on the server. Ask the tech team to set the WhatsApp secret.',
+  WHATSAPP_PHONE_NUMBER_ID_MISSING: 'The WhatsApp sender is not configured on the server. Ask the tech team to set the WhatsApp secret.',
 };
 
 const STATUS_ORDER = Object.values(TEAM_PAYMENT_STATUS);
@@ -67,6 +84,11 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
   const [rejectReason, setRejectReason] = useState('');
   const [emailBusy, setEmailBusy] = useState(false);
   const [confirmResendEmail, setConfirmResendEmail] = useState(false);
+  const [whatsappBusy, setWhatsappBusy] = useState(false);
+  /* Ref lock, not just the disabled prop: state commits on the next
+     render, so two clicks inside the same frame could otherwise both
+     pass a whatsappBusy check and fire two WhatsApp messages. */
+  const whatsappLock = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -144,6 +166,42 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
     }
   }, [teamId, load, onChanged, push]);
 
+  /* WhatsApp confirmation — ALWAYS an explicit manual admin click.
+     Never chained to a payment change, never chained to an email send,
+     and never retried automatically. It posts only { teamId, action:
+     'send_whatsapp' } through the same authenticated invoke the email
+     buttons use; the backend resolves the lead's phone and the QR. */
+  const sendWhatsapp = useCallback(async () => {
+    if (!teamId || whatsappLock.current) return;
+    whatsappLock.current = true;
+    setWhatsappBusy(true);
+    try {
+      const result = await adminSendWhatsappConfirmation(teamId);
+      if (result?.ok) {
+        if (result.statusUpdated === false) {
+          push('MESSAGE SENT \u2014 STATUS NOT RECORDED ON SERVER. CHECK LOGS.', 'error');
+        } else {
+          push('VERIFICATION MESSAGE SENT ON WHATSAPP', 'success');
+        }
+        onChanged?.();
+        await load();
+      } else {
+        push(
+          WHATSAPP_MESSAGES[result?.code] ?? result?.error ?? 'FAILED TO SEND THE WHATSAPP MESSAGE',
+          'error'
+        );
+        /* Re-read so the section shows FAILED + the stored code, exactly
+           as the server recorded it. */
+        await load();
+      }
+    } catch (err) {
+      push(err?.message || 'FAILED TO SEND THE WHATSAPP MESSAGE', 'error');
+    } finally {
+      whatsappLock.current = false;
+      setWhatsappBusy(false);
+    }
+  }, [teamId, load, onChanged, push]);
+
   const team = detail?.team;
   const members = detail?.members ?? [];
   const lead = members.find((m) => m.role === 'lead');
@@ -168,6 +226,19 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
   const emailEligible =
     team?.paymentStatus === 'verified' || team?.paymentStatus === 'rejected';
   const sendVerb = emailKind === 'reject' ? 'SEND REJECTION EMAIL' : 'SEND VERIFICATION EMAIL';
+
+  /* WhatsApp channel — separate state, separate action, same styling.
+     Eligible only for a VERIFIED team: the confirmation mirrors the
+     verification email, so a pending/submitted/rejected team shows the
+     same locked note the email section uses. */
+  const whatsappEligible = team?.paymentStatus === 'verified';
+  const whatsappStatus = team?.whatsappStatus ?? 'pending';
+  const whatsappVerb =
+    whatsappStatus === 'sent'
+      ? 'RESEND VERIFICATION MESSAGE'
+      : whatsappStatus === 'failed'
+        ? 'RETRY VERIFICATION MESSAGE'
+        : 'SEND VERIFICATION MESSAGE';
 
   return (
     <div className="cpa-drawer" role="dialog" aria-modal="true" aria-label="Team details">
@@ -323,6 +394,55 @@ export default function TeamDetailsDrawer({ teamId, onClose, onChanged }) {
                           onClick={() => sendEmail(emailKind)}
                         >
                           {emailBusy ? 'SENDING…' : sendVerb}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section className="cpa-drawer__section">
+                <h4 className="cpa-drawer__section-title">WHATSAPP CONFIRMATION</h4>
+                <div className="cpa-drawer__email">
+                  {!whatsappEligible ? (
+                    <span className="cpa-muted-sm">
+                      VERIFY THE PAYMENT BEFORE SENDING THE WHATSAPP CONFIRMATION
+                    </span>
+                  ) : (
+                    <div className="cpa-kvs">
+                      {whatsappStatus === 'sent' ? (
+                        <>
+                          <KV label="MESSAGE STATUS" value="SENT ✓" />
+                          <KV
+                            label="SENT TO"
+                            value={team?.whatsappLastSentTo ?? '—'}
+                            copy={team?.whatsappLastSentTo ?? ''}
+                          />
+                          <KV label="SENT AT" value={dateLabel(team?.whatsappSentAt)} />
+                          <KV label="SEND COUNT" value={String(team?.whatsappSendCount ?? 0)} />
+                        </>
+                      ) : whatsappStatus === 'failed' ? (
+                        <>
+                          <KV label="MESSAGE STATUS" value="FAILED ✗" />
+                          {team?.whatsappLastError && (
+                            <KV
+                              label="LAST ERROR"
+                              value={WHATSAPP_MESSAGES[team.whatsappLastError] ?? team.whatsappLastError}
+                            />
+                          )}
+                          <KV label="SEND COUNT" value={String(team?.whatsappSendCount ?? 0)} />
+                        </>
+                      ) : (
+                        <KV label="MESSAGE STATUS" value="NOT SENT" />
+                      )}
+                      <div className="cpa-drawer__email-actions">
+                        <button
+                          type="button"
+                          className="cpa-btn cpa-btn--ok cpa-btn--sm"
+                          disabled={whatsappBusy || emailBusy}
+                          onClick={sendWhatsapp}
+                        >
+                          {whatsappBusy ? 'SENDING…' : whatsappVerb}
                         </button>
                       </div>
                     </div>
