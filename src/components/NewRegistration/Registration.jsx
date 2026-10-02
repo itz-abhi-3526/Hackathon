@@ -4,6 +4,7 @@ import { HACKATHON } from '../../data/index.js';
 import { PARTICIPANT_ROLE } from '../../lib/schema.js';
 import { isParticipantComplete, getRegistrationFee, startingRegistrationFee } from '../../services/registrationService.js';
 import useRegistration from '../../hooks/useRegistration.js';
+import { useCountdown } from '../../hooks/index.js';
 import PresenterLogos from '../PresenterLogos/PresenterLogos.jsx';
 import {
   ACCEPTED_PROOF_TYPES,
@@ -67,6 +68,17 @@ const inrLabel = (fee) => {
   return `\u20B9${n.toLocaleString('en-IN', { maximumFractionDigits: decimals })}`;
 };
 
+/* Time left in the active round, taken from the round's OWN ends_at — the
+   same window the database uses to close the phase, so no new schedule is
+   introduced here. Purely informational: it never gates availability, and
+   useCountdown already floors at zero, so a finished round reads
+   00:00:00 rather than going negative. Days are prefixed only when the
+   window is longer than a day, keeping the common case as HH:MM:SS. */
+const pad2 = (n) => String(n).padStart(2, '0');
+
+const roundTimeLabel = ({ days, hours, minutes, seconds }) =>
+  `${days > 0 ? `${days}D ` : ''}${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`;
+
 /* The fee is NEVER hardcoded on the form: it always comes from the
    active registration round, keyed by the SELECTED TEAM SIZE
    (fee_3_members / fee_4_members — 3- and 4-member teams only, legacy
@@ -78,9 +90,11 @@ const activeFee = (store) =>
   getRegistrationFee(store?.round, store?.team?.size);
 
 function RoundBanner({ round, hasSize }) {
-  const remaining = Math.max(Number(round?.remaining ?? 0), 0);
   const capacity = Number(round?.capacity ?? 0);
   const pct = capacity ? Math.min(100, (Number(round?.registered ?? 0) / capacity) * 100) : 0;
+  /* Informational only — the phase still ends when the database says so. */
+  const endsAt = round?.ends_at ?? round?.endsAt ?? null;
+  const timeLeft = useCountdown(endsAt);
   return (
     <div className="reg__round">
       <div className="reg__round-stats">
@@ -94,7 +108,7 @@ function RoundBanner({ round, hasSize }) {
           </span>
         )}
         <span className="reg__round-cap">
-          {capacity ? `${remaining} OF ${capacity} TEAM SLOTS AVAILABLE` : '\u00D7'}
+          TIME REMAINING {endsAt ? roundTimeLabel(timeLeft) : '\u2014'}
         </span>
       </div>
       <div className="reg__round-bar">
