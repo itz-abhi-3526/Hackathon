@@ -7,38 +7,56 @@ import Navigation from './components/NewNav/Navigation.jsx';
 import Cursor from './components/NewCursor/Cursor.jsx';
 import Hero from './components/NewHero/Hero.jsx';
 import Manifesto from './components/NewManifesto/Manifesto.jsx';
-import Problems from './components/NewProblems/Problems.jsx';
 import Experience from './components/NewExperience/Experience.jsx';
 import Countdown from './components/NewCountdown/Countdown.jsx';
 import TimelineSection from './components/NewTimeline/Timeline.jsx';
+import Tecverso from './components/NewTecverso/Tecverso.jsx';
 import Prizes from './components/NewPrizes/Prizes.jsx';
-import People from './components/NewPeople/People.jsx';
 import FAQ from './components/NewFAQ/FAQ.jsx';
 import FinalSequence from './components/NewFinalCTA/FinalSequence.jsx';
 import Registration from './components/NewRegistration/Registration.jsx';
 import AdminApp from './admin/AdminApp.jsx';
 import PublicLeaderboard from './components/PublicLeaderboard/PublicLeaderboard.jsx';
+import ReferralsPage from './components/Referrals/Referrals.jsx';
+import ReferralLeaderboard from './components/ReferralLeaderboard/ReferralLeaderboard.jsx';
 import useRegistrationStore from './store/registrationStore.js';
 
 /* The live scoreboard is reached at /leaderboard — the same SPA serves
-   it, mirroring how /admin is rewritten to the hash-routed admin app. */
+   it, mirroring how /admin is rewritten to the hash-routed admin app.
+   The referral signup page has its own route at /referrals and the
+   referral leaderboard sits at /referral-leaderboard. */
 const LEADERBOARD_PATH_RE = /^\/leaderboard(\/.*)?$/;
+const REFERRALS_PATH_RE = /^\/referrals(\/.*)?$/;
+const REFERRAL_LEADERBOARD_PATH_RE = /^\/referral-leaderboard(\/.*)?$/;
 
 function isLeaderboardPath() {
   return LEADERBOARD_PATH_RE.test(window.location.pathname);
 }
 
+function isReferralsPath() {
+  return REFERRALS_PATH_RE.test(window.location.pathname);
+}
+
+function isReferralLeaderboardPath() {
+  return REFERRAL_LEADERBOARD_PATH_RE.test(window.location.pathname);
+}
+
 function initialPhase() {
   if (window.location.hash.startsWith('#admin')) return 'admin';
   if (isLeaderboardPath()) return 'leaderboard';
+  if (isReferralLeaderboardPath()) return 'referral-leaderboard';
+  if (isReferralsPath()) return 'referrals';
   return 'landing';
 }
 
 export default function App() {
   const [phase, setPhase] = useState(initialPhase);
-  /* Skip the terminal boot when landing directly on the scoreboard so
-     the live board appears instantly on projector/mobile screens. */
-  const [booted, setBooted] = useState(() => !isLeaderboardPath());
+  /* Skip the terminal boot when landing directly on the scoreboard,
+     referral signup or referral leaderboard so the board/page appears
+     instantly. */
+  const [booted, setBooted] = useState(
+    () => isLeaderboardPath() || isReferralsPath() || isReferralLeaderboardPath()
+  );
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -78,6 +96,21 @@ export default function App() {
        session. The old session id, stored draft, and in-memory state are
        all cleared so a previous team's summary can never be rendered. */
     useRegistrationStore.getState().resetRegistration();
+
+    /* OPTIONAL referral prefill from the query string. The shared
+       referral links carry ?ref=H2P-XXXXXX; registration itself has no
+       URL route (it is a phase switch inside the SPA), so the ref is
+       read the moment the registration UI is entered and the query is
+       still present. Normalized to uppercase; the user can edit or clear
+       it, and the backend remains the sole authority. No redirect, no
+       route change — landing behaviour at /register?ref=… is untouched. */
+    const ref = String(new URLSearchParams(window.location.search).get('ref') ?? '')
+      .trim()
+      .toUpperCase();
+    if (ref) {
+      useRegistrationStore.getState().setReferralCode(ref);
+    }
+
     setPhase('registration');
     window.scrollTo(0, 0);
   }, []);
@@ -117,12 +150,10 @@ export default function App() {
               <main>
                 <Hero onRegister={enterRegistration} />
                 <Manifesto />
-                <Problems />
-                <Experience />
-                <Countdown />
-                <TimelineSection />
                 <Prizes />
-                <People />
+                <Experience />
+                <TimelineSection />
+                <Tecverso />
                 <FAQ />
                 <FinalSequence onRegister={enterRegistration} />
               </main>
@@ -162,6 +193,30 @@ export default function App() {
               transition={{ duration: 0.5 }}
             >
               <PublicLeaderboard homeUrl="/" />
+            </motion.div>
+          )}
+
+          {phase === 'referrals' && (
+            <motion.div
+              key="referrals"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <ReferralsPage homeUrl="/" />
+            </motion.div>
+          )}
+
+          {phase === 'referral-leaderboard' && (
+            <motion.div
+              key="referral-leaderboard"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <ReferralLeaderboard homeUrl="/" />
             </motion.div>
           )}
         </AnimatePresence>

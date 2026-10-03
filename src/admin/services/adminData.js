@@ -197,6 +197,14 @@ export function normalizeTeam(row) {
     rejectionEmailLastError: row.rejection_email_last_error ?? null,
     rejectionEmailSendCount: row.rejection_email_send_count ?? 0,
     rejectionEmailLastSentTo: row.rejection_email_last_sent_to ?? null,
+    /* WhatsApp confirmation channel. Already delivered by the '*' in
+       TEAM_EMBED (no query change); mapped here because normalizeTeam
+       is an explicit whitelist. */
+    whatsappStatus: row.whatsapp_status ?? 'pending',
+    whatsappSentAt: row.whatsapp_sent_at ?? null,
+    whatsappLastError: row.whatsapp_last_error ?? null,
+    whatsappSendCount: row.whatsapp_send_count ?? 0,
+    whatsappLastSentTo: row.whatsapp_last_sent_to ?? null,
   };
 }
 
@@ -610,6 +618,21 @@ export async function adminSendVerificationEmail(teamId) {
 
 export async function adminSendRejectionEmail(teamId) {
   return invokeSendEmail(teamId, 'send_rejection');
+}
+
+/* ── Send the WhatsApp confirmation (admin team drawer) ────────────
+   The same Edge Function, the same private invokeSendEmail() helper
+   (admin session verified first, admin JWT attached by the SDK, the
+   existing 401/403/unreachable error mapping) and therefore the same
+   authenticated client — no service-role key, no second client, no
+   Meta or WhatsApp secret in the browser.
+
+   The body carries ONLY { teamId, action }. The recipient phone is
+   never sent from here: the function resolves the team lead's number
+   server-side from the participants row and is the sole source of
+   truth for who gets the message. */
+export async function adminSendWhatsappConfirmation(teamId) {
+  return invokeSendEmail(teamId, 'send_whatsapp');
 }
 
 /* Filter option sources ────────────────────────────────────────── */

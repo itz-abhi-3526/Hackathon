@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { getActiveRegistrationRound, startingRegistrationFee } from '../../services/registrationService.js';
+import PresenterLogos from '../PresenterLogos/PresenterLogos.jsx';
 import './FinalCTA.css';
 
 export default function FinalCTA({ onRegister, progress }) {
@@ -124,7 +125,7 @@ export default function FinalCTA({ onRegister, progress }) {
         </motion.span>
 
         <motion.span className="finalcta__presenter" style={{ opacity: typeB }}>
-          PRESENTED BY FISAT HORIZON CLUB
+          <PresenterLogos className="finalcta__presenter-logos" vertical />
         </motion.span>
       </div>
 

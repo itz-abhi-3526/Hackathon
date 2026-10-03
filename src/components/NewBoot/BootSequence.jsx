@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { HACKATHON, TIMELINE } from '../../data/index.js';
 import { isSupabaseConfigured } from '../../lib/config.js';
 import { getSupabase } from '../../lib/supabase.js';
-import { T } from '../../lib/schema.js';
+import PresenterLogos from '../PresenterLogos/PresenterLogos.jsx';
 import './BootSequence.css';
 
 const ENV = import.meta.env.PROD ? 'PRODUCTION' : import.meta.env.DEV ? 'DEVELOPMENT' : 'LOCAL';
@@ -74,11 +74,8 @@ export default function BootSequence({ onComplete }) {
       }
       try {
         const supabase = getSupabase();
-        const out = await race(
-          supabase.from(T.PROBLEM_STATEMENTS).select('id', { count: 'exact', head: true }).limit(1),
-          1300
-        );
-        setDbStatus(out ? (out.error ? 'WARN' : 'OK') : 'WARN');
+        const out = await race(supabase.rpc('public_active_round'), 1300);
+        setDbStatus(out && !out.error ? 'OK' : 'WARN');
       } catch {
         setDbStatus('WARN');
       }
@@ -129,7 +126,7 @@ export default function BootSequence({ onComplete }) {
     { label: 'CHECKING EVENT CONFIG', status: 'OK' },
     { label: 'CONNECTING DATABASE', status: dbStatus },
     { label: 'VERIFYING REGISTRATION', status: isSupabaseConfigured() ? 'OK' : 'OFFLINE' },
-    { label: 'LOADING PROBLEM SETS', status: '[06] LOADED' },
+    { label: 'SYNCING EVENT DATA', status: 'OK' },
     { label: 'INITIALIZING TIMELINE', status: `[${String(TIMELINE.length).padStart(2, '0')}] PHASES` },
     { label: 'LOADING ASSETS', status: 'OK' },
     { label: 'MOUNTING INTERFACE', status: 'OK' },
@@ -350,7 +347,9 @@ export default function BootSequence({ onComplete }) {
           transition={{ duration: 0.5, delay: 0.5 }}
         >
           <span>{HACKATHON.name} {HACKATHON.edition}</span>
-          <span>{HACKATHON.presenter}</span>
+          <span className="boot__presenter">
+            <PresenterLogos className="boot__presenter-logos" />
+          </span>
           <span>ANGAMALY, INDIA</span>
         </motion.footer>
 

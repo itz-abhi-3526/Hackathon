@@ -48,8 +48,17 @@ export default function Cursor() {
     document.addEventListener('mouseenter', onEnter);
     document.addEventListener('mouseleave', onLeave);
 
+    /* The observer below re-scans on every childList mutation, and the
+       mouseenter handler itself mutates the cursor label — so without a
+       dedup guard each hover re-attached a fresh handler pair to every
+       link, and the handlers compounded on every pass. Bind each element
+       exactly once. */
+    const bound = new WeakSet();
+
     const addHoverListeners = () => {
       document.querySelectorAll('a, button, [role="button"], .vh-interactive').forEach((el) => {
+        if (bound.has(el)) return;
+        bound.add(el);
         el.addEventListener('mouseenter', () => {
           cursorRef.current?.classList.add('vh-cursor--active');
           const label = el.getAttribute('data-cursor');

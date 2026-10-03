@@ -1,0 +1,21 @@
+.presenter-logos {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1;
+  letter-spacing: normal;
+}
+
+.presenter-logos--vertical {
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.presenter-logos__logo {
+  display: block;
+  height: 38px;
+  width: auto;
+  max-width: none;
+  flex: 0 0 auto;
+  object-fit: contain;
+}

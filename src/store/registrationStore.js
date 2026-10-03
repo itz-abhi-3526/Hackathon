@@ -62,7 +62,7 @@ const EMPTY_PROOF = {
   uploadedAt: null,
 };
 
-const EMPTY_TEAM = { name: '', college: '', size: 2 };
+const EMPTY_TEAM = { name: '', college: '', size: 3 };
 
 const EMPTY_TEAM_SAVED = { name: '', problemStatementId: null };
 
@@ -74,19 +74,30 @@ const useRegistrationStore = create((set, get) => ({
   currentStep: 0,
   completedSteps: [],
 
-  team: { ...EMPTY_TEAM },
+team: { ...EMPTY_TEAM },
   /* True from the first explicit Step 02 (TEAM SIZE) selection. The
      sidebar/mobile TOTAL only becomes a real amount after a size is
      chosen — until then Step 01 stays price-neutral and shows
-     "SELECT TEAM SIZE" even though the store's default size is 2. */
+     "SELECT TEAM SIZE" even though the store's default size is 3. */
   teamSizeSelected: false,
-  players: [createEmptyPlayer(1), createEmptyPlayer(2)],
+  players: [createEmptyPlayer(1), createEmptyPlayer(2), createEmptyPlayer(3)],
   problemStatement: null,
 
   /* The persistent teams row this registration maps to. teamId is kept
      once the user leaves Step 01 so no duplicate team is ever created. */
   teamId: null,
   registrationCode: '',
+  /* Server-issued ownership secret for THIS team: it is returned once by
+     register_team when the team is created and is the only thing that can
+     authorize a later retry of the same registration_code. Kept beside
+     the code in the existing session draft — never displayed, logged or
+     placed in a URL. Empty means "no team owned yet". */
+  retryToken: '',
+  /* OPTIONAL referral code captured during registration (normalized to
+     trim + uppercase). Sent only when non-empty; the backend is the sole
+     authority over whether the code is valid and active. Never gates any
+     step — submission proceeds exactly as before when empty. */
+  referralCode: '',
   /* Snapshot of the last successfully-saved team row (name + problem). */
   teamSaved: { ...EMPTY_TEAM_SAVED },
 
@@ -110,7 +121,9 @@ const useRegistrationStore = create((set, get) => ({
     persisted: false,
   },
 
-  /* Public problem arena, loaded at boot from problem_statements. */
+  /* Problem selection is no longer part of registration — the official
+     challenges are revealed during the hackathon, so problemStatement
+     stays null and the legacy selection handlers below are dormant. */
   problems: [],
 
   /* Current active registration round (from public_active_round).
@@ -240,7 +253,7 @@ const useRegistrationStore = create((set, get) => ({
   })),
 
   dropTeamId: () => {
-    set({ teamId: null, registrationCode: '' });
+    set({ teamId: null, registrationCode: '', retryToken: '' });
     const s = get();
     writeSession(serialize(s.currentStep, s, s.team, s.players, s.problemStatement, s.payment));
   },
@@ -256,12 +269,22 @@ const useRegistrationStore = create((set, get) => ({
     writeSession(serialize(s.currentStep, s, s.team, s.players, s.problemStatement, s.payment));
   },
 
+  /* OPTIONAL referral code — normalized (trim → uppercase) on every
+     write so the stored value is always the exact code register_team
+     should see. Empty input stores ''. */
+  setReferralCode: (code) => {
+    const normalized = String(code ?? '').trim().toUpperCase();
+    set({ referralCode: normalized });
+    const s = get();
+    writeSession(serialize(s.currentStep, s, s.team, s.players, s.problemStatement, s.payment));
+  },
+
   /* Restore the wizard from the persisted teams/participants rows so a
      refresh finds every already-saved member filled in and linked. */
   applyServerState: ({ team, participants, problems }) => {
     const state = get();
     const rows = Array.isArray(participants) ? participants : [];
-    const size = Math.max(Number(state.team.size) || 2, rows.length);
+    const size = Math.max(Number(state.team.size) || 3, rows.length);
     const players = rows.map((r, i) => ({
       id: i + 1,
       name: r.full_name ?? '',
@@ -403,15 +426,26 @@ const useRegistrationStore = create((set, get) => ({
     loading: { ...state.loading, submitting: value },
   })),
 
-  finalizeSubmission: ({ registrationCode, paymentStatus, submittedAt, teamId, registrationFee }) => {
+  finalizeSubmission: ({ registrationCode, paymentStatus, submittedAt, teamId, registrationFee, retryToken }) => {
     const code = registrationCode || get().registrationCode || '';
+    /* The token is issued only by the response that CREATED the team, so
+       a retry response (which never re-issues it) keeps the one already
+       held in this session. */
+    const token = retryToken || get().retryToken || '';
     if (code) {
       /* mark the run as done so a refresh lands on the success state
          (form data is kept for the pass screen) */
-      writeSession({ ...readSession(), finished: true, step: 5 });
+      writeSession({
+        ...readSession(),
+        registrationCode: code,
+        retryToken: token,
+        finished: true,
+        step: 5,
+      });
     }
     set({
       registrationCode: code,
+      retryToken: token,
       paymentStatus: paymentStatus || 'submitted',
       submittedAt: submittedAt || new Date().toISOString(),
       registrationFee:
@@ -443,9 +477,11 @@ const useRegistrationStore = create((set, get) => ({
     }
 
     const team = { ...EMPTY_TEAM, ...(session.team ?? {}) };
+    const rawSize = Number(team.size);
+    team.size = Number.isInteger(rawSize) && rawSize >= 3 && rawSize <= 4 ? rawSize : 3;
     let players = Array.isArray(session.players)
       ? session.players
-      : [createEmptyPlayer(1), createEmptyPlayer(2)];
+      : [createEmptyPlayer(1), createEmptyPlayer(2), createEmptyPlayer(3)];
     if (!players.some((p) => p.role === PARTICIPANT_ROLE.LEAD) && players.length) {
       players = players.map((p, i) => ({ ...p, role: i === 0 ? PARTICIPANT_ROLE.LEAD : p.role }));
     }
@@ -483,6 +519,8 @@ const useRegistrationStore = create((set, get) => ({
       payment,
       teamId: session.teamId ?? null,
       registrationCode: session.registrationCode ?? '',
+      retryToken: typeof session.retryToken === 'string' ? session.retryToken : '',
+      referralCode: String(session.referralCode ?? '').trim().toUpperCase(),
       /* A stored session that reached Step 02+ has already had its team
          size fixed — treat that as "selected" so a refresh keeps showing
          the chosen amount instead of reverting to "SELECT TEAM SIZE". */
@@ -517,10 +555,12 @@ const useRegistrationStore = create((set, get) => ({
       completedSteps: [],
       team: { ...EMPTY_TEAM },
       teamSizeSelected: false,
-      players: [createEmptyPlayer(1), createEmptyPlayer(2)],
+      players: [createEmptyPlayer(1), createEmptyPlayer(2), createEmptyPlayer(3)],
       problemStatement: null,
       teamId: null,
       registrationCode: '',
+      retryToken: '',
+      referralCode: '',
       teamSaved: { ...EMPTY_TEAM_SAVED },
       round: null,
       payment: {
@@ -554,19 +594,17 @@ const useRegistrationStore = create((set, get) => ({
       case 0:
         return (
           String(state.team.name ?? '').trim() !== '' &&
-          String(state.team.college ?? '').trim() !== '' &&
-          state.problemStatement !== null
+          String(state.team.college ?? '').trim() !== ''
         );
       case 1:
-        return state.team.size >= 2 && state.team.size <= 4;
+        return state.teamSizeSelected && state.team.size >= 3 && state.team.size <= 4;
       case 2:
-        /* Step 03 (crew passes) is gated ONLY on team + track + size +
-           every participant being complete + exactly one lead.
-           Payment is never consulted here — it only matters on the
-           final review/submit. */
+        /* Step 03 (crew passes) is gated ONLY on team + size + every
+           participant being complete + exactly one lead. Payment is
+           never consulted here — it only matters on the final
+           review/submit. */
         return validateParticipants({
           team: state.team,
-          problemStatement: state.problemStatement,
           players: state.players,
         }).length === 0;
       case 3:
@@ -574,7 +612,6 @@ const useRegistrationStore = create((set, get) => ({
       case 4:
         return validateEntry({
           team: state.team,
-          problemStatement: state.problemStatement,
           players: state.players,
           payment: state.payment,
         }).length === 0;
@@ -590,6 +627,8 @@ function serialize(step, state, team, players, problemStatement, payment) {
     step,
     teamId: state?.teamId ?? null,
     registrationCode: state?.registrationCode ?? '',
+    retryToken: state?.retryToken ?? '',
+    referralCode: String(state?.referralCode ?? '').trim().toUpperCase(),
     teamSizeSelected: Boolean(state?.teamSizeSelected),
     registrationFee:
       state?.registrationFee !== undefined && state?.registrationFee !== null

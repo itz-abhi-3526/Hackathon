@@ -2,12 +2,13 @@
    HACK2PITCH 2026 — Single Supabase clients
    The public publisher key only. Two clients:
 
-     getSupabase()        — anonymous flow (registration): RLS grants
-                            SELECT on problem_statements and anonymous
-                            INSERT on teams / participants.
+     getSupabase()        — anonymous flow (registration): the ONLY public
+                            surface is the register_team RPC. No anonymous
+                            table reads exist — problem_statements is
+                            private until the hackathon.
      getAdminSupabase()   — admin interface: uses an authenticated
-                            Supabase Auth session so the RLS "authentic­
-                            ated" SELECT/UPDATE policies apply.
+                            Supabase Auth session so the RLS "authenti­
+                            cated admin" SELECT/UPDATE policies apply.
 
    Both are created lazily so the landing page never crashes when env
    vars are absent — the registration/admin screens surface config
