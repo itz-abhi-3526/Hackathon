@@ -304,8 +304,8 @@ function StepCrewSize({ store }) {
 
   const sizes = useMemo(() => {
     const labels = {
-      3: ['TRIO', 'Three minds, infinite angles (475/person)'],
-      4: ['SQUAD', 'Full force, no limits (475/person)'],
+      3: ['TRIO', 'Three minds, infinite angles (549/person)'],
+      4: ['SQUAD', 'Full force, no limits (549/person)'],
     };
     const out = [];
     for (let n = min; n <= max; n++) {
