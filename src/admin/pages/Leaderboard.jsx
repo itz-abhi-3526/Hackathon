@@ -159,7 +159,7 @@ export default function Leaderboard() {
     confirmThen({
       title: 'UPDATE MAIN LEADERBOARD?',
       message:
-        'Publishes every judged team\'s CUMULATIVE total (Round 1 + Round 2 + Final) onto the public scoreboard. This is the ONLY way the public board changes.',
+        'Publishes the CUMULATIVE total (Round 1 + Round 2 + Final) of the ACTIVE teams only — those still qualified (top 20 after the Round 2 cut, top 8 after the Final cut) — onto the public scoreboard. Previously published teams that have been eliminated are removed. This is the ONLY way the public board changes.',
       confirmLabel: 'UPDATE MAIN LEADERBOARD',
       key: 'sync:main',
       action: () =>

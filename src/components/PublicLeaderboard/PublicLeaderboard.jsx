@@ -1,25 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPublicLeaderboard } from '../../services/leaderboardService.js';
-import { getSupabase } from '../../lib/supabase.js';
-import {
-  rankEntries,
-  diffScoreChanges,
-  realtimeStateFor,
-  connectionLabel,
-} from './leaderboardLive.js';
+import { rankEntries } from './leaderboardLive.js';
 import './PublicLeaderboard.css';
 
 const EASE = [0.16, 1, 0.3, 1];
 
-/* Silent poll kept as a safety fallback when Realtime is disabled on
-   the leaderboard table or during prolonged channel outages. */
+/* Poll keeps the board fresh. Scores stay server-side (anon has no read
+   on leaderboard.score), so the public board shows rank + team name only. */
 const REFRESH_MS = 5000;
-
-/* How long a score-change flash stays visible before it fades. */
-const HIGHLIGHT_MS = 2600;
-
-const REALTIME_CHANNEL = 'voidhack-public-leaderboard';
 
 function RankBadge({ rank }) {
   return (
@@ -31,29 +20,15 @@ function RankBadge({ rank }) {
 
 function LeaderRow({ entry, index }) {
   const podium = index < 3;
-  const { change } = entry;
-  const trend = change ? (change.to > change.from ? 'up' : 'down') : null;
 
   return (
     <li
-      className={`vlb-row${podium ? ` vlb-row--${String(entry.rank).padStart(2, '0')} vlb-row--podium` : ''}${trend ? ` vlb-row--${trend}` : ''}`}
+      className={`vlb-row${podium ? ` vlb-row--${String(entry.rank).padStart(2, '0')} vlb-row--podium` : ''}`}
     >
       <RankBadge rank={entry.rank} />
 
       <span className="vlb-name" title={entry.teamName}>
         {entry.teamName}
-      </span>
-
-      <span className={`vlb-score${trend ? ` vlb-score--${trend}` : ''}`} aria-label={`${entry.teamName}, ${entry.score} points`}>
-        <span className="vlb-score__num">
-          {String(entry.score).padStart(3, '0')}
-        </span>
-
-        {trend && (
-          <span className={`vlb-delta vlb-delta--${trend}`} aria-hidden="true">
-            {trend === 'up' ? '▲' : '▼'} {Math.abs(change.to - change.from)}
-          </span>
-        )}
       </span>
     </li>
   );
@@ -67,7 +42,6 @@ function BoardSkeleton({ count = 6 }) {
         <li key={i} className="vlb-row vlb-row--skeleton">
           <span className="vlb-skeleton vlb-skeleton--rank" />
           <span className="vlb-skeleton vlb-skeleton--name" />
-          <span className="vlb-skeleton vlb-skeleton--score" />
         </li>
       ))}
     </ol>
@@ -105,39 +79,10 @@ export default function PublicLeaderboard({ homeUrl }) {
   const [offline, setOffline] = useState(() =>
     typeof navigator === 'undefined' ? false : !navigator.onLine
   );
-  const [rtState, setRtState] = useState('syncing');
-  const [highlights, setHighlights] = useState(() => new Map());
 
   /* Refs */
-  const prevEntriesRef = useRef([]);
-  const highlightTimersRef = useRef(new Set());
-  const channelRef = useRef(null);
   const disposedRef = useRef(false);
   const seqRef = useRef(0);
-
-  const postHighlights = useCallback((changes) => {
-    setHighlights((cur) => {
-      let next = null;
-      for (const c of changes) {
-        if (!next && cur.get(c.teamName)?.to === c.to) continue;
-        next = next ?? new Map(cur);
-        next.set(c.teamName, c);
-      }
-      return next ?? cur;
-    });
-    for (const c of changes) {
-      const id = setTimeout(() => {
-        highlightTimersRef.current.delete(id);
-        setHighlights((cur) => {
-          if (cur.get(c.teamName)?.to !== c.to) return cur;
-          const next = new Map(cur);
-          next.delete(c.teamName);
-          return next;
-        });
-      }, HIGHLIGHT_MS);
-      highlightTimersRef.current.add(id);
-    }
-  }, []);
 
   const load = useCallback(async (silent = false) => {
     if (!silent) {
@@ -148,9 +93,6 @@ export default function PublicLeaderboard({ homeUrl }) {
     try {
       const rows = await getPublicLeaderboard();
       if (token !== seqRef.current || disposedRef.current) return;
-      const changes = diffScoreChanges(prevEntriesRef.current, rows);
-      prevEntriesRef.current = rows;
-      if (changes.length) postHighlights(changes);
       setEntries(rows);
       setLoaded(true);
       setError('');
@@ -161,35 +103,15 @@ export default function PublicLeaderboard({ homeUrl }) {
       setLoaded(true);
       setLoading(false);
     }
-  }, [postHighlights]);
+  }, []);
 
-  /* Mount: initial fetch, Supabase Realtime subscription, and network
-     awareness.  Channel is cleaned up on unmount; the disposedRef flag
-     suppresses stale async updates after navigation away. */
+  /* Mount: initial fetch, network awareness, and a silent poll. The
+     disposedRef flag suppresses stale async updates after navigation
+     away. */
   useEffect(() => {
     disposedRef.current = false;
-    const timers = highlightTimersRef.current;
     load(true);
 
-    /* Realtime subscription — single channel, no duplicates. */
-    const supabase = getSupabase();
-    if (channelRef.current) supabase.removeChannel(channelRef.current);
-
-    const channel = supabase
-      .channel(REALTIME_CHANNEL)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'leaderboard' }, () => {
-        if (!disposedRef.current) load(true);
-      })
-      .subscribe((status) => {
-        if (disposedRef.current) return;
-        setRtState((prev) => {
-          const next = realtimeStateFor(status);
-          return next === prev ? prev : next;
-        });
-      });
-    channelRef.current = channel;
-
-    /* Network online/offline awareness. */
     const onOffline = () => setOffline(true);
     const onOnline = () => {
       setOffline(false);
@@ -198,38 +120,24 @@ export default function PublicLeaderboard({ homeUrl }) {
     window.addEventListener('offline', onOffline);
     window.addEventListener('online', onOnline);
 
+    const id = setInterval(() => {
+      if (!disposedRef.current) load(true);
+    }, REFRESH_MS);
+
     return () => {
       disposedRef.current = true;
       window.removeEventListener('offline', onOffline);
       window.removeEventListener('online', onOnline);
-      timers.forEach(clearTimeout);
-      timers.clear();
-      supabase.removeChannel(channel);
-      channelRef.current = null;
+      clearInterval(id);
     };
   }, [load]);
 
-  /* Silent poll remains as a fallback when Realtime is disabled on the
-     leaderboard table or during prolonged channel outages. */
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (!offline) load(true);
-    }, REFRESH_MS);
-    return () => clearInterval(id);
-  }, [offline, load]);
-
-  const rows = useMemo(
-    () => rankEntries(entries).map((e) => ({ ...e, change: highlights.get(e.teamName) ?? null })),
-    [entries, highlights]
-  );
+  const rows = useMemo(() => rankEntries(entries), [entries]);
 
   const showBoard  = !loading && !error && !offline && rows.length > 0;
   const showEmpty  = loaded && !loading && !error && !offline && rows.length === 0;
   const showError  = !loading && error && rows.length === 0;
   const showOffline = offline && rows.length === 0;
-
-  const connLabel = connectionLabel(rtState, offline);
-  const connKind  = offline ? 'off' : rtState === 'connected' ? 'on' : rtState === 'degraded' ? 'warn' : 'sync';
 
   return (
     <div className="vlb">
@@ -243,14 +151,6 @@ export default function PublicLeaderboard({ homeUrl }) {
           </a>
 
           <div className="vlb__bar-right">
-            <span
-              className={`vlb__live vlb__live--${connKind}`}
-              role="status"
-              aria-live="polite"
-            >
-              {connKind === 'on' && <span className="vlb__live-dot" aria-hidden="true" />}
-              {connLabel}
-            </span>
             <span className="vlb__bar-count">{String(rows.length).padStart(2, '0')} TEAMS</span>
             <a className="vlb__back" href={homeUrl}>
               <span aria-hidden="true">←</span> HOME
@@ -284,7 +184,7 @@ export default function PublicLeaderboard({ homeUrl }) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, ease: EASE, delay: 0.12 }}
           >
-            LIVE STANDINGS — RANKED BY TOTAL SCORE, HIGHEST FIRST.
+            OFFICIAL STANDINGS — RANKED HIGHEST FIRST.
           </motion.p>
         </header>
 
@@ -302,7 +202,7 @@ export default function PublicLeaderboard({ homeUrl }) {
                   <LeaderRow key={entry.teamName || `${i}`} entry={entry} index={i} />
                 ))}
               </ol>
-              <p className="vlb-foot-note">SCORES SYNC AUTOMATICALLY — NO REFRESH REQUIRED.</p>
+              <p className="vlb-foot-note">STANDINGS UPDATE AUTOMATICALLY — NO REFRESH REQUIRED.</p>
             </motion.div>
           )}
 
@@ -314,7 +214,7 @@ export default function PublicLeaderboard({ homeUrl }) {
             <StatePanel
               key="empty"
               kind="empty"
-              message="NO TEAMS ARE ON THE BOARD YET. SCORES APPEAR HERE AS SOON AS THE FIRST RANKING GOES LIVE."
+              message="NO TEAMS ARE ON THE BOARD YET. RANKINGS APPEAR HERE AS SOON AS THE FIRST SCORES GO LIVE."
             />
           )}
 
