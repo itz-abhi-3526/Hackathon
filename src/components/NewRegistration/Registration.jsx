@@ -304,8 +304,13 @@ function StepCrewSize({ store }) {
 
   const sizes = useMemo(() => {
     const labels = {
+<<<<<<< HEAD
       3: ['TRIO', 'Three minds, infinite angles (549/person)'],
       4: ['SQUAD', 'Full force, no limits (549/person)'],
+=======
+      3: ['TRIO', <>Three minds, infinite angles (<s>₹549</s> <strong>₹449 per person</strong>)</>],
+      4: ['SQUAD', <>Full force, no limits (<s>₹475</s> <strong>₹449 per person</strong>)</>],
+>>>>>>> 5b0d4ec (Update rush hour registration pricing)
     };
     const out = [];
     for (let n = min; n <= max; n++) {
