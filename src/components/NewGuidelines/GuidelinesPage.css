@@ -1,0 +1,404 @@
+/* ═══════════════════════════════════════════════════════════════
+   HACK2PITCH 2026 — EVENT GUIDELINES (/guidelines)
+   A premium event handbook: strong typographic hierarchy, numbered
+   sections, thin separators, a readable schedule, and red used only
+   for numbers, accents and key labels. Every selector is scoped to
+   .guide so nothing leaks into the rest of the site.
+   ═══════════════════════════════════════════════════════════════ */
+
+.guide {
+  position: relative;
+  min-height: 100vh;
+  background: var(--vh-black);
+  color: var(--vh-white);
+  overflow-x: clip;
+}
+
+/* ── Oversized ghost mark behind the masthead ── */
+.guide__mark {
+  position: absolute;
+  top: clamp(3rem, 9vh, 7rem);
+  right: calc(-1 * var(--vh-gutter));
+  z-index: 0;
+  font-family: var(--vh-font-display);
+  font-size: clamp(8rem, 26vw, 22rem);
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(242, 240, 237, 0.05);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── TOP BAR ── */
+.guide__bar {
+  position: relative;
+  z-index: 2;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.guide__bar-inner {
+  max-width: var(--vh-max-width);
+  margin: 0 auto;
+  padding: 0 var(--vh-gutter);
+  min-height: clamp(3.5rem, 6vh, 5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vh-space-4);
+}
+
+.guide__brand {
+  font-family: var(--vh-font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+  color: var(--vh-white);
+  transition: opacity 0.3s;
+}
+
+.guide__brand span {
+  color: var(--vh-red);
+}
+
+.guide__brand:hover {
+  opacity: 0.8;
+}
+
+.guide__bar-back,
+.guide__masthead-back,
+.guide__end-back {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.2em;
+  color: var(--vh-white-dim);
+  transition: color 0.3s;
+}
+
+.guide__bar-back span,
+.guide__masthead-back span,
+.guide__end-back span {
+  color: var(--vh-red);
+}
+
+.guide__bar-back:hover,
+.guide__masthead-back:hover,
+.guide__end-back:hover {
+  color: var(--vh-white);
+}
+
+/* ── MAIN COLUMN ── */
+.guide__main {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vh, 6rem) var(--vh-gutter) clamp(4rem, 10vh, 8rem);
+}
+
+/* ── MASTHEAD ── */
+.guide__masthead {
+  position: relative;
+  padding-bottom: clamp(2.5rem, 6vh, 4rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.guide__org {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.22em;
+  line-height: 1.9;
+  color: var(--vh-white);
+}
+
+.guide__org-sub {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.22em;
+  line-height: 1.9;
+  color: var(--vh-white-dim);
+  margin-bottom: var(--vh-space-6);
+}
+
+.guide__edition {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.34em;
+  color: var(--vh-red);
+  margin-bottom: var(--vh-space-3);
+}
+
+.guide__title {
+  margin: 0;
+  font-family: var(--vh-font-display);
+  font-size: clamp(3rem, 11vw, 8.5rem);
+  line-height: 0.84;
+  letter-spacing: 0.01em;
+  color: var(--vh-white);
+}
+
+.guide__dates {
+  margin-top: var(--vh-space-5);
+  font-family: var(--vh-font-display);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  letter-spacing: 0.14em;
+  color: var(--vh-white-dim);
+}
+
+.guide__masthead-back {
+  display: inline-block;
+  margin-top: var(--vh-space-6);
+}
+
+/* ── SECTION ── */
+.guide__section {
+  padding: clamp(2.5rem, 6vh, 4.5rem) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  scroll-margin-top: clamp(1.5rem, 5vh, 3rem);
+}
+
+.guide__section-head {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  margin-bottom: clamp(1.75rem, 4vh, 2.75rem);
+}
+
+.guide__section-num {
+  font-family: var(--vh-font-display);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  line-height: 0.8;
+  color: var(--vh-red);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.guide__section-title {
+  margin: 0;
+  font-family: var(--vh-font-display);
+  font-size: clamp(1.75rem, 5vw, 3.25rem);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  color: var(--vh-white);
+  white-space: nowrap;
+}
+
+.guide__section-rule {
+  flex: 1;
+  height: 1px;
+  min-width: 1.5rem;
+  background: linear-gradient(
+    90deg,
+    rgba(232, 22, 5, 0.5),
+    rgba(255, 255, 255, 0.06) 70%
+  );
+  align-self: center;
+}
+
+/* ── LISTS (sections 01) ── */
+.guide__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-4);
+}
+
+.guide__list-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--vh-space-4);
+  align-items: start;
+}
+
+.guide__list-mark {
+  width: 10px;
+  height: 1px;
+  background: var(--vh-red);
+  margin-top: 0.85em;
+}
+
+.guide__list-text {
+  max-width: 78ch;
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-md);
+  line-height: 1.75;
+  color: var(--vh-white-dim);
+}
+
+.guide__list-accent {
+  color: var(--vh-white);
+  font-weight: 600;
+}
+
+/* ── NUMBERED POINTS (sections 03 & 04) ── */
+.guide__points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.guide__point {
+  display: grid;
+  grid-template-columns: clamp(2.25rem, 5vw, 3.25rem) minmax(0, 1fr);
+  column-gap: clamp(1rem, 2.5vw, 2rem);
+  padding: var(--vh-space-4) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.guide__point:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.guide__point-index {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.14em;
+  color: var(--vh-red);
+  padding-top: 0.45em;
+}
+
+.guide__point-text {
+  max-width: 80ch;
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-md);
+  line-height: 1.75;
+  color: var(--vh-white-dim);
+}
+
+/* ── SCHEDULE (section 02) ── */
+.guide__schedule {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.75rem, 4vw, 3rem);
+}
+
+.guide__schedule-day {
+  min-width: 0;
+}
+
+.guide__schedule-day-title {
+  margin: 0 0 var(--vh-space-4);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.28em;
+  color: var(--vh-red);
+}
+
+.guide__schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.guide__schedule-time-head,
+.guide__schedule-activity-head {
+  font-family: var(--vh-font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  font-weight: 500;
+  text-align: left;
+  color: var(--vh-white-faint);
+  padding: 0 0 var(--vh-space-2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.guide__schedule-time-head,
+.guide__schedule-time {
+  width: 42%;
+}
+
+.guide__schedule-time,
+.guide__schedule-activity {
+  padding: var(--vh-space-3) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.guide__schedule-time {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.04em;
+  color: var(--vh-white);
+  white-space: nowrap;
+  padding-right: var(--vh-space-4);
+}
+
+.guide__schedule-activity {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-sm);
+  line-height: 1.5;
+  color: var(--vh-white-dim);
+}
+
+/* ── END ── */
+.guide__end {
+  padding-top: clamp(3rem, 8vh, 5rem);
+  text-align: center;
+}
+
+.guide__end-name {
+  font-family: var(--vh-font-display);
+  font-size: clamp(2.25rem, 7vw, 5rem);
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  color: var(--vh-white);
+}
+
+.guide__end-tagline {
+  margin-top: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-sm);
+  letter-spacing: 0.34em;
+  color: var(--vh-red);
+}
+
+.guide__end-back {
+  display: inline-block;
+  margin-top: var(--vh-space-7);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .guide__schedule {
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 6vh, 3rem);
+  }
+
+  .guide__section-title {
+    white-space: normal;
+  }
+
+  .guide__title {
+    font-size: clamp(2.75rem, 14vw, 5rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .guide__section-head {
+    gap: var(--vh-space-3);
+  }
+
+  .guide__point {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    column-gap: var(--vh-space-3);
+  }
+
+  .guide__list-text,
+  .guide__point-text {
+    font-size: var(--vh-text-base);
+  }
+
+  .guide__schedule-time {
+    white-space: normal;
+  }
+}

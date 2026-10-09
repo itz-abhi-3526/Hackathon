@@ -10,6 +10,8 @@ import Manifesto from './components/NewManifesto/Manifesto.jsx';
 import Experience from './components/NewExperience/Experience.jsx';
 import Countdown from './components/NewCountdown/Countdown.jsx';
 import TimelineSection from './components/NewTimeline/Timeline.jsx';
+import GuidelinesPreview from './components/NewGuidelines/GuidelinesPreview.jsx';
+import GuidelinesPage from './components/NewGuidelines/GuidelinesPage.jsx';
 import Tecverso from './components/NewTecverso/Tecverso.jsx';
 import Prizes from './components/NewPrizes/Prizes.jsx';
 import FAQ from './components/NewFAQ/FAQ.jsx';
@@ -28,9 +30,14 @@ import useRegistrationStore from './store/registrationStore.js';
 const LEADERBOARD_PATH_RE = /^\/leaderboard(\/.*)?$/;
 const REFERRALS_PATH_RE = /^\/referrals(\/.*)?$/;
 const REFERRAL_LEADERBOARD_PATH_RE = /^\/referral-leaderboard(\/.*)?$/;
+const GUIDELINES_PATH_RE = /^\/guidelines(\/.*)?$/;
 
 function isLeaderboardPath() {
   return LEADERBOARD_PATH_RE.test(window.location.pathname);
+}
+
+function isGuidelinesPath() {
+  return GUIDELINES_PATH_RE.test(window.location.pathname);
 }
 
 function isReferralsPath() {
@@ -46,6 +53,7 @@ function initialPhase() {
   if (isLeaderboardPath()) return 'leaderboard';
   if (isReferralLeaderboardPath()) return 'referral-leaderboard';
   if (isReferralsPath()) return 'referrals';
+  if (isGuidelinesPath()) return 'guidelines';
   return 'landing';
 }
 
@@ -55,7 +63,11 @@ export default function App() {
      referral signup or referral leaderboard so the board/page appears
      instantly. */
   const [booted, setBooted] = useState(
-    () => isLeaderboardPath() || isReferralsPath() || isReferralLeaderboardPath()
+    () =>
+      isLeaderboardPath() ||
+      isReferralsPath() ||
+      isReferralLeaderboardPath() ||
+      isGuidelinesPath()
   );
 
   useEffect(() => {
@@ -153,6 +165,7 @@ export default function App() {
                 <Prizes />
                 <Experience />
                 <TimelineSection />
+                <GuidelinesPreview />
                 <Tecverso />
                 <FAQ />
                 <FinalSequence onRegister={enterRegistration} />
@@ -193,6 +206,18 @@ export default function App() {
               transition={{ duration: 0.5 }}
             >
               <PublicLeaderboard homeUrl="/" />
+            </motion.div>
+          )}
+
+          {phase === 'guidelines' && (
+            <motion.div
+              key="guidelines"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <GuidelinesPage />
             </motion.div>
           )}
 
