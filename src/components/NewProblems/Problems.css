@@ -1,0 +1,381 @@
+/* ═══════════════════════════════════════════════════════════════
+   HACK2PITCH 2026 — PROBLEM STATEMENTS
+   Three tracks staged as editorial dossiers. Bold type, red seams
+   and cinematic reveals — the brief is read before it is built.
+   ═══════════════════════════════════════════════════════════════ */
+
+.problems {
+  position: relative;
+  background: var(--vh-black);
+  padding: clamp(6rem, 12vh, 12rem) 0;
+  overflow: hidden;
+}
+
+/* Continuation seam — the red axis carries in from the event intro */
+.problems__handoff {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(2px, 0.15vw, 3px);
+  height: clamp(3rem, 8vh, 7rem);
+  background: var(--vh-red);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.problems__inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── HEADER ── */
+.problems__header {
+  margin-bottom: clamp(2.5rem, 6vh, 4.5rem);
+}
+
+.problems__overline {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.3em;
+  color: var(--vh-red);
+  margin-bottom: var(--vh-space-5);
+}
+
+.problems__overline-bar {
+  width: 30px;
+  height: 2px;
+  background: var(--vh-red);
+  display: block;
+}
+
+.problems__overline-index {
+  margin-left: auto;
+  color: var(--vh-white-faint);
+  letter-spacing: 0.2em;
+}
+
+.problems__heading {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-5xl);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  color: var(--vh-white);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55em;
+  align-items: baseline;
+}
+
+.problems__heading-accent {
+  color: var(--vh-red);
+}
+
+.problems__lede {
+  margin-top: var(--vh-space-5);
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-lg);
+  line-height: 1.6;
+  color: var(--vh-white-dim);
+  max-width: 62ch;
+}
+
+.problems__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--vh-space-3);
+  margin-top: var(--vh-space-5);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.24em;
+}
+
+.problems__meta-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--vh-red);
+  box-shadow: 0 0 12px rgba(232, 22, 5, 0.7);
+  display: block;
+}
+
+.problems__meta-dates {
+  color: var(--vh-white);
+}
+
+.problems__meta-sep {
+  color: var(--vh-white-faint);
+}
+
+.problems__meta-loc {
+  color: var(--vh-white-dim);
+}
+
+/* ── TRACK NAVIGATION ── */
+.problems__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vh-space-3);
+  padding-bottom: clamp(1.75rem, 4vh, 2.75rem);
+  margin-bottom: clamp(2rem, 5vh, 3.5rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.problems__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--vh-space-3);
+  padding: 0.7rem 1.1rem;
+  background: var(--vh-black-soft);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: var(--vh-white-dim);
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.16em;
+  text-align: left;
+  transition: color 0.35s var(--vh-ease-out),
+    border-color 0.35s var(--vh-ease-out),
+    background 0.35s var(--vh-ease-out),
+    transform 0.35s var(--vh-ease-out);
+}
+
+.problems__tab:hover {
+  color: var(--vh-white);
+  border-color: var(--vh-red);
+  background: var(--vh-black-light);
+  transform: translateY(-2px);
+}
+
+.problems__tab-index {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-lg);
+  line-height: 1;
+  color: var(--vh-red);
+}
+
+.problems__tab-title {
+  max-width: 22ch;
+}
+
+/* ── TRACK LIST ── */
+.problems__list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 4vh, 3rem);
+}
+
+.problems__track {
+  position: relative;
+  padding: clamp(1.75rem, 3.5vw, 3.25rem);
+  padding-left: clamp(1.75rem, 3.5vw, 3.25rem);
+  background: var(--vh-black-soft);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  scroll-margin-top: 90px;
+  overflow: hidden;
+  transition: border-color 0.45s var(--vh-ease-out),
+    background 0.45s var(--vh-ease-out);
+}
+
+.problems__track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 90% at 100% 0%,
+    rgba(232, 22, 5, 0.08),
+    rgba(232, 22, 5, 0) 55%
+  );
+  opacity: 0;
+  transition: opacity 0.5s var(--vh-ease-out);
+  pointer-events: none;
+}
+
+.problems__track:hover {
+  border-color: rgba(232, 22, 5, 0.4);
+}
+
+.problems__track:hover::after {
+  opacity: 1;
+}
+
+.problems__track-rail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--vh-red), rgba(232, 22, 5, 0.05));
+  transform: scaleY(0.32);
+  transform-origin: top center;
+  opacity: 0.5;
+  transition: transform 0.6s var(--vh-ease-out), opacity 0.6s var(--vh-ease-out);
+}
+
+.problems__track:hover .problems__track-rail {
+  transform: scaleY(1);
+  opacity: 1;
+}
+
+/* ── TRACK HEAD ── */
+.problems__track-head {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(1rem, 2.5vw, 2.25rem);
+  padding-bottom: clamp(1.25rem, 3vh, 2rem);
+  margin-bottom: clamp(1.5rem, 3.5vh, 2.5rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.problems__track-number {
+  font-family: var(--vh-font-display);
+  font-size: clamp(3rem, 8vw, 7rem);
+  line-height: 0.78;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(232, 22, 5, 0.55);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.problems__track-heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-2);
+  padding-top: 0.35rem;
+}
+
+.problems__track-label {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.32em;
+  color: var(--vh-red);
+}
+
+.problems__track-title {
+  font-family: var(--vh-font-display);
+  font-size: var(--vh-text-3xl);
+  line-height: 0.98;
+  letter-spacing: 0.02em;
+  color: var(--vh-white);
+}
+
+/* ── TRACK BODY ── */
+.problems__track-body {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3.5vh, 2.5rem);
+}
+
+.problems__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vh-space-3);
+}
+
+.problems__block--challenge {
+  padding-left: clamp(1rem, 2.5vw, 1.75rem);
+  border-left: 2px solid var(--vh-red);
+}
+
+.problems__block-label {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.26em;
+  color: var(--vh-white-faint);
+}
+
+.problems__block-label--red {
+  color: var(--vh-red);
+}
+
+.problems__block-text {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-md);
+  line-height: 1.75;
+  color: var(--vh-white-dim);
+  max-width: 78ch;
+}
+
+.problems__block--challenge .problems__block-text {
+  color: var(--vh-white-warm);
+  font-size: var(--vh-text-lg);
+  line-height: 1.6;
+}
+
+/* ── SUBMISSION REQUIREMENTS ── */
+.problems__requirements {
+  list-style: none;
+  display: grid;
+  gap: var(--vh-space-3);
+  margin-top: var(--vh-space-1);
+}
+
+.problems__requirement {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vh-space-4);
+  padding: clamp(0.75rem, 1.5vw, 1rem) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.problems__requirement:last-child {
+  border-bottom: none;
+}
+
+.problems__requirement-mark {
+  font-family: var(--vh-font-mono);
+  font-size: var(--vh-text-xs);
+  letter-spacing: 0.1em;
+  color: var(--vh-red);
+  padding-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.problems__requirement-text {
+  font-family: var(--vh-font-body);
+  font-size: var(--vh-text-base);
+  line-height: 1.65;
+  color: var(--vh-white-warm);
+  max-width: 74ch;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .problems__heading {
+    flex-direction: column;
+    gap: 0.08em;
+  }
+
+  .problems__track-number {
+    font-size: clamp(2.5rem, 12vw, 4.5rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .problems__tab {
+    flex: 1 1 100%;
+  }
+
+  .problems__tab-title {
+    max-width: none;
+  }
+
+  .problems__track-head {
+    flex-direction: column;
+    gap: var(--vh-space-3);
+  }
+
+  .problems__track-number {
+    font-size: clamp(2.25rem, 16vw, 3.5rem);
+  }
+
+  .problems__track-title {
+    font-size: var(--vh-text-2xl);
+  }
+
+  .problems__block--challenge {
+    padding-left: clamp(0.85rem, 4vw, 1.25rem);
+  }
+}
