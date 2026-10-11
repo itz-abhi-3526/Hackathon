@@ -19,7 +19,7 @@ const COLUMNS = [
     label: 'INFO',
     links: [
       { label: 'FAQ', href: '#faq' },
-      { label: 'LEADERBOARD', href: LEADERBOARD_URL },
+      { label: 'SELECTED TEAMS', href: LEADERBOARD_URL },
       { label: 'REGISTER', href: '#register', featured: true },
     ],
   },

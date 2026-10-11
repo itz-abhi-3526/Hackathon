@@ -81,7 +81,7 @@ export default function Navigation({ onRegister }) {
               REFERRALS
             </a>
             <a className="nav__leaderboard" href={LEADERBOARD_URL}>
-              LEADERBOARD
+              SELECTED TEAMS
             </a>
             <button className="nav__register" onClick={onRegister}>
               REGISTER
@@ -173,7 +173,7 @@ export default function Navigation({ onRegister }) {
               variants={ITEM}
               onClick={() => setMobileOpen(false)}
             >
-              <span className="nav__mobile-leaderboard-line">{'▤'} LIVE SCORES</span>
+              <span className="nav__mobile-leaderboard-line">{'▤'} SELECTED TEAMS</span>
             </motion.a>
 
             <div className="nav__mobile-foot">
