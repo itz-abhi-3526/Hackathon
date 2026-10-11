@@ -1180,10 +1180,10 @@ export function stageByKey(key) {
   return STAGES.find((s) => s.key === key) ?? null;
 }
 
-/* The fixed stage rubric: exactly three placeholders "Criteria 1/2/3"
-   with a non-configurable 20-mark ceiling. Rows that already exist are
-   returned with their id; missing ones are returned as placeholders so
-   the scoring form renders three slots even before the DB is seeded. */
+/* The fixed stage rubric: one placeholder "Score" with a non-configurable
+   100-mark ceiling. Rows that already exist are returned with their id;
+   missing ones are returned as placeholders so the scoring form renders
+   the slot even before the DB is seeded. */
 export function stageCriteriaPlaceholders(criteria = []) {
   return STAGE_CRITERIA_SLOTS.map((name, i) => {
     const found = criteria.find((c) => c.name === name) ?? null;
@@ -1204,7 +1204,7 @@ async function fetchStageQualifiedTeamIds(stageKey, supabase) {
     .from(T.STAGE_STATUS)
     .select('team_id')
     .eq('stage', stageKey)
-    .eq('status', 'qualified');
+    .in('status', ['qualified', 'winner']);
   if (error) throw wrapError(error, 'QUALIFICATION STATUS COULD NOT BE LOADED');
   return (data ?? []).map((r) => r.team_id);
 }

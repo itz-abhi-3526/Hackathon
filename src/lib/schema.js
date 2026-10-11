@@ -66,9 +66,9 @@ export const STAGE_STATUS_FLAGS = {
   winner: 'winner',
 };
 
-/* Fixed stage rubric: exactly three criteria, max 20 each (60 per round). */
-export const STAGE_CRITERIA_SLOTS = ['Criteria 1', 'Criteria 2', 'Criteria 3'];
-export const STAGE_CRITERIA_MAX_SCORE = 20;
+/* Fixed stage rubric: ONE mark per team per round, out of 100. */
+export const STAGE_CRITERIA_SLOTS = ['Score'];
+export const STAGE_CRITERIA_MAX_SCORE = 100;
 export const STAGE_ROUND_MAX_SCORE = STAGE_CRITERIA_MAX_SCORE * STAGE_CRITERIA_SLOTS.length;
 
 /* Admin cumulative leaderboard (view admin_judging_leaderboard). */

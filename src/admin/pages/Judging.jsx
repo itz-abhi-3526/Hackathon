@@ -2,9 +2,9 @@
    VOIDHACK 2026 — Judging / shared evaluations (admin)
    Exactly three fixed stages: ROUND 1 → top 20 → ROUND 2 → top 8 →
    FINAL PRESENTATION → top 3. Every stage carries the same non-
-   configurable rubric: Criteria 1 / 2 / 3, 20 marks each (60 per round,
-   180 cumulative). Scoring is SHARED — ONE record per round × team ×
-   criterion, no judge selector, no per-judge rows, no averaging. Any
+   configurable rubric: a single mark out of 100 (60 → 100 per round,
+   180 → 300 cumulative). Scoring is SHARED — ONE record per round ×
+   team, no judge selector, no per-judge rows, no averaging. Any
    authorised admin edits the same record, and Supabase Realtime pushes
    every save to every open editing session live. Qualification into a
    later stage is ALWAYS explicit (admin Leaderboard page) — teams are
@@ -30,7 +30,7 @@ import { SearchBar, RefreshButton, Pagination } from '../components/Toolbar.jsx'
 import StatusBadge from '../components/StatusBadge.jsx';
 import { codeFor, dateLabel, problemLabel } from '../utils/format.js';
 import { judgingStatus, clampScore } from '../services/judgingValidation.js';
-import { STAGES, STAGE_CRITERIA_MAX_SCORE, STAGE_ROUND_MAX_SCORE } from '../../lib/schema.js';
+import { STAGES, STAGE_CRITERIA_SLOTS, STAGE_CRITERIA_MAX_SCORE, STAGE_ROUND_MAX_SCORE } from '../../lib/schema.js';
 
 const PAGE_SIZE = 50;
 
@@ -61,7 +61,8 @@ export default function Judging() {
     () => stageCriteriaPlaceholders(criteria.data ?? []),
     [criteria.data]
   );
-  const criteriaCount = STAGES.find((s) => s.key === stageKey) ? 3 : 0;
+  const criteriaCount = STAGES.find((s) => s.key === stageKey) ? STAGE_CRITERIA_SLOTS.length : 0;
+  const criteriaLabel = `${STAGE_CRITERIA_SLOTS.length} ${STAGE_CRITERIA_SLOTS.length === 1 ? 'CRITERION' : 'CRITERIA'}`;
 
   const rows = useMemo(
     () =>
@@ -158,7 +159,7 @@ export default function Judging() {
       : 'LOADING…'
     : !selectedRound
     ? 'STAGE ROUND NOT CONFIGURED'
-    : `${rows.length} · 3 CRITERIA · ${STAGE_ROUND_MAX_SCORE} MARKS POSSIBLE`;
+    : `${rows.length} · ${criteriaLabel} · ${STAGE_ROUND_MAX_SCORE} MARKS POSSIBLE`;
 
   const stageTab = (s) => {
     const active = s.key === stageKey;
