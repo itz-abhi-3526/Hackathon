@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    VOIDHACK 2026 — Judging / shared evaluations (admin)
-   Exactly three fixed stages: ROUND 1 → top 20 → ROUND 2 → top 8 →
+   Exactly three fixed stages: ROUND 1 → top 15 → ROUND 2 → top 8 →
    FINAL PRESENTATION → top 3. Every stage carries the same non-
    configurable rubric: a single mark out of 100 (60 → 100 per round,
    180 → 300 cumulative). Scoring is SHARED — ONE record per round ×
@@ -202,7 +202,7 @@ export default function Judging() {
         <StatCard
           label="COMPLETE"
           value={stat.complete}
-          hint={`${stageKey === 'round_1' ? 'ALL REGISTERED TEAMS' : stageKey === 'round_2' ? 'TOP 20 QUALIFIED' : 'TOP 8 FINALISTS'}`}
+          hint={`${stageKey === 'round_1' ? 'ALL REGISTERED TEAMS' : stageKey === 'round_2' ? 'TOP 15 QUALIFIED' : 'TOP 8 FINALISTS'}`}
           tone={stat.complete ? 'ok' : ''}
         />
       </section>

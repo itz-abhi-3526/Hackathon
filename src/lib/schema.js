@@ -53,7 +53,7 @@ export const T = {
    qualifyingCutoff = how many teams advance out of this stage. */
 export const STAGES = [
   { key: 'round_1', label: 'Round 1', cutoff: 0 },
-  { key: 'round_2', label: 'Round 2', cutoff: 20 },
+  { key: 'round_2', label: 'Round 2', cutoff: 15 },
   { key: 'final', label: 'Final Presentation', cutoff: 8 },
 ];
 

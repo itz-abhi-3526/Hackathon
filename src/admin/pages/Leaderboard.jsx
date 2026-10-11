@@ -3,7 +3,7 @@
    The cumulative judging board: Rank / Team / Round 1 / Round 2 / Final
    Presentation / Cumulative Total, ordered by Cumulative descending
    (Round 2 ranking context = R1 + R2, Final context = R1 + R2 + Final).
-   Qualification is ALWAYS an explicit admin action — top 20 into Round 2,
+   Qualification is ALWAYS an explicit admin action — top 15 into Round 2,
    top 8 into the Final, top 3 finalised — and is applied atomically in
    the database. The public scoreboard NEVER changes on its own: it only
    updates when you press UPDATE MAIN LEADERBOARD.
@@ -124,10 +124,10 @@ export default function Leaderboard() {
 
   const qualifyRound2 = () =>
     confirmThen({
-      title: 'QUALIFY TOP 20 FOR ROUND 2?',
+      title: 'QUALIFY TOP 15 FOR ROUND 2?',
       message:
         'Ranks every scored team by their ROUND 1 total and writes an explicit QUALIFIED / ELIMINATED state for Round 2. Nothing is deleted — eliminated teams keep all scores.',
-      confirmLabel: 'QUALIFY TOP 20 FOR ROUND 2',
+      confirmLabel: 'QUALIFY TOP 15 FOR ROUND 2',
       key: 'qualify:round_2',
       action: () =>
         runAction('qualify:round_2', adminQualifyRound2, (n) => `${n} TEAMS QUALIFIED INTO ROUND 2`),
@@ -159,7 +159,7 @@ export default function Leaderboard() {
     confirmThen({
       title: 'UPDATE MAIN LEADERBOARD?',
       message:
-        'Publishes the CUMULATIVE total (Round 1 + Round 2 + Final) of the ACTIVE teams only — those still qualified (top 20 after the Round 2 cut, top 8 after the Final cut) — onto the public scoreboard. Previously published teams that have been eliminated are removed. This is the ONLY way the public board changes.',
+        'Publishes the CUMULATIVE total (Round 1 + Round 2 + Final) of the ACTIVE teams only — those still qualified (top 15 after the Round 2 cut, top 8 after the Final cut) — onto the public scoreboard. Previously published teams that have been eliminated are removed. This is the ONLY way the public board changes.',
       confirmLabel: 'UPDATE MAIN LEADERBOARD',
       key: 'sync:main',
       action: () =>
@@ -248,9 +248,9 @@ export default function Leaderboard() {
               className="cpa-btn cpa-btn--solid"
               disabled={Boolean(busyKey)}
               onClick={qualifyRound2}
-              title="Explicitly qualify the top 20 by Round 1 total"
+              title="Explicitly qualify the top 15 by Round 1 total"
             >
-              QUALIFY TOP 20 FOR ROUND 2
+              QUALIFY TOP 15 FOR ROUND 2
             </button>
             <button
               type="button"

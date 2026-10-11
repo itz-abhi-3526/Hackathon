@@ -1371,7 +1371,7 @@ async function runJudgingRpc(name, args = {}) {
 }
 
 /* Explicit qualification / finalisation (DB is the source of truth). The
-   only legal transitions: qualify top-20 into Round 2, qualify top-8 into
+   only legal transitions: qualify top-15 into Round 2, qualify top-8 into
    the Final, finalize the top 3. Nothing is ever auto-eliminated or
    deleted when ranks change. */
 export function adminQualifyRound2() {
