@@ -1,32 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPublicLeaderboard } from '../../services/leaderboardService.js';
-import { rankEntries } from './leaderboardLive.js';
 import './PublicLeaderboard.css';
 
 const EASE = [0.16, 1, 0.3, 1];
 
 /* Poll keeps the board fresh. Scores stay server-side (anon has no read
-   on leaderboard.score), so the public board shows rank + team name only. */
+   on leaderboard.score), so the public board is a discreet list of the
+   selected team names only — no ranks, no scores. */
 const REFRESH_MS = 5000;
 
-function RankBadge({ rank }) {
+function LeaderRow({ entry }) {
   return (
-    <span className={`vlb-rank vlb-rank--${String(rank).padStart(2, '0')}`} aria-hidden="true">
-      {String(rank).padStart(2, '0')}
-    </span>
-  );
-}
-
-function LeaderRow({ entry, index }) {
-  const podium = index < 3;
-
-  return (
-    <li
-      className={`vlb-row${podium ? ` vlb-row--${String(entry.rank).padStart(2, '0')} vlb-row--podium` : ''}`}
-    >
-      <RankBadge rank={entry.rank} />
-
+    <li className="vlb-row">
       <span className="vlb-name" title={entry.teamName}>
         {entry.teamName}
       </span>
@@ -40,7 +26,6 @@ function BoardSkeleton({ count = 6 }) {
     <ol className="vlb-board vlb-board--skeleton" aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => (
         <li key={i} className="vlb-row vlb-row--skeleton">
-          <span className="vlb-skeleton vlb-skeleton--rank" />
           <span className="vlb-skeleton vlb-skeleton--name" />
         </li>
       ))}
@@ -99,7 +84,7 @@ export default function PublicLeaderboard({ homeUrl }) {
       setLoading(false);
     } catch (err) {
       if (token !== seqRef.current || disposedRef.current) return;
-      setError(String(err?.message ?? 'SCOREBOARD UNAVAILABLE — Please try again.'));
+      setError(String(err?.message ?? 'UNAVAILABLE — PLEASE TRY AGAIN.'));
       setLoaded(true);
       setLoading(false);
     }
@@ -132,7 +117,7 @@ export default function PublicLeaderboard({ homeUrl }) {
     };
   }, [load]);
 
-  const rows = useMemo(() => rankEntries(entries), [entries]);
+  const rows = entries;
 
   const showBoard  = !loading && !error && !offline && rows.length > 0;
   const showEmpty  = loaded && !loading && !error && !offline && rows.length === 0;
@@ -161,31 +146,14 @@ export default function PublicLeaderboard({ homeUrl }) {
 
       <div className="vlb__inner">
         <header className="vlb__head">
-          <motion.p
-            className="vlb__overline"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: EASE }}
-          >
-            <span className="vlb__overline-bar" aria-hidden="true" />
-            HACK2PITCH 2026 — OFFICIAL SCOREBOARD
-          </motion.p>
           <motion.h1
             className="vlb__title"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: EASE, delay: 0.05 }}
+            transition={{ duration: 0.6, ease: EASE }}
           >
-            LEADERBOARD
+            SELECTED TEAMS
           </motion.h1>
-          <motion.p
-            className="vlb__sub"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, ease: EASE, delay: 0.12 }}
-          >
-            OFFICIAL STANDINGS — RANKED HIGHEST FIRST.
-          </motion.p>
         </header>
 
         <AnimatePresence mode="wait">
@@ -199,10 +167,10 @@ export default function PublicLeaderboard({ homeUrl }) {
             >
               <ol className="vlb-board">
                 {rows.map((entry, i) => (
-                  <LeaderRow key={entry.teamName || `${i}`} entry={entry} index={i} />
+                  <LeaderRow key={entry.teamName || `${i}`} entry={entry} />
                 ))}
               </ol>
-              <p className="vlb-foot-note">STANDINGS UPDATE AUTOMATICALLY — NO REFRESH REQUIRED.</p>
+              <p className="vlb-foot-note">UPDATES AUTOMATICALLY.</p>
             </motion.div>
           )}
 
@@ -214,7 +182,7 @@ export default function PublicLeaderboard({ homeUrl }) {
             <StatePanel
               key="empty"
               kind="empty"
-              message="NO TEAMS ARE ON THE BOARD YET. RANKINGS APPEAR HERE AS SOON AS THE FIRST SCORES GO LIVE."
+              message="NO TEAMS ARE SELECTED YET. THE SELECTED TEAMS WILL APPEAR HERE."
             />
           )}
 
@@ -232,7 +200,7 @@ export default function PublicLeaderboard({ homeUrl }) {
             <StatePanel
               key="offline"
               kind="offline"
-              message="CONNECTION LOST — THE SCOREBOARD CANNOT UPDATE. RECONNECT TO SEE LIVE STANDINGS."
+              message="CONNECTION LOST — THE LIST CANNOT UPDATE. RECONNECT TO SEE THE SELECTED TEAMS."
             />
           )}
         </AnimatePresence>
